@@ -1,0 +1,50 @@
+.wc-form-outer {
+  display: flex;
+  flex-direction: column;
+
+  .wc-form-label {
+    padding: 5px 3px 3px 0px;
+  }
+
+  .wc-form-wrapper {
+    display: flex;
+    flex-direction: column;
+
+    .wc-form-input {
+      padding: 5px 8px;
+    }
+
+    .wc-form-select {
+      padding: 5px 8px;
+    }
+
+    .wc-form-help {
+      padding: 0px 5px 5px 0px;
+    }
+
+    .wc-errors {
+      display: flex;
+      flex-direction: column;
+      color: red;
+    }
+
+    .wc-form-checks {
+      display: flex;
+      flex-direction: column;
+
+      .wc-form-check {
+        display: flex;
+        align-items: center;
+        justify-content: start;
+        padding: 5px 0px;
+        gap: 5px;
+
+        label {
+          text-transform: capitalize;
+        }
+
+        input {}
+      }
+    }
+  }
+}

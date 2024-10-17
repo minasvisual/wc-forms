@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>replit</title>  
+  <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
+  <script type="module" src="/src/index.js" defer></script>
+</head>
+
+<body  >
+  <form class="w-1/2 m-auto flex flex-col gap-4 p-3">
+    <form-input name="test" type="text" label="Text field" validations="required|minlen:5">
+    </form-input>
+    <form-input name="test2" type="email" label="Email field" validations="required|email">
+    </form-input>
+    <form-input name="test3" type="password" label="Password field" validations="required|minlen:5|maxlen:50|confirm:test">
+    </form-input>
+    <form-input name="test4" type="select" validations="required|in:2,3,5" label="Select field" options="['',1,2,3,4,5,6,7,8,9,10]">
+    </form-input>
+    <form-input name="test5" type="date" label="Date field" validations="required|isdate|isafter:2020-01-01|isbefore:2020-12-31">
+    </form-input> 
+    <form-input name="test6" type="number" label="Number" validations="required|isnumber|min:5|max:100">
+    </form-input>
+    <form-input name="test7" type="radio" validations="required|in:2,3" label="Radioboxes field" options="['radio1','radio2','radio3']">
+    </form-input>
+    <form-input name="test8" type="checkbox" validations="required|in:2" label="Checkboxes field"  options="['check1','check2','check3']">
+    </form-input>
+    <form-input name="test9" type="textarea" rows="5" validations="required|maxlen:255|minlen:5" label="Textarea field">
+    </form-input>
+    <form-input name="test10" type="url" label="Url field" validations="required" placeholder="ex. https://domain.com">
+    </form-input>
+    <form-input name="test10" type="search" label="Search field" validations="required|minlen:5">
+    </form-input> 
+    <form-input name="test11" type="color" label="Color field" validations="required">
+    </form-input>
+    <form-input name="test12" type="datetime-local" label="Date time" validations="required|isdate|isafter:2020-01-01|isbefore:2020-12-31">
+    </form-input>
+    <button type="submit" class="border-2 border-black bg-zinc-300 p-2">
+      Enter
+    </button>
+  </form>
+  <script src="/scripts.js"></script>
+</body>
+
+</html>
