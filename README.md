@@ -11,11 +11,11 @@ Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https:/
 ## Roadmap
 - [x] Basic inputs map
 - [x] Basic validation map
-- [ ] Slot customization
+- [X] Slot customization
+- [X] Custom validations
+- [X] Custom input types
 - [ ] Unit tests
 - [ ] Extensible style
-- [ ] Custom validations
-- [ ] Custom input types
 - [ ] Internacionalization
 - [ ] NPM Package installation
 - [ ] Mask native
@@ -69,3 +69,71 @@ Usage
 - notin:<values-comma-separatelly> 
 - startwith:<any>
 - endswith:<any>
+
+
+## Custom validations
+Open `src/config.js` and add:
+```
+export const validations = {
+  ...
+  nameOfValidation: {
+    message: (params, value, values) => `The value is ${value} and the param is ${params[0]} and the form values is ${JSON.stringify(values)}`,
+    handle: ({ value, params }) => {
+      // value is field value | params is array of validation params: "nameOfValidation:param1:param2 ...."
+      return true // true if is valid | false if is invalid
+    }
+  }
+```
+
+Use your validation on html:
+```
+<form-input name="test" type="email" label="Email field" validations="required|nameOfValidation:param1">
+</form-input>
+```
+
+
+## Custom field types
+- First: Create a class that implements the template and store `formitem` public variable of form element to receive event handlers
+- Second: Create a method to trigger error message on the template
+````
+export class FormCurrency {
+  constructor({ el, shadow, internals }) { 
+    this.label = el.getAttribute('label')
+    this.name = el.getAttribute('name')  
+
+    shadow.innerHTML = ` 
+      <div class="wc-form-outer"> 
+        <label class="wc-form-label">${this.label} </label>
+        <div class="wc-form-wrapper"> 
+          <div class="wc-form-input-wrapper"> 
+            R$ <input class="wc-form-input" type="text" name="${this.name}" />
+          </div>  
+        </div> 
+      </div>
+    `
+  
+    // REQUIRED
+    this.formitem = shadow.querySelector('input'); 
+  }
+  
+  setError(error) { // false or `string of errors separatelly of <br/>`
+    console.log('Do anything with form error', error)
+  }
+}
+
+````
+Next, open `src/config.js`, import your class and add on inputs list your new input type:
+```
+import { FormCurrency } from 'path/of/file/FormCurrency.js'
+...
+export const inputs = {
+  ...
+  currency: {
+    source: FormCurrency
+  }
+```
+
+Use your new input on html:
+```
+<form-input name="test" type="currency" label="Currency field" ></form-input>
+```

@@ -1,8 +1,9 @@
 import { FormText } from './inputs/forminput.js'
 import { FormSelect } from './inputs/formselect.js'
-import { FormTextarea } from './inputs/formtext.js'
-import { FormChecksBox, FormChecksRadio } from './inputs/formchecks.js'
-import { splitValues } from './helpers.js'
+import { FormTextarea, } from './inputs/formtext.js'
+import { FormChecksBox, FormChecksRadio } from './inputs/formchecks.js' 
+import { splitValues, dateRegex, emailRegex } from './helpers.js'
+import { FormCurrency } from './inputs/custominput.js'
 
 export const validations = {
   required: {
@@ -14,8 +15,7 @@ export const validations = {
   email: {
     message: () => 'This should be an valid email',
     handle: ({ value, params }) => {
-      let reg = /^([a-z]){1,}([a-z0-9._-]){1,}([@]){1}([a-z]){2,}([.]){1}([a-z]){2,}([.]?){1}([a-z]?){2,}$/i;
-      return value && typeof value === 'string' && reg.test(value)
+      return value && typeof value === 'string' && emailRegex.test(value)
     }
   },
   minlen: {
@@ -39,22 +39,19 @@ export const validations = {
   isdate: {
     message: () => 'This field must be a valid date',
     handle: ({ value, params }) => {
-      let reg = /^([1-2][0-1][0-9][0-9])-([0-1][0-9])-([0-9]{2})$/i;
-      return value && typeof value === 'string' && reg.test(value)
+      return value && typeof value === 'string' && dateRegex.test(value)
     }
   },
   isafter: {
     message: (params, value, values) => `This field must be after ${params[0]}`,
     handle: ({ value, params, values }) => {
-      let reg = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/i;
-      return value && typeof value === 'string' && reg.test(value) && new Date(value) > new Date(params[0])
+      return value && typeof value === 'string' && dateRegex.test(value) && new Date(value) > new Date(params[0])
     }
   },
   isbefore: {
     message: (params, value, values) => `This field must be before ${params[0]}`,
     handle: ({ value, params, values }) => {
-      let reg = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/i;
-      return value && typeof value === 'string' && reg.test(value) && new Date(value) < new Date(params[0])
+      return value && typeof value === 'string' && dateRegex.test(value) && new Date(value) < new Date(params[0])
     }
   },
   isnumber: {
@@ -77,8 +74,8 @@ export const validations = {
   },
   in: {
     message: (params, value) => `This field must contains ${params.join(',')}`,
-    handle: ({ value, params }) => { 
-      return value && (splitValues(params).includes(value) || splitValues(value).includes(params)) 
+    handle: ({ value, params }) => {
+      return value && (splitValues(params).includes(value) || splitValues(value).includes(params))
     }
   },
   notin: {
@@ -100,7 +97,7 @@ export const validations = {
     }
   }
 }
-
+ 
 export const inputs = {
   text: {
     source: FormText,
@@ -140,5 +137,8 @@ export const inputs = {
   },
   textarea: {
     source: FormTextarea,
+  },
+  currency: {
+    source: FormCurrency,
   }
 }

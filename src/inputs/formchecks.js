@@ -16,14 +16,18 @@ export class FormChecks {
 
     template.innerHTML = ` 
       <div class="wc-form-outer">
-        <label class="wc-form-label">${this.label} </label>
+        <slot name="before"></slot>
+        <slot name="label"><label class="wc-form-label">${this.label} </label></slot>
         <div class="wc-form-wrapper">
           <div class="wc-form-checks">
-            ${this.getChecks()}
+            <slot name="prefix"></slot>
+            <slot name="input">${this.getChecks()}</slot>
+            <slot name="suffix"></slot>
           </div>  
-          ${this.help ? `<small>${this.help}</small>` : ''}
-          <small class="wc-errors hidden"></small>
+          <slot name="help">${this.help ? `<small>${this.help}</small>` : ''}</slot>
+          <slot name="errors"><small class="wc-errors hidden"></small></slot>
         </div>
+        <slot name="after"></slot>
       </div>
     `
 

@@ -11,12 +11,18 @@ export class FormText {
     
     template.innerHTML = ` 
       <div class="wc-form-outer">
-        <label class="wc-form-label">${this.label} </label>
-        <div class="wc-form-wrapper">
-          <input class="wc-form-input" ${renderAttributes(el, ['class'])} />
-          ${this.help ? `<small>${this.help}</small>` : ''}
-          <small class="wc-errors hidden"></small>
+        <slot name="before"></slot>
+        <slot name="label"><label class="wc-form-label">${this.label} </label></slot>
+        <div class="wc-form-wrapper"> 
+          <div class="wc-form-input-wrapper">
+            <slot name="prefix"></slot>
+            <slot name="input"><input class="wc-form-input" ${renderAttributes(el, ['class'])} /></slot>
+            <slot name="suffix"></slot>
+          </div>
+          <slot name="help">${this.help ? `<small>${this.help}</small>` : ''}</slot>
+          <slot name="errors"><small class="wc-errors hidden"></small></slot>
         </div>
+        <slot name="after"></slot>
       </div>
     `
 

@@ -11,12 +11,20 @@ export class FormTextarea {
 
     template.innerHTML = ` 
       <div class="wc-form-outer">
-        <label class="wc-form-label">${this.label} </label>
+        <slot name="before"></slot>
+        <slot name="label"><label class="wc-form-label">${this.label} </label></slot>
         <div class="wc-form-wrapper">
-          <textarea class="wc-form-textarea" ${renderAttributes(el, ['class', 'type'])} >${el.getAttribute('placeholder') ?? ''}</textarea>
-          ${this.help ? `<small>${this.help}</small>` : ''}
-          <small class="wc-errors hidden"></small>
+          <div class="wc-form-input-wrapper">
+            <slot name="prefix"></slot>
+            <slot name="input">
+              <textarea class="wc-form-textarea" ${renderAttributes(el, ['class', 'type'])} >${el.getAttribute('placeholder') ?? ''}</textarea>
+            </slot> 
+            <slot name="suffix"></slot>
+          </div>
+          <slot name="help">${this.help ? `<small>${this.help}</small>` : ''}</slot>
+          <slot name="errors"><small class="wc-errors hidden"></small></slot>
         </div>
+        <slot name="after"></slot>
       </div>
     `
 

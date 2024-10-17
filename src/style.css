@@ -4,20 +4,25 @@
 
   .wc-form-label {
     padding: 5px 3px 3px 0px;
+    font-weight: 500;
   }
 
   .wc-form-wrapper {
     display: flex;
     flex-direction: column;
 
-    .wc-form-input {
-      padding: 5px 8px;
+    .wc-form-input-wrapper {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
 
-    .wc-form-select {
+    .wc-form-input, .wc-form-textarea, .wc-form-select  {
       padding: 5px 8px;
+      width: 100%;
     }
-
+ 
     .wc-form-help {
       padding: 0px 5px 5px 0px;
     }

@@ -27,3 +27,7 @@ export function splitValues(value) {
   if (!value || typeof value !== 'string') return value
   if (value.includes(',')) return value.split(',')
 }
+
+export const dateRegex = /^[1-2]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])(T([01]\d|2[0-3]):[0-5]\d)?$/;
+
+export const emailRegex = /^([a-z]){1,}([a-z0-9._-]){1,}([@]){1}([a-z]){2,}([.]){1}([a-z]){2,}([.]?){1}([a-z]?){2,}$/i;

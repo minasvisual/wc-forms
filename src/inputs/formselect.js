@@ -11,14 +11,22 @@ export class FormSelect {
 
     template.innerHTML = ` 
       <div class="wc-form-outer">
-        <label class="wc-form-label">${this.label} </label>
+        <slot name="before"></slot>
+        <slot name="label"><label class="wc-form-label">${this.label} </label></slot>
         <div class="wc-form-wrapper">
-          <select class="wc-form-select" ${renderAttributes(el, ['class','options','type'])}>
-            <slot/>
-          </select>
-          ${this.help ? `<small>${this.help}</small>` : ''}
-          <small class="wc-errors hidden"></small>
+          <div class="wc-form-input-wrapper">
+            <slot name="prefix"></slot>
+            <slot name="input"> 
+              <select class="wc-form-select" ${renderAttributes(el, ['class','options','type'])}>
+                <slot/>
+              </select>
+            </slot> 
+            <slot name="suffix"></slot>
+          </div>
+          <slot name="help">${this.help ? `<small>${this.help}</small>` : ''}</slot>
+          <slot name="errors"><small class="wc-errors hidden"></small></slot>
         </div>
+        <slot name="after"></slot>
       </div>
     `
 
