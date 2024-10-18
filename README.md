@@ -72,30 +72,37 @@ Usage
 
 
 ## Custom validations
-Open `src/config.js` and add:
-```
-export const validations = {
-  ...
-  nameOfValidation: {
-    message: (params, value, values) => `The value is ${value} and the param is ${params[0]} and the form values is ${JSON.stringify(values)}`,
-    handle: ({ value, params }) => {
-      // value is field value | params is array of validation params: "nameOfValidation:param1:param2 ...."
-      return true // true if is valid | false if is invalid
-    }
-  }
+Inside `<head>` tag, import `Config` as module before import `index.js` and add:
+```html
+  ....
+  <script type="module" >
+    import { Config } from '/src/config.js' 
+
+    Config.registerValidation('custom', {
+      // Build error message
+      message: (params, value, values) 
+        => `The value is ${value} and the param is ${params[0]} and the form values is ${JSON.stringify(values)}`,
+      // Validate changed input
+      handle: ({ value, params }) => {
+        // value is field value | params is array of validation params: "custom:param1:param2 ...."
+        return true // true if is valid | false if is invalid
+      }
+    }) 
+  </script> 
+  <script type="module" src="/src/index.js" defer async></script>
+  ... 
 ```
 
 Use your validation on html:
 ```
-<form-input name="test" type="email" label="Email field" validations="required|nameOfValidation:param1">
-</form-input>
+<form-input name="test" type="email" label="Email field" validations="required|custom:param1"></form-input>
 ```
 
 
 ## Custom field types
-- First: Create a class that implements the template and store `formitem` public variable of form element to receive event handlers
+- First: Create a class that implements the template and store `formitem` as public variable of form element to receive event handlers
 - Second: Create a method to trigger error message on the template
-````
+```js
 export class FormCurrency {
   constructor({ el, shadow, internals }) { 
     this.label = el.getAttribute('label')
@@ -113,24 +120,25 @@ export class FormCurrency {
     `
   
     // REQUIRED
-    this.formitem = shadow.querySelector('input'); 
+    this.formitem = shadow.querySelector('input');
   }
   
   setError(error) { // false or `string of errors separatelly of <br/>`
-    console.log('Do anything with form error', error)
+    console.log('Do anything with error message', error)
   }
 }
 
-````
-Next, open `src/config.js`, import your class and add on inputs list your new input type:
 ```
-import { FormCurrency } from 'path/of/file/FormCurrency.js'
-...
-export const inputs = {
+Next, import `Config` store and import your class. register your new input type:
+```html
+  <script type="module" >
+    import { Config } from '/src/config.js'
+    import { FormCurrency } from '/path/of/file/custominput.js'
+  
+    Config.registerInput('currency', FormCurrency)
+  </script> 
+  <script type="module" src="/src/index.js" defer async></script>
   ...
-  currency: {
-    source: FormCurrency
-  }
 ```
 
 Use your new input on html:

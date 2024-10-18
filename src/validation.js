@@ -1,4 +1,4 @@
-import { validations } from './config.js'
+import { Config } from './config.js'
 export class Validate {
   constructor(ruleString) {
     this.rule = ''
@@ -24,6 +24,7 @@ export class Validate {
   }
 
   getSourceRule() {
+    let validations = Config.validations
     if (!validations[this.rule]) 
       throw new Error(`Rule not found: ${this.rule}`)
     return validations[this.rule]

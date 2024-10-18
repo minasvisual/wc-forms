@@ -4,9 +4,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <title>replit</title>  
+  <title>Web Components Forms</title>  
+  <script type="module" >
+    import { Config } from '/src/config.js'
+    import { FormCurrency } from '/src/inputs/custominput.js'
+
+    Config.registerValidation('custom', {
+      message: (params, value) => `This field must quals ${params[0]}`,
+      handle: ({ value, params }) => value == params[0]
+    })
+    Config.registerInput('currency', FormCurrency)
+  </script>
   <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
-  <script type="module" src="/src/index.js" defer></script>
+  <script type="module" src="/src/index.js" defer async></script>
 </head>
 
 <body  >
@@ -37,13 +47,13 @@
     </form-input>
     <form-input name="test10" type="search" label="Search field" validations="required|minlen:5">
     </form-input> 
-    <form-input name="test11" type="color" label="Color field" validations="required">
+    <form-input name="test11" type="color" label="Color field" validations="required|custom:#ffffff">
     </form-input>
     <form-input name="test12" type="datetime-local" label="Date time" validations="required|isdate|isafter:2020-01-01|isbefore:2020-12-31">
     </form-input>
     
     <form-input name="test13" type="currency" label="Custom field type" validations="required">
-    </form-input>    
+    </form-input>   
     <button type="submit" class="border-2 border-black bg-zinc-300 p-2">
       Enter
     </button>

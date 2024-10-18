@@ -1,6 +1,6 @@
 import { renderAttributes, extractValidations } from './helpers.js'
 import { Validate } from './validation.js'
-import { inputs } from './config.js'
+import { Config } from './config.js'
 
 class FormComponent extends HTMLElement {
   static formAssociated = true;
@@ -12,7 +12,8 @@ class FormComponent extends HTMLElement {
 
   connectedCallback() {
     this.itype = this.getAttribute('type')
-    // todo: create adapters
+    // todo: create adapters 
+    const inputs = Config.inputs
     const InputSource = inputs[this.itype] ?? inputs.text
     if (!InputSource) throw new Error(`Input type not found: ${this.itype}`)
     this.instance = new InputSource.source({
@@ -24,7 +25,6 @@ class FormComponent extends HTMLElement {
     this.shadowRoot.appendChild(this.addStyles())
     this.formitem = this.instance.formitem
     this.formitem.addEventListener('change', (e) => {
-      console.log('check changed', e.target.value)
       this.internals.setFormValue(this.formitem.value)
       this.emitEvent('change', this.formitem.value)
       this.validate()
@@ -32,6 +32,9 @@ class FormComponent extends HTMLElement {
 
     if (this.instance?.onMounted)
       this.instance?.onMounted()
+
+    if (this.instance?.onDestroy)
+      this.instance?.onDestroy()
   }
 
   disconnectedCallback() {
@@ -43,7 +46,9 @@ class FormComponent extends HTMLElement {
       type: 'text/css',
     })
     style.appendChild(
-      document.createTextNode(`@import "/src/style.css";`)
+      document.createTextNode(
+        `@import "${Config.basePath}/style.css";`
+      )
     );
     return style
   }
