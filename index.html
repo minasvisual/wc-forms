@@ -9,6 +9,8 @@
     import { Config } from './src/config.js'
     import { FormCurrency } from './src/inputs/custominput.js'
 
+    if(location.href.includes('github.io'))
+      Config.basePath = '/wc-forms/src'
     Config.registerValidation('custom', {
       message: (params, value) => `This field must quals ${params[0]}`,
       handle: ({ value, params }) => value == params[0]

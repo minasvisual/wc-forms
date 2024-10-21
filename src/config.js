@@ -197,7 +197,7 @@ export const inputs = {
 }
 
 export const Config = {
-  basePath: './src',
+  basePath: '/src',
   validations, 
   inputs,
   registerValidation(name, rule) {
