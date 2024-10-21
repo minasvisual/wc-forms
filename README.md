@@ -2,6 +2,9 @@
 
 Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https://formkit.com/getting-started/what-is-formkit) library.
 
+## Demo
+[Github Pages](https://minasvisual.github.io/wc-forms/)
+
 ## Features
 - Form group inputs
 - Modular validation attribute
