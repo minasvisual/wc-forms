@@ -22,7 +22,7 @@
 </head>
 
 <body  >
-  <form class="w-1/2 m-auto flex flex-col gap-4 p-3">
+  <form is="form-control" class="w-1/2 m-auto flex flex-col gap-4 p-3">
     <form-input name="test" type="text" label="Text field" validations="required|minlen:5">
       <span slot="label">
         <h1 style="color:red">Custom label slot</h1>
@@ -39,9 +39,9 @@
     </form-input> 
     <form-input name="test6" type="number" label="Number" validations="required|isnumber|min:5|max:100">
     </form-input>
-    <form-input name="test7" type="radio" validations="required|in:2,3" label="Radioboxes field" options="['radio1','radio2','radio3']">
+    <form-input name="test7" type="radioboxes" validations="required|in:2,3" label="Radioboxes field" options="['radio1','radio2','radio3']">
     </form-input>
-    <form-input name="test8" type="checkbox" validations="required|in:2" label="Checkboxes field"  options="['check1','check2','check3']">
+    <form-input name="test8" type="checkboxes" validations="required|in:2" label="Checkboxes field"  options="['check1','check2','check3']">
     </form-input>
     <form-input name="test9" type="textarea" rows="5" validations="required|maxlen:255|minlen:5" label="Textarea field">
     </form-input>
@@ -53,8 +53,11 @@
     </form-input>
     <form-input name="test12" type="datetime-local" label="Date time" validations="required|isdate|isafter:2020-01-01|isbefore:2020-12-31">
     </form-input>
-    
-    <form-input name="test13" type="currency" label="Custom field type" validations="required">
+    <form-input name="test13" type="checkbox" validations="required" label="Checkbox boolean field" >
+    </form-input>
+    <form-input name="test14" type="checkbox" value="optin" validations="" label="Checkbox value field" >
+    </form-input>
+    <form-input name="test15" type="currency" label="Custom field type" validations="required">
     </form-input>   
     <button type="submit" class="border-2 border-black bg-zinc-300 p-2">
       Enter

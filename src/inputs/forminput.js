@@ -6,6 +6,7 @@ export class FormText {
     this.itype = el.getAttribute('type')
     this.help = el.getAttribute('help')
     this.label = el.getAttribute('label')
+    this.inputvalue = el.value || ''
     this.error = ''
     const template = document.createElement("template");
     

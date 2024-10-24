@@ -1,7 +1,7 @@
 import { FormText } from './inputs/forminput.js'
 import { FormSelect } from './inputs/formselect.js'
 import { FormTextarea, } from './inputs/formtext.js'
-import { FormChecksBox, FormChecksRadio } from './inputs/formchecks.js' 
+import { FormCheckBox, FormChecksBoxes, FormChecksRadio } from './inputs/formchecks.js' 
 import { splitValues, get, dateRegex, emailRegex, isValidNumber } from './helpers.js' 
 
 /**
@@ -156,42 +156,58 @@ export const validations = {
  
 export const inputs = {
   text: {
+    output: 'text',
     source: FormText,
   },
   number: {
+    output: 'number',
     source: FormText,
   },
   email: {
+    output: 'text',
     source: FormText,
   },
   url: {
+    output: 'text',
     source: FormText,
   },
   color: {
+    output: 'text',
     source: FormText,
   },
   date: {
+    output: 'text',
     source: FormText,
   },
   'datetime-local': {
     source: FormText,
   }, 
   password: {
+    output: 'text',
     source: FormText,
   },
   search: {
+    output: 'text',
     source: FormText,
   },
   select: {
+    output: 'text',
     source: FormSelect,
   },
-  radio: {
+  checkbox: {
+    output: 'text',
+    source: FormCheckBox,
+  },
+  radioboxes: {
+    output: 'text',
     source: FormChecksRadio,
   },
-  checkbox: {
-    source: FormChecksBox,
+  checkboxes: {
+    output: 'array',
+    source: FormChecksBoxes,
   },
   textarea: {
+    output: 'text',
     source: FormTextarea,
   }, 
 }
@@ -207,10 +223,13 @@ export const Config = {
     if(!rule.handle || typeof rule.handle !== 'function') throw new Error('Rule handle must be a function')
     this.validations[name] = rule
   },
-  registerInput(name, classObj) {
+  registerInput(name, classObj, options = {}) {
     console.log(name, typeof classObj)
     if(!name) throw new Error('Name is required')
     if(!classObj || typeof classObj !== 'function') throw new Error('Rule is required as object') 
-    this.inputs[name] = { source: classObj }
+    this.inputs[name] = { 
+      output: options?.output || 'text', 
+      source: classObj 
+    }
   }
 }

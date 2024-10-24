@@ -3,10 +3,10 @@ function send(e) {
   e.preventDefault()
   const form = e.target; 
   const values = Object.fromEntries(new FormData(form));
-  console.log('Submited', values)
+  console.log('Submited', e.detail)
 } 
 
-document.querySelector('form').addEventListener('submit', send)
+document.querySelector('form').addEventListener('submited', send)
 
 let input = document.querySelector('form-input[name="test"]')
 input.addEventListener('typing', e => console.log('typing', e.detail))

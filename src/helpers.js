@@ -8,7 +8,7 @@ export function renderAttributes(el, exclude = []) {
 }
 
 export function extractValidations(validString) {
-  return (typeof validString === 'string' ? validString.split("|") : [])
+  return (validString && typeof validString === 'string' ? validString.split("|") : [])
 }
 
 export function templateString(str, obj) {

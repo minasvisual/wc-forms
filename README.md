@@ -51,8 +51,9 @@ Usage
 - date
 - datetime-local
 - select
-- radio
-- checkbox
+- radioboxes // multiple
+- checkboxes // multiple
+- checkbox   // unique
 - textarea 
 
 

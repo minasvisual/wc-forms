@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Web Components Forms</title>   
+  <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
+  <script type="module" src="./src/index.js" defer async></script> 
+  <script src="//unpkg.com/alpinejs" defer></script>
+</head>
+
+<body x-data="todos">
+  <form is="form-control" class="w-1/2 m-auto flex flex-row gap-4 p-3 items-end" @submited="addTask"> 
+      <span>New task</span>
+      <form-input name="name" type="text" label="Name" validations="required|minlen:5"></form-input>  
+      <form-input name="duedate" type="date" label="Due date" validations="required|isafter:2024-01-01"></form-input>
+      <button type="submit" class="border-2 border-black bg-zinc-300 h-8 px-2">
+        Enter
+      </button>  
+  </form>
+  <hr />
+  <div id="tasks" class="w-1/2 m-auto flex flex-col gap-4">
+    <div x-show="!tasks.length" class="text-center w-full">No tasks</div>
+    <template x-for="task in tasks">
+      <div class="w-full grid grid-cols-4 border-b-2">
+        <span x-text="task.name"></span>
+        <span x-text="task.duedate"></span>
+        <form-input name="done" type="checkbox" 
+              options="[{'label': 'Done', 'value': true}]" 
+              @change="e => task.done = !task.done"> 
+        </form-input>
+        <button type="button" @click="e => removeTask(task)">Remove</button>
+      </div>
+    </template>
+    <pre x-html="JSON.stringify(tasks, null, 2)"></pre>
+  </div> 
+  <script >  
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('todos', () => ({
+            tasks: [],  
+            addTask(e) { 
+              const { name, duedate } = e.detail
+              if(!name || !duedate) return alert('required')
+              this.tasks.push(e.detail)
+            }, 
+            removeTask(task) {  
+              const index = this.tasks.indexOf(task)
+              this.tasks.splice(index, 1)
+            }
+        }))
+    }) 
+  </script>
+</body>
+
+</html>
