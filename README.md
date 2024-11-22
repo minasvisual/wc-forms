@@ -17,11 +17,12 @@ Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https:/
 - [X] Slot customization
 - [X] Custom validations
 - [X] Custom input types
+- [X] Mask native
+- [X] Custom Masks native
 - [ ] Unit tests
 - [ ] Extensible style
 - [ ] Internacionalization
 - [ ] NPM Package installation
-- [ ] Mask native
 - [ ] Plugins
 
 ## Installation
@@ -101,6 +102,65 @@ Use your validation on html:
 ```
 <form-input name="test" type="email" label="Email field" validations="required|custom:param1"></form-input>
 ```
+
+## Native masks by VMasker
+Use mask to format output of input texts
+```html
+<form-input name="test" type="text" mask="(99) 99999-9999" label="Phone field" validations="required">
+</form-input>
+```
+#### Replace map:
+- S: any character
+- A: any letter (A-Za-z)
+- 9: any number (0-9) 
+
+#### Mask types:
+- pattern: default, let empty mask:type attribute
+- currency: add attribute `mask:format="currency"`
+- number: add attribute `mask:format="number"`
+- alpha: add attribute `mask:format="alpha"`
+
+```html
+<form-input name="test" type="text" mask mask:format="currency" label="Money field" >
+</form-input>
+```
+
+#### Mask with unmask return: 
+```html
+<form-input name="test" type="text" mask="(99) 9999-9999" unmask label="Money field" >
+</form-input>
+```
+
+#### Custom Mask: 
+HTML header example:
+- A mask that changes pattern through characters length
+```html
+  ....
+  <script type="module" >
+    import { Config } from '/src/config.js' 
+    // See more in VMasker Docs: https://github.com/vanilla-masker/vanilla-masker/tree/master
+    Config.registerMask('document', (el, maskInstance, maskInputAttribute) => {
+      var docMask = ['999.999.999-999', '99.999.999/9999-99'];
+      var inputHandler = (masks, max, event) => {
+        var c = event.target;
+        var v = c.value.replace(/\D/g, '');
+        var m = c.value.length > max ? 1 : 0;
+        maskInstance.unMask();
+        maskInstance.maskPattern(masks[m]); 
+      }
+      maskInstance.maskPattern(docMask[0]);
+      el.addEventListener('input', inputHandler.bind(undefined, docMask, 14), false);
+    })
+  </script> 
+  <script type="module" src="/src/index.js" defer async></script>
+  ... 
+```
+HTML Content
+```html
+ <form-input name="test18" type="text" label="Custom mask" mask mask:format="document" validations="required" >  
+ </form-input>  
+```
+
 
 
 ## Custom field types

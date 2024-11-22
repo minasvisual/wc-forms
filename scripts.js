@@ -1,4 +1,3 @@
- 
 function send(e) {
   e.preventDefault()
   const form = e.target; 
@@ -6,8 +5,13 @@ function send(e) {
   console.log('Submited', e.detail)
 } 
 
-document.querySelector('form').addEventListener('submited', send)
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('onload' ) 
 
-let input = document.querySelector('form-input[name="test"]')
-input.addEventListener('typing', e => console.log('typing', e.detail))
-input.addEventListener('change', e => console.log('change', e.detail))
+  document.querySelector('form').addEventListener('submited', send)
+
+  let input = document.querySelector('form-input[name="test"]')
+  input.addEventListener('typing', e => console.log('typing', e.detail))
+  input.addEventListener('change', e => console.log('change', e.detail))
+   
+})

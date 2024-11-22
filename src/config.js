@@ -157,7 +157,7 @@ export const validations = {
 export const inputs = {
   text: {
     output: 'text',
-    source: FormText,
+    source: FormText, 
   },
   number: {
     output: 'number',
@@ -212,10 +212,23 @@ export const inputs = {
   }, 
 }
 
+export const masks = {
+  'pattern': 'maskPattern',
+  'currency': 'maskMoney',
+  'number': 'maskNumber', 
+  'alpha': 'maskAlphaNum',
+}
+
 export const Config = {
   basePath: '/src',
   validations, 
   inputs,
+  masks,
+  registerMask(name, rule) {
+    if(!name) throw new Error('Name is required')
+    if(!rule || typeof rule !== 'function') throw new Error('Rule is required as object')
+    this.masks[name] = rule
+  },
   registerValidation(name, rule) {
     if(!name) throw new Error('Name is required')
     if(!rule || typeof rule !== 'object') throw new Error('Rule is required as object')

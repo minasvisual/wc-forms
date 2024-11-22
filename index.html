@@ -7,18 +7,37 @@
   <title>Web Components Forms</title>  
   <script type="module" >
     import { Config } from './src/config.js'
-    import { FormCurrency } from './src/inputs/custominput.js'
+    import { FormCurrency } from './src/inputs/custominput.js'  
 
     if(location.href.includes('github.io'))
       Config.basePath = '/wc-forms/src'
+    
+    // Custom validation
     Config.registerValidation('custom', {
       message: (params, value) => `This field must quals ${params[0]}`,
       handle: ({ value, params }) => value == params[0]
     })
+    // Custom input
     Config.registerInput('currency', FormCurrency)
+
+    // Custom mask
+    Config.registerMask('document', (el, maskInstance, maskInputAttribute) => {
+      var docMask = ['999.999.999-999', '99.999.999/9999-99'];
+      var inputHandler = (masks, max, event) => {
+        var c = event.target;
+        var v = c.value.replace(/\D/g, '');
+        var m = c.value.length > max ? 1 : 0;
+        maskInstance.unMask();
+        maskInstance.maskPattern(masks[m]); 
+      }
+      maskInstance.maskPattern(docMask[0]);
+      el.addEventListener('input', inputHandler.bind(undefined, docMask, 14), false);
+    })
+    
   </script>
   <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
   <script type="module" src="./src/index.js" defer async></script> 
+
 </head>
 
 <body  >
@@ -59,10 +78,17 @@
     </form-input>
     <form-input name="test15" type="currency" label="Custom field type" validations="required">
     </form-input>   
+    <form-input name="test16" type="text" label="Mask field" validations="required" mask mask:format="currency"  >  
+    </form-input>   
+    <form-input name="test17" type="text" label="Mask field unmasked return" validations="required" mask="(99) 99999-9999" unmask="true" >  
+    </form-input>   
+    <form-input name="test18" type="text" label="Custom mask" mask mask:format="document" validations="required" >  
+    </form-input>   
     <button type="submit" class="border-2 border-black bg-zinc-300 p-2">
       Enter
     </button>
   </form>
+  <!-- <script src="./src/mask.js"></script> -->
   <script src="./scripts.js"></script>
 </body>
 

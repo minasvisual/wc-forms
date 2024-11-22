@@ -1,5 +1,6 @@
-import { isValidNumber, extractValidations } from './helpers.js'
+import { isValidNumber, extractValidations, get } from './helpers.js'
 import { Validate } from './validation.js'
+import Masks from './mask.js'
 import { Config } from './config.js'
 
 class FormComponent extends HTMLElement {
@@ -60,10 +61,12 @@ class FormComponent extends HTMLElement {
     this.formitem = this.instance.formitem
     this.formitem.value = this.getAttribute('value')
     this.formitem.setAttribute('data-type', InputSource.output)
-    this.formitem.addEventListener('change', (e) => {
+    this.maskIt(InputSource)
+    this.formitem.addEventListener('change', (e) => { 
       this.formitem.value = e.target.value
-      this.internals.setFormValue(this.formitem.value)
-      this.emitEvent('change', this.formitem.value)
+      let valueRaw =this.unmaskIt(e.target.value)
+      this.internals.setFormValue(valueRaw)
+      this.emitEvent('change', valueRaw)
       this.validate() 
     });
 
@@ -122,6 +125,29 @@ class FormComponent extends HTMLElement {
       this.instance.setError(Object.values(this.errors).join('<br>'))
   }
 
+  maskIt(InputSource) {    
+    this.hasMask = this.getAttribute('mask') !== null 
+    if(InputSource.output !== 'text' || !this.hasMask) return; 
+ 
+    let instMask = Masks(this.formitem)
+    let mask = this.getAttribute('mask')
+    let format = this.getAttribute('mask:format') ?? 'pattern'
+    let maskFn = get(Config.masks, format)
+    if( !maskFn ) return;  
+
+    if( typeof maskFn !== 'function' )
+      instMask[maskFn](mask);
+    else
+      maskFn(this.formitem, instMask, mask); 
+  }
+
+  unmaskIt(value) {   
+    const hasUnmask = this.getAttribute('unmask') !== null
+    if(hasUnmask) { 
+      return value ? value.replace(/\D/g, '') : value
+    }
+    return value
+  }
 }
  
 class FormWrapper extends HTMLFormElement {
