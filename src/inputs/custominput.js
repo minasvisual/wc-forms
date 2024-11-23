@@ -31,7 +31,7 @@ export class FormCurrency {
   }
   
   setError(error) { // false or `string of errors separatelly of <br/>`
-    console.log('Do anything with form error', error)
+    console.log('[Custom input] Do anything with form error', error)
   }
 
   maskCurrency(value) {

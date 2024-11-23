@@ -25,6 +25,11 @@ Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https:/
 - [ ] NPM Package installation
 - [ ] Plugins
 
+#### bugs 
+- [ ] Validation style and help
+- [ ] input url - force pattern
+
+
 ## Installation
  - This is not a npm package yet, so clone this repository in your project and import `/src/index.js` to your html header;
 

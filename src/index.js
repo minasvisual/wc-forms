@@ -60,11 +60,11 @@ class FormComponent extends HTMLElement {
     this.shadowRoot.appendChild(this.addStyles())
     this.formitem = this.instance.formitem
     this.formitem.value = this.getAttribute('value')
-    this.formitem.setAttribute('data-type', InputSource.output)
+    this.formitem.setAttribute('data-type', InputSource.output) 
     this.maskIt(InputSource)
     this.formitem.addEventListener('change', (e) => { 
-      this.formitem.value = e.target.value
       let valueRaw =this.unmaskIt(e.target.value)
+      this.formitem.value = e.target.value
       this.internals.setFormValue(valueRaw)
       this.emitEvent('change', valueRaw)
       this.validate() 
@@ -75,6 +75,8 @@ class FormComponent extends HTMLElement {
 
     if (this.instance?.onDestroy)
       this.instance?.onDestroy()
+
+    this.handleSubmit()
   }
 
   disconnectedCallback() {
@@ -106,18 +108,29 @@ class FormComponent extends HTMLElement {
     return Object.fromEntries(new FormData(this.internals.form));
   }
 
+  handleSubmit(){
+    let submitElement = this.internals.form.querySelector('button:not([type="button"])') 
+    if(!submitElement) return;
+    submitElement.addEventListener('click', e => { 
+      this.validate()
+      if (Object.keys(this.errors).length > 0)
+        e.stopPropagation()
+    })
+  }
+
   validate() {
     this.instance.setError(false)
     this.errors = {}
     let value = this.formitem.value
-    let validAttrs = extractValidations(this.getAttribute('validations'))
-    console.log('validAttrs', validAttrs)
+    let validAttrs = extractValidations(this.getAttribute('validations')) 
     if (!validAttrs || !validAttrs.length) return; 
     for (let attr of validAttrs) { 
       this.internals.setValidity({ valueMissing: false }, [], this.formitem)
       let vdt = new Validate(attr)
       if (vdt.validate(value, this.formitem, this.getFormValues()))
         continue;
+      if (this.itype === 'date')
+        console.log('date', value, vdt)
       this.errors[attr] = vdt.errors
       this.internals.setValidity({ valueMissing: true }, vdt.errors, this.formitem)
     }
@@ -152,22 +165,31 @@ class FormComponent extends HTMLElement {
  
 class FormWrapper extends HTMLFormElement {
   constructor() {
-    super() 
+    super()  
   }
   connectedCallback() {
     this.addEventListener("submit", (e) => {
       e.preventDefault()
       e.stopPropagation()
       const form = e.target
-      let values = Object.fromEntries(new FormData(form))  
+      let rawValues = Object.fromEntries(new FormData(form)) 
+      this.isValid = true 
+      this.errors = {} 
+      this.values = {} 
       for (let el of form.elements){
-        let value = values[el.getAttribute('name')]
-        let type = el.getAttribute('data-type') || el.getAttribute('type')
+        let name = el.getAttribute('name')
+        let value = rawValues[name]
+        let type = el.getAttribute('data-type') || el.getAttribute('type') 
         if( ['button','submit'].includes(type) ) continue;
           
-        values[el.getAttribute('name')] = this.format(type, value) 
+        this.values[name] = this.format(type, value)  
+        if(!el.checkValidity()) {
+          this.isValid = false
+          this.errors[name] = el.validationMessage 
+        }
       } 
-      this.dispatchEvent(new CustomEvent('submited', { detail:values }))
+ 
+      this.emitEvent()
     })
   }
   format(type, value){ 
@@ -183,6 +205,14 @@ class FormWrapper extends HTMLFormElement {
     if(type === 'object' && value?.includes(',')) return value.split(',')
     return value
   }
+
+  emitEvent(values) {  
+    const evt = new CustomEvent('submited', { detail:this.values })
+    Object.defineProperties(evt, { valid: { value: this.isValid }, errors:{ value:this.errors} })
+    this.dispatchEvent(evt)
+  }
+
+
 }
 
 customElements.define('form-input', FormComponent);

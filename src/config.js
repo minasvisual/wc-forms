@@ -98,8 +98,7 @@ export const validations = {
   },
   isnumber: {
     message: () => 'This field must be a valid number',
-    handle: ({ value, params }) => {
-      console.log(value, Number.isNaN(value))
+    handle: ({ value, params }) => { 
       return value && typeof Number(value) === 'number' && !Number.isNaN(Number(value))
     }
   },
@@ -150,6 +149,18 @@ export const validations = {
       if( !get(params, '[0]') || !isValidNumber(value) ) throw new Error('Parameter 1 not found')
       if( !isValidNumber(value) ) throw new Error('Value must be a number')
       return value && Number(value) >= Number(params[0])
+    }
+  },
+  istrue : {
+    message: () => 'This field must be true',
+    handle: ({ value }) => {
+      return value && (value === 'true' || value === true)
+    }
+  },
+  isfalse : {
+    message: () => 'This field must be false',
+    handle: ({ value }) => {
+      return value && (value === 'false' || value === false)
     }
   }
 }
@@ -236,8 +247,7 @@ export const Config = {
     if(!rule.handle || typeof rule.handle !== 'function') throw new Error('Rule handle must be a function')
     this.validations[name] = rule
   },
-  registerInput(name, classObj, options = {}) {
-    console.log(name, typeof classObj)
+  registerInput(name, classObj, options = {}) { 
     if(!name) throw new Error('Name is required')
     if(!classObj || typeof classObj !== 'function') throw new Error('Rule is required as object') 
     this.inputs[name] = { 
