@@ -87,11 +87,16 @@ class FormComponent extends HTMLElement {
     Object.assign(style, {
       type: 'text/css',
     })
-    style.appendChild(
-      document.createTextNode(
-        `@import "${Config.basePath}/style.css";`
-      )
-    );
+    if (Config.stylesText) {
+      style.appendChild(document.createTextNode(Config.stylesText));
+    } else {
+      let url = Config.stylesURL || `${Config.basePath}/style.css`
+      style.appendChild(
+        document.createTextNode(
+          `@import "${url}";`
+        )
+      );
+    }
     return style
   }
 
@@ -178,6 +183,7 @@ class FormWrapper extends HTMLFormElement {
       this.values = {} 
       for (let el of form.elements){
         let name = el.getAttribute('name')
+        if (!name) continue;
         let value = rawValues[name]
         let type = el.getAttribute('data-type') || el.getAttribute('type') 
         if( ['button','submit'].includes(type) ) continue;
@@ -194,15 +200,16 @@ class FormWrapper extends HTMLFormElement {
   }
   format(type, value){ 
     if(['',null,undefined,NaN].includes(value)) return undefined
+    if(type === 'checkboxes') return value ? String(value).split(',') : []
+    if(type === 'array') return value ? String(value).split(',') : []
+    if(type === 'radioboxes' && value?.includes(',')) return String(value).split(',')
+    if(type === 'object' && value?.includes(',')) return String(value).split(',')
+
     if(isValidNumber(value)) return Number(value)
     if(value === 'true' || value === 'false') return value === 'true'
     if(value === 'null' ) return null
     if(type === 'number') return Number(value)
     if(type === 'currency') return Number(value)
-    if(type === 'radioboxes' && value?.includes(',')) return value.split(',')
-    if(type === 'checkboxes' && value?.includes(',')) return value.split(',')
-    if(type === 'array' && value?.includes(',')) return value.split(',')
-    if(type === 'object' && value?.includes(',')) return value.split(',')
     return value
   }
 

@@ -29,6 +29,19 @@ describe('Config validations - Email', () => {
  
 })
 
+describe('Config validations - URL', () => {
+  test('should test validation url', async () => {
+    const sut = Config.validations.url.handle
+    const message = Config.validations.url.message
+    expect(typeof sut).toBe('function')
+    expect(sut({ value: 'https://domain.com' })).toBe(true)
+    expect(sut({ value: 'http://domain.com/path?x=1' })).toBe(true)
+    expect(sut({ value: 'domain.com' })).toBe(false)
+    expect(sut({ value: 'abc' })).toBe(false)
+    expect(message({})).toBe('This field must be a valid URL')
+  })
+})
+
 describe('Config validations - Min Length', () => { 
   test('should test max length validation', async () => {
     const sut = Config.validations.minlen.handle
@@ -155,9 +168,9 @@ describe('Config validations - IN', () => {
     expect(sut({ value: 'watermelon,apple', params: ['apple','banana','orange'] })).toBe(true) 
     expect(sut({ value: 'watermelon', params: ['apple','banana','orange'] })).toBe(false) 
     expect(sut({ value: 'watermelon,lemon', params: ['apple','banana','orange'] })).toBe(false) 
-    expect(message([])).toBe(`This field must contains `)
-    expect(message(['hello'])).toBe(`This field must contains hello`)
-    expect(message(['lemon','watermelon'])).toBe(`This field must contains lemon,watermelon`)
+    expect(message([])).toBe(`This field must contains  values`)
+    expect(message(['hello'])).toBe(`This field must contains hello values`)
+    expect(message(['lemon','watermelon'])).toBe(`This field must contains lemon,watermelon values`)
   })  
 })
 

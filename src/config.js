@@ -1,8 +1,8 @@
 import { FormText } from './inputs/forminput.js'
 import { FormSelect } from './inputs/formselect.js'
 import { FormTextarea, } from './inputs/formtext.js'
-import { FormCheckBox, FormChecksBoxes, FormChecksRadio } from './inputs/formchecks.js' 
-import { splitValues, get, dateRegex, emailRegex, isValidNumber } from './helpers.js' 
+import { FormCheckBox, FormChecksBoxes, FormChecksRadio } from './inputs/formchecks.js'
+import { splitValues, get, dateRegex, emailRegex, isValidNumber } from './helpers.js'
 
 /**
  * Validations object
@@ -47,32 +47,45 @@ export const validations = {
      * @returns {boolean} - true if the value is not empty, false otherwise
      */
     handle: ({ value }) => {
-      return ![null, undefined, NaN, ''].includes(value) 
+      return ![null, undefined, NaN, ''].includes(value)
     }
   },
   email: {
-    message: () => 'This should be an valid email', 
+    message: () => 'This should be an valid email',
     handle: ({ value }) => {
       return value && typeof value === 'string' && emailRegex.test(value)
+    }
+  },
+  url: {
+    message: () => 'This field must be a valid URL',
+    handle: ({ value }) => {
+      if (!value || typeof value !== 'string') return false
+      try {
+        // Accept full absolute URLs only, matching the placeholder/documentation intent.
+        let parsed = new URL(value)
+        return ['http:', 'https:'].includes(parsed.protocol)
+      } catch (error) {
+        return false
+      }
     }
   },
   minlen: {
     message: (params) => `This field must be at least ${get(params, '[0]', 1)} characters`,
     handle: ({ value, params }) => {
-      if(!get(params, '[0]')) throw new Error('Parameter 1 not found')
+      if (!get(params, '[0]')) throw new Error('Parameter 1 not found')
       return value && (value.length >= parseInt(params[0] || 1))
     }
   },
   maxlen: {
     message: (params, value, values) => `This field must be maximum ${get(params, '[0]', 255)} characters`,
-    handle: ({ value, params }) => {   
-      return value && ( value.length <= parseInt(get(params, '[0]', '255')) )
+    handle: ({ value, params }) => {
+      return value && (value.length <= parseInt(get(params, '[0]', '255')))
     }
   },
   confirm: {
     message: (params) => `This field must be equal to ${get(params, '[0]')} field`,
     handle: ({ value, params = [], values }) => {
-      if(!get(params, '[0]')) throw new Error('Parameter to match not found')
+      if (!get(params, '[0]')) throw new Error('Parameter to match not found')
       return value && get(params, '[0]') && (value === values[get(params, '[0]')])
     }
   },
@@ -85,27 +98,27 @@ export const validations = {
   isafter: {
     message: (params = [], value, values) => `This field must be after ${get(params, '[0]')}`,
     handle: ({ value, params = [], values }) => {
-      if(!get(params, '[0]')) throw new Error('Parameter 1 not found')
+      if (!get(params, '[0]')) throw new Error('Parameter 1 not found')
       return value && typeof value === 'string' && dateRegex.test(value) && new Date(value) > new Date(params[0])
     }
   },
   isbefore: {
     message: (params = [], value, values) => `This field must be before ${get(params, '[0]')}`,
     handle: ({ value, params = [], values }) => {
-      if(!get(params, '[0]')) throw new Error('Parameter 1 not found')
+      if (!get(params, '[0]')) throw new Error('Parameter 1 not found')
       return value && typeof value === 'string' && dateRegex.test(value) && new Date(value) < new Date(params[0])
     }
   },
   isnumber: {
     message: () => 'This field must be a valid number',
-    handle: ({ value, params }) => { 
+    handle: ({ value, params }) => {
       return value && typeof Number(value) === 'number' && !Number.isNaN(Number(value))
     }
   },
   startwith: {
     message: (params, value) => `This field must start with ${value}`,
     handle: ({ value, params }) => {
-      if(!get(params, '[0]')) throw new Error('Parameter 1 not found')
+      if (!get(params, '[0]')) throw new Error('Parameter 1 not found')
       return value && value.toLowerCase().startsWith(params[0].toLowerCase())
     }
   },
@@ -116,59 +129,59 @@ export const validations = {
     }
   },
   in: {
-    message: (params = [], value) => `This field must contains ${params?.join(',')}`,
+    message: (params = [], value) => `This field must contains ${params?.join(',')} values`,
     handle: ({ value, params }) => {
-      if(params.length === 0) throw new Error('Parameters is required')
-      if(value && value.includes(',')) 
-        return  splitValues(value).some(v => splitValues(params).includes(v))
-      else  
+      if (params.length === 0) throw new Error('Parameters is required')
+      if (value && value.includes(','))
+        return splitValues(value).some(v => splitValues(params).includes(v))
+      else
         return value && splitValues(params).includes(value)
     }
   },
   notin: {
     message: (params = [], value) => `This field must not contains ${params.join(',')}`,
     handle: ({ value, params }) => {
-      if(params.length === 0) throw new Error('Parameters is required')
-      if(value && value.includes(',')) 
-        return  !splitValues(value).some(v => splitValues(params).includes(v))
-      else  
+      if (params.length === 0) throw new Error('Parameters is required')
+      if (value && value.includes(','))
+        return !splitValues(value).some(v => splitValues(params).includes(v))
+      else
         return value && !splitValues(params).includes(value)
     }
   },
   max: {
     message: (params = [], value) => `This field must be less than ${get(params, '[0]')}`,
     handle: ({ value, params }) => {
-      if( !get(params, '[0]') || !isValidNumber(value) ) throw new Error('Parameter 1 not found')
-      if( !isValidNumber(value) ) throw new Error('Value must be a number')
+      if (!get(params, '[0]') || !isValidNumber(value)) throw new Error('Parameter 1 not found')
+      if (!isValidNumber(value)) throw new Error('Value must be a number')
       return value && Number(value) <= Number(params[0])
     }
   },
   min: {
     message: (params = [], value) => `This field must be greater than ${get(params, '[0]')}`,
     handle: ({ value, params }) => {
-      if( !get(params, '[0]') || !isValidNumber(value) ) throw new Error('Parameter 1 not found')
-      if( !isValidNumber(value) ) throw new Error('Value must be a number')
+      if (!get(params, '[0]') || !isValidNumber(value)) throw new Error('Parameter 1 not found')
+      if (!isValidNumber(value)) throw new Error('Value must be a number')
       return value && Number(value) >= Number(params[0])
     }
   },
-  istrue : {
+  istrue: {
     message: () => 'This field must be true',
     handle: ({ value }) => {
       return value && (value === 'true' || value === true)
     }
   },
-  isfalse : {
+  isfalse: {
     message: () => 'This field must be false',
     handle: ({ value }) => {
       return value && (value === 'false' || value === false)
     }
   }
 }
- 
+
 export const inputs = {
   text: {
     output: 'text',
-    source: FormText, 
+    source: FormText,
   },
   number: {
     output: 'number',
@@ -192,7 +205,7 @@ export const inputs = {
   },
   'datetime-local': {
     source: FormText,
-  }, 
+  },
   password: {
     output: 'text',
     source: FormText,
@@ -220,39 +233,41 @@ export const inputs = {
   textarea: {
     output: 'text',
     source: FormTextarea,
-  }, 
+  },
 }
 
 export const masks = {
   'pattern': 'maskPattern',
   'currency': 'maskMoney',
-  'number': 'maskNumber', 
+  'number': 'maskNumber',
   'alpha': 'maskAlphaNum',
 }
 
 export const Config = {
   basePath: '/src',
-  validations, 
+  stylesURL: '',
+  stylesText: '',
+  validations,
   inputs,
   masks,
   registerMask(name, rule) {
-    if(!name) throw new Error('Name is required')
-    if(!rule || typeof rule !== 'function') throw new Error('Rule is required as object')
+    if (!name) throw new Error('Name is required')
+    if (!rule || typeof rule !== 'function') throw new Error('Rule is required as object')
     this.masks[name] = rule
   },
   registerValidation(name, rule) {
-    if(!name) throw new Error('Name is required')
-    if(!rule || typeof rule !== 'object') throw new Error('Rule is required as object')
-    if(!rule.message || typeof rule.message !== 'function') throw new Error('Rule message must be a function')
-    if(!rule.handle || typeof rule.handle !== 'function') throw new Error('Rule handle must be a function')
+    if (!name) throw new Error('Name is required')
+    if (!rule || typeof rule !== 'object') throw new Error('Rule is required as object')
+    if (!rule.message || typeof rule.message !== 'function') throw new Error('Rule message must be a function')
+    if (!rule.handle || typeof rule.handle !== 'function') throw new Error('Rule handle must be a function')
     this.validations[name] = rule
   },
-  registerInput(name, classObj, options = {}) { 
-    if(!name) throw new Error('Name is required')
-    if(!classObj || typeof classObj !== 'function') throw new Error('Rule is required as object') 
-    this.inputs[name] = { 
-      output: options?.output || 'text', 
-      source: classObj 
+  registerInput(name, classObj, options = {}) {
+    if (!name) throw new Error('Name is required')
+    if (!classObj || typeof classObj !== 'function') throw new Error('Rule is required as object')
+    this.inputs[name] = {
+      output: options?.output || 'text',
+      source: classObj
     }
   }
 }

@@ -19,10 +19,10 @@ Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https:/
 - [X] Custom input types
 - [X] Mask native
 - [X] Custom Masks native
-- [ ] Unit tests
-- [ ] Extensible style
+- [x] Unit tests
+- [x] Extensible style
 - [ ] Internacionalization
-- [ ] NPM Package installation
+- [x] NPM Package installation
 - [ ] Plugins
 
 #### bugs 
@@ -31,11 +31,36 @@ Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https:/
 
 
 ## Installation
- - This is not a npm package yet, so clone this repository in your project and import `/src/index.js` to your html header;
-
-Usage
+You can install via NPM:
+```sh
+npm install wc-forms
 ```
-<form ...>
+
+Or consume it directly via CDN (like unpkg):
+```html
+<script type="module" src="https://unpkg.com/wc-forms"></script>
+```
+
+#### Usage with NPM:
+Import the library in your Javascript module:
+```javascript
+import 'wc-forms'
+```
+
+If you need custom validations or custom styles paths, configure before importing the module:
+```javascript
+import { Config } from 'wc-forms/config'
+
+// Customizing path for styles or exposing from a server public folder:
+Config.basePath = '/your/public/assets' 
+
+// Later import the form library
+import 'wc-forms'
+```
+
+### Basic HTML usage
+```html
+<form >
   <form-input 
     name="fullname" 
     type="text" 
@@ -44,6 +69,7 @@ Usage
     validations="required|minlen:5|maxlen:128" 
   >  
   </form-input>
+</form>
 ```
 
 ## Inputs type available  
@@ -167,6 +193,34 @@ HTML Content
 ```
 
 
+
+## Theming and Customization
+This library uses isolated Shadow DOM but exposes internal elements using the `part` attribute for easy styling in your global CSS.
+
+Available parts: `outer`, `label`, `wrapper`, `input-wrapper`, `input`, `help`, `errors`, `checks-wrapper`, `check-label`, `check-text`.
+
+```css
+/* Example: Styling the native input globally */
+form-input::part(input) {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+form-input::part(input):focus {
+  border-color: blue;
+  outline: none;
+}
+```
+
+If you need to replace the default structural styles, you can inject a raw CSS string or load a custom URL using `Config` before importing the module:
+```javascript
+import { Config } from 'wc-forms/config'
+import styles from 'wc-forms/style.css?raw' // (Vite example)
+
+Config.stylesText = styles // Injects raw CSS
+// Config.stylesURL = '/your-custom-styles.css' // Or loads from URL
+
+import 'wc-forms'
+```
 
 ## Custom field types
 - First: Create a class that implements the template and store `formitem` as public variable of form element to receive event handlers

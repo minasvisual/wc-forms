@@ -6,11 +6,11 @@ export class FormCurrency {
     this.internals = internals
 
     shadow.innerHTML = ` 
-      <div class="wc-form-outer"> 
-        <label class="wc-form-label">${this.label} </label>
-        <div class="wc-form-wrapper"> 
-          <div class="wc-form-input-wrapper"> 
-            R$ <input class="wc-form-input" type="text" name="${this.name}" placeholder="0.00" />
+      <div class="wc-form-outer" part="outer"> 
+        <label class="wc-form-label" part="label">${this.label} </label>
+        <div class="wc-form-wrapper" part="wrapper"> 
+          <div class="wc-form-input-wrapper" part="input-wrapper"> 
+            R$ <input class="wc-form-input" part="input" type="text" name="${this.name}" placeholder="0.00" />
           </div>  
         </div> 
       </div>

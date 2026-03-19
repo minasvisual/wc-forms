@@ -5,6 +5,8 @@ function send(e) {
   console.log('Submited validation', e.valid)
   console.log('Submited validation errors', e.errors)
   console.log('Submited data parsed', e.detail)
+  console.log('Submited by event', values)
+  alert('Sent! See the console.')
 } 
 
 document.addEventListener('DOMContentLoaded', () => {

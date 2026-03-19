@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width">
   <title>Web Components Forms</title>   
   <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
-  <script type="module" src="./src/index.js" defer async></script> 
+  <script type="module" src="../src/index.js" defer async></script> 
   <script src="//unpkg.com/alpinejs" defer></script>
 </head>
 
@@ -27,7 +27,7 @@
         <span x-text="task.name"></span>
         <span x-text="task.duedate"></span>
         <form-input name="done" type="checkbox" 
-              options="[{'label': 'Done', 'value': true}]" 
+              label="Done" 
               @change="e => task.done = !task.done"> 
         </form-input>
         <button type="button" @click="e => removeTask(task)">Remove</button>
