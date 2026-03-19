@@ -58,6 +58,37 @@ Config.basePath = '/your/public/assets'
 import 'wc-forms'
 ```
 
+### Usage with React
+Native custom events like `submited` require a `useRef` to attach event listeners in React. Assure your bundler injects the raw CSS.
+
+```jsx
+import React, { useRef, useEffect } from 'react';
+import { Config } from 'wc-forms/config';
+import styles from 'wc-forms/style.css?raw';
+
+Config.stylesText = styles;
+import 'wc-forms';
+
+export function ReactForm() {
+  const formRef = useRef(null);
+
+  useEffect(() => {
+    const form = formRef.current;
+    const handleSubmit = (e) => console.log('Payload:', e.detail);
+    
+    if (form) form.addEventListener('submited', handleSubmit);
+    return () => form?.removeEventListener('submited', handleSubmit);
+  }, []);
+
+  return (
+    <form is="form-control" ref={formRef}>
+      <form-input name="user" type="text" label="Name" validations="required"></form-input>
+      <button type="submit">Send</button>
+    </form>
+  );
+}
+```
+
 ### Basic HTML usage
 ```html
 <form >

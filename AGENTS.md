@@ -1,39 +1,39 @@
 # AGENTS.md
 
-## Objetivo
-- Este projeto implementa componentes de formulário em Web Components, com JavaScript vanilla, módulos ESM e sem dependência de framework.
-- O Codex deve preservar essa proposta: código simples, extensível por configuração e consumível direto no navegador via `src/index.js`.
+## Objective
+- This project implements form components as Web Components, with vanilla JavaScript, ESM modules, and no framework dependencies.
+- Codex must preserve this proposal: simple code, extensible by configuration, and directly consumable in the browser via `src/index.js`.
 
-## Stack e arquitetura
-- Usar apenas JavaScript ESM (`import`/`export`), compatível com o ambiente atual do projeto.
-- Não introduzir TypeScript, bundlers, transpilers, frameworks UI ou dependências sem necessidade explícita.
-- Manter a API principal baseada em custom elements:
-  - `<form-input>` para campos.
-  - `<form is="form-control">` para o wrapper de submit.
-- Preservar o uso de `ElementInternals`, `attachShadow`, `formAssociated` e integração com `FormData`.
-- Tratar `src/config.js` como ponto central de extensibilidade para:
+## Stack and architecture
+- Use only ESM JavaScript (`import`/`export`), compatible with the project's current environment.
+- Do not introduce TypeScript, bundlers, transpilers, UI frameworks, or dependencies without explicit need.
+- Keep the main API based on custom elements:
+  - `<form-input>` for fields.
+  - `<form is="form-control">` for the submit wrapper.
+- Preserve the use of `ElementInternals`, `attachShadow`, `formAssociated`, and integration with `FormData`.
+- Treat `src/config.js` as the central point of extensibility for:
   - `validations`
   - `inputs`
   - `masks`
 
-## Convenções de código
-- Seguir o estilo já dominante do repositório:
-  - aspas simples
-  - semicolon apenas quando já fizer sentido localmente; não reformatar o arquivo inteiro
-  - nomes descritivos em inglês para classes, métodos e variáveis
-  - exports nomeados para utilitários e classes
-- Preferir funções pequenas e diretas, com lógica explícita.
-- Evitar abstrações excessivas. Se a solução puder seguir o padrão já existente, seguir o padrão existente.
-- Não reestruturar arquivos ou renomear APIs públicas sem necessidade clara.
+## Coding conventions
+- Follow the repository's dominant style:
+  - single quotes
+  - semicolons only when it locally makes sense; do not reformat the entire file
+  - descriptive English names for classes, methods, and variables
+  - named exports for utilities and classes
+- Prefer small and direct functions with explicit logic.
+- Avoid excessive abstractions. If the solution can follow the existing pattern, follow the existing pattern.
+- Do not restructure files or rename public APIs without a clear need.
 
-## Padrões dos componentes
-- Novos tipos de input devem seguir o contrato usado pelos componentes em `src/inputs/`:
-  - receber `{ el, shadow, internals }` no `constructor`
-  - montar o template via `template.innerHTML`
-  - anexar no `shadow`
-  - expor `this.formitem`
-  - implementar `setError(error)`
-- Quando fizer sentido, manter a estrutura de slots existente:
+## Component patterns
+- New input types must follow the contract used by components in `src/inputs/`:
+  - receive `{ el, shadow, internals }` in the `constructor`
+  - mount the template via `template.innerHTML`
+  - attach to the `shadow`
+  - expose `this.formitem`
+  - implement `setError(error)`
+- When it makes sense, keep the existing slot structure:
   - `before`
   - `label`
   - `prefix`
@@ -42,20 +42,20 @@
   - `help`
   - `errors`
   - `after`
-- Reaproveitar classes CSS já existentes (`wc-form-*`) antes de criar novas convenções.
-- Se um novo input for registrável, integrá-lo por `Config.registerInput(...)` ou pela tabela `inputs` em `src/config.js`.
+- Reuse existing CSS classes (`wc-form-*`) before creating new conventions.
+- If a new input is registrable, integrate it via `Config.registerInput(...)` or the `inputs` table in `src/config.js`.
 
-## Padrões de validação e máscara
-- Regras de validação devem continuar no formato atual:
+## Validation and mask patterns
+- Validation rules must remain in the current format:
   - `message: (...args) => string`
   - `handle: ({ value, params, el, values, rule }) => boolean`
-- Validations string-based devem continuar compatíveis com o formato documentado no README:
+- String-based validations must remain compatible with the format documented in the README:
   - `required|minlen:5|maxlen:128`
-- Máscaras novas devem seguir a extensão por `Config.registerMask(...)`.
-- Antes de criar novo mecanismo, verificar se a extensão cabe em `Config`.
+- New masks must follow the extension via `Config.registerMask(...)`.
+- Before creating a new mechanism, check if the extension fits in `Config`.
 
-## API pública e compatibilidade
-- Preservar atributos documentados no README, como:
+## Public API and compatibility
+- Preserve attributes documented in the README, such as:
   - `name`
   - `type`
   - `label`
@@ -65,40 +65,40 @@
   - `mask`
   - `mask:format`
   - `unmask`
-- Evitar breaking changes em nomes de evento e comportamento observável.
-- Se uma mudança alterar a API pública, atualizar o `README.md` no mesmo trabalho.
+- Avoid breaking changes in event names and observable behavior.
+- If a change modifies the public API, update `README.md` within the same task.
 
-## Documentação
-- Toda feature nova que afete uso do componente deve refletir o README.
-- Exemplos do README devem continuar alinhados com o comportamento real do código.
-- Se uma limitação conhecida for relevante para a mudança, documentá-la de forma objetiva.
+## Documentation
+- Every new feature that affects the component's usage must reflect in the README.
+- README examples must remain aligned with the actual code behavior.
+- If a known limitation is relevant to the change, document it objectively.
 
-## Testes
-- Usar Vitest para testes automatizados.
-- Ao alterar helpers, validações, parsing ou comportamento determinístico, adicionar ou ajustar testes em `tests/`.
-- Seguir o padrão atual dos testes:
+## Tests
+- Use Vitest for automated tests.
+- When changing helpers, validations, parsing, or deterministic behavior, add or adjust tests in `tests/`.
+- Follow the current test pattern:
   - `describe(...)`
   - `test(...)`
   - `expect(...)`
-- Priorizar testes de comportamento público, não detalhes internos desnecessários.
+- Prioritize testing public behavior, not unnecessary internal details.
 
-## Diretrizes para mudanças
-- Fazer mudanças pequenas e localizadas.
-- Não corrigir estilo de arquivos não relacionados apenas por preferência.
-- Não remover código existente sem confirmar impacto na API e na documentação.
-- Ao adicionar recurso novo, verificar este checklist:
-  - implementação integrada ao fluxo atual
-  - atualização de `Config` se necessário
-  - documentação no `README.md`
-  - teste cobrindo o caso principal
+## Guidelines for changes
+- Make small, localized changes.
+- Do not fix the style of unrelated files just out of preference.
+- Do not remove existing code without confirming the impact on the API and documentation.
+- When adding a new feature, check this checklist:
+  - implementation integrated into the current flow
+  - `Config` update if necessary
+  - documentation in `README.md`
+  - test covering the main case
 
-## O que evitar
-- Não introduzir dependências de runtime sem pedido explícito.
-- Não migrar a base para outra arquitetura.
-- Não trocar a convenção attribute-driven dos componentes por uma API imperativa.
-- Não criar helpers genéricos demais se o uso é local e simples.
+## What to avoid
+- Do not introduce runtime dependencies without an explicit request.
+- Do not migrate the base to another architecture.
+- Do not replace the attribute-driven convention of the components with an imperative API.
+- Do not create overly generic helpers if the usage is local and simple.
 
-## Resposta esperada do Codex em tarefas futuras
-- Antes de propor refactors amplos, confirmar se o problema pode ser resolvido mantendo o padrão atual.
-- Em tarefas de implementação, priorizar compatibilidade com o README e com `src/config.js`.
-- Em tarefas de correção, considerar primeiro regressão de API pública, validação, máscara e submit.
+## Expected Codex response in future tasks
+- Before proposing broad refactors, confirm if the problem can be solved while keeping the current pattern.
+- In implementation tasks, prioritize compatibility with the README and `src/config.js`.
+- In fix tasks, first consider public API, validation, mask, and submit regression.
