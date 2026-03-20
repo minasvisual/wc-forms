@@ -4,6 +4,8 @@ Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https:/
 
 ## Demo
 [Github Pages](https://minasvisual.github.io/wc-forms/)
+[Alpine To-Do](https://minasvisual.github.io/wc-forms/examples/todo.html)
+[React Standalone](https://minasvisual.github.io/wc-forms/examples/index.html)
 
 ## Features
 - Form group inputs
@@ -21,13 +23,13 @@ Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https:/
 - [X] Custom Masks native
 - [x] Unit tests
 - [x] Extensible style
-- [ ] Internacionalization
 - [x] NPM Package installation
+- [ ] Internacionalization
 - [ ] Plugins
 
 #### bugs 
-- [ ] Validation style and help
-- [ ] input url - force pattern
+- [x] Validation style and help
+- [x] input url - force pattern
 
 
 ## Installation
