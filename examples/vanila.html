@@ -91,6 +91,14 @@
         {'value': 10, 'label': 'Option 10'}
       ]">
     </form-input>
+    <form-input name="selectFieldHtml" type="select" validations="required|in:2,3,5" label="Select field (HTML Options)">
+      <option value="">Select an option</option>
+      <option value="1">Option 1</option>
+      <option value="2">Option 2</option>
+      <option value="3">Option 3</option>
+      <option value="4">Option 4</option>
+      <option value="5">Option 5</option>
+    </form-input>
     <form-input name="dateField" type="date" label="Date field"
       validations="required|isdate|isafter:2026-01-01|isbefore:2026-12-31">
     </form-input>

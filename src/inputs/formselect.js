@@ -34,6 +34,10 @@ export class FormSelect {
     this.erroritem = shadow.querySelector('.wc-errors');
     this.formitem = shadow.querySelector('select'); 
 
+    // Move any native HTML options into the shadow select, since <slot> inside <select> is not supported by browsers
+    const htmlOptions = el.querySelectorAll('option, optgroup');
+    htmlOptions.forEach(opt => this.formitem.appendChild(opt));
+
     this.paramChanged()
   }
 
