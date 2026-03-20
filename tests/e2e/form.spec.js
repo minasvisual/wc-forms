@@ -7,61 +7,79 @@ test('fills form fields and validates parsed submit payload', async ({ page }) =
 
   page.on('console', async (msg) => {
     const text = msg.text();
+    const args = msg.args();
+    let val = null;
+    if (args.length > 1) val = await args[1].jsonValue().catch(()=>null);
+    console.log('BROWSER CONSOLE:', text, val);
+
     if (text.includes('Submited validation') && !text.includes('errors')) {
-      const args = msg.args();
       if (args.length > 1) submittedValid = await args[1].jsonValue();
     }
     if (text.includes('Submited validation errors')) {
-      const args = msg.args();
       if (args.length > 1) submittedErrors = await args[1].jsonValue();
     }
     if (text.includes('Submited data parsed')) {
-      const args = msg.args();
       if (args.length > 1) submittedData = await args[1].jsonValue();
     }
   });
 
-  await page.goto('/examples/index.html');
+  await page.goto('/examples/vanila.html');
 
-  await page.locator('form-input[name="test"]').locator('input').fill('match1');
-  await page.locator('form-input[name="test2"]').locator('input').fill('user@example.com');
-  await page.locator('form-input[name="test3"]').locator('input').fill('match1');
-  await page.locator('form-input[name="test4"]').locator('select').selectOption('2');
-  await page.locator('form-input[name="test5"]').locator('input').fill('2020-06-10');
-  await page.locator('form-input[name="test6"]').locator('input').fill('25');
-  await page.locator('form-input[name="test7"]').locator('input[type="radio"]').nth(2).check();
-  await page.locator('form-input[name="test8"]').locator('input[type="checkbox"]').nth(2).check();
-  await page.locator('form-input[name="test9"]').locator('textarea').fill('a valid textarea content');
-  await page.locator('form-input[name="test10"]').first().locator('input').fill('https://example.com');
-  await page.locator('form-input[name="test10b"]').locator('input').fill('queryterm');
-  await page.locator('form-input[name="test11"]').locator('input').fill('#ffffff');
-  await page.locator('form-input[name="test12"]').locator('input').fill('2020-06-10T12:30');
-  await page.locator('form-input[name="test13"]').locator('input[type="checkbox"]').check();
-  await page.locator('form-input[name="test14"]').locator('input[type="checkbox"]').check();
-  await page.locator('form-input[name="test15"]').locator('input').fill('12345');
-  await page.locator('form-input[name="test16"]').locator('input').fill('123456');
-  await page.locator('form-input[name="test17"]').locator('input').fill('11987654321');
-  await page.locator('form-input[name="test18"]').locator('input').fill('12345678901234');
+  await page.locator('form-input[name="textField"]').locator('input').fill('match1');
+  await page.locator('form-input[name="emailField"]').locator('input').fill('user@example.com');
+  await page.locator('form-input[name="passwordField"]').locator('input').fill('match1');
+  await page.locator('form-input[name="selectField"]').locator('select').selectOption('2');
+  await page.locator('form-input[name="dateField"]').locator('input').fill('2026-06-10');
+  await page.locator('form-input[name="numberField"]').locator('input').fill('25');
+  
+  await page.locator('form-input[name="radioboxesField"]').locator('input[type="radio"]').nth(2).check();
+  
+  // Select multiple items on the checkbox field!!
+  await page.locator('form-input[name="checkboxField"]').locator('input[type="checkbox"]').nth(0).check();
+  await page.locator('form-input[name="checkboxField"]').locator('input[type="checkbox"]').nth(2).check();
+  
+  await page.locator('form-input[name="textareaField"]').locator('textarea').fill('a valid textarea content');
+  await page.locator('form-input[name="urlField"]').locator('input').fill('https://example.com');
+  await page.locator('form-input[name="searchField"]').locator('input').fill('developer');
+  await page.locator('form-input[name="colorField"]').locator('input').fill('#ffffff');
+  await page.locator('form-input[name="dateTimeField"]').locator('input').fill('2026-06-10T12:30');
+  
+  await page.locator('form-input[name="booleanField"]').locator('input[type="checkbox"]').check();
+  await page.locator('form-input[name="checkboxValueField"]').locator('input[type="checkbox"]').check();
+  
+  await page.locator('form-input[name="currencyField"]').locator('input').fill('12345');
+  await page.locator('form-input[name="maskField"]').locator('input').fill('123456');
+  await page.locator('form-input[name="maskFieldUnmaskedReturn"]').locator('input').fill('11987654321');
+  await page.locator('form-input[name="customMaskField"]').locator('input').fill('12345678901234');
+
+  await page.evaluate(() => {
+    let form = document.querySelector('form');
+    let invalids = [];
+    for (let el of form.elements) {
+      if (!el.checkValidity()) invalids.push({ name: el.name, msg: el.validationMessage });
+    }
+    console.log('INVALID ELEMENTS:', JSON.stringify(invalids));
+  });
 
   await page.getByRole('button', { name: 'Enter' }).click();
 
   await expect.poll(() => submittedValid).toBe(true);
   await expect.poll(() => submittedErrors).toEqual({});
   await expect.poll(() => submittedData).toMatchObject({
-    test: 'match1',
-    test2: 'user@example.com',
-    test3: 'match1',
-    test4: 2,
-    test5: '2020-06-10',
-    test6: 25,
-    test7: 2,
-    test8: ['2'],
-    test9: 'a valid textarea content',
-    test10: 'https://example.com',
-    test10b: 'queryterm',
-    test11: '#ffffff',
-    test12: '2020-06-10T12:30',
-    test13: true,
-    test14: 'optin',
+    textField: 'match1',
+    emailField: 'user@example.com',
+    passwordField: 'match1',
+    selectField: 2,
+    dateField: '2026-06-10',
+    numberField: 25,
+    radioboxesField: 2,
+    checkboxField: ['0', '2'], // <--- CHECKBOX ARRAY ASSERTION
+    textareaField: 'a valid textarea content',
+    urlField: 'https://example.com',
+    searchField: 'developer',
+    colorField: '#ffffff',
+    dateTimeField: '2026-06-10T12:30',
+    booleanField: true,
+    checkboxValueField: 'optin',
   });
 });

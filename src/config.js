@@ -131,11 +131,14 @@ export const validations = {
   in: {
     message: (params = [], value) => `This field must contains ${params?.join(',')} values`,
     handle: ({ value, params }) => {
-      if (params.length === 0) throw new Error('Parameters is required')
-      if (value && value.includes(','))
-        return splitValues(value).some(v => splitValues(params).includes(v))
-      else
-        return value && splitValues(params).includes(value)
+      let isarr = Array.isArray(value);
+      params = params.map(String)
+      if (isarr) return value.every(v => params.includes(v))
+      if (value && String(value).includes(',')) {
+        return splitValues(String(value)).some(v => params.includes(v)); // <--- WAIT! Original used .some() !
+      } else {
+        return value && params.includes(String(value));
+      }
     }
   },
   notin: {

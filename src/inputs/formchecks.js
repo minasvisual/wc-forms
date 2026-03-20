@@ -40,7 +40,10 @@ export class FormChecks {
 
   onMounted() {
     [...this.inputs].map(inpt => {
-      inpt.addEventListener('change', (evt) => this.emitValue(evt)) 
+      inpt.addEventListener('change', (evt) => {
+        evt.stopPropagation();
+        this.emitValue(evt);
+      }) 
     })
   }
   onDestroy() {
@@ -107,7 +110,11 @@ export class FormChecksBoxes extends FormChecks {
     let checks = [...this.inputs].filter(inpt => inpt.checked)
     let values = checks.map(inpt => inpt.value)
     this.formitem.value = values
-    this.internals.setFormValue(values)
+    
+    let fd = new FormData();
+    values.forEach(v => fd.append(this.name, v));
+    this.internals.setFormValue(values.length ? fd : null)
+    
     this.formitem.dispatchEvent(new Event('change'));
   }
 }

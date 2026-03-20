@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Form Fields Independent Validations', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/examples/index.html');
+    await page.goto('/examples/vanila.html');
   });
 
   test('Text field validation (minlen)', async ({ page }) => {

@@ -1,4 +1,4 @@
-import { isValidNumber, extractValidations, get } from './helpers.js'
+import { isValidNumber, extractValidations, get, getFormValues } from './helpers.js'
 import { Validate } from './validation.js'
 import Masks from './mask.js'
 import { Config } from './config.js'
@@ -63,9 +63,17 @@ class FormComponent extends HTMLElement {
     this.formitem.setAttribute('data-type', InputSource.output) 
     this.maskIt(InputSource)
     this.formitem.addEventListener('change', (e) => { 
-      let valueRaw =this.unmaskIt(e.target.value)
+      let valueRaw = this.unmaskIt(e.target.value)
       this.formitem.value = e.target.value
-      this.internals.setFormValue(valueRaw)
+      
+      if (Array.isArray(valueRaw)) {
+        let fd = new FormData();
+        valueRaw.forEach(v => fd.append(this.getAttribute('name'), v));
+        this.internals.setFormValue(valueRaw.length ? fd : null);
+      } else {
+        this.internals.setFormValue(valueRaw);
+      }
+      
       this.emitEvent('change', valueRaw)
       this.validate() 
     });
@@ -179,18 +187,16 @@ class FormWrapper extends HTMLFormElement {
       e.preventDefault()
       e.stopPropagation()
       const form = e.target
-      let rawValues = Object.fromEntries(new FormData(form)) 
+      this.values = getFormValues(form)
       this.isValid = true 
       this.errors = {} 
-      this.values = {} 
+
       for (let el of form.elements){
         let name = el.getAttribute('name')
         if (!name) continue;
-        let value = rawValues[name]
         let type = el.getAttribute('data-type') || el.getAttribute('type') 
         if( ['button','submit'].includes(type) ) continue;
           
-        this.values[name] = this.format(type, value)  
         if(!el.checkValidity()) {
           this.isValid = false
           this.errors[name] = el.validationMessage 
@@ -199,20 +205,6 @@ class FormWrapper extends HTMLFormElement {
  
       this.emitEvent()
     })
-  }
-  format(type, value){ 
-    if(['',null,undefined,NaN].includes(value)) return undefined
-    if(type === 'checkboxes') return value ? String(value).split(',') : []
-    if(type === 'array') return value ? String(value).split(',') : []
-    if(type === 'radioboxes' && value?.includes(',')) return String(value).split(',')
-    if(type === 'object' && value?.includes(',')) return String(value).split(',')
-
-    if(isValidNumber(value)) return Number(value)
-    if(value === 'true' || value === 'false') return value === 'true'
-    if(value === 'null' ) return null
-    if(type === 'number') return Number(value)
-    if(type === 'currency') return Number(value)
-    return value
   }
 
   emitEvent(values) {  

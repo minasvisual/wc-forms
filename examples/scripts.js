@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('form').addEventListener('submit', () => console.log('submit'))
   document.querySelector('form').addEventListener('submited', send)
 
-  let input = document.querySelector('form-input[name="test"]')
+  let input = document.querySelector('form-input[name="textField"]')
   input.addEventListener('typing', e => console.log('typing', e.detail))
   input.addEventListener('change', e => console.log('change', e.detail))
    

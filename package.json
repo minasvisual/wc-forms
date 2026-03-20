@@ -24,7 +24,14 @@
     "dev": "http-server -c-1 -o /examples/vanila.html",
     "test:e2e": "playwright test"
   },
-  "keywords": [],
+  "keywords": [
+    "form generation",
+    "web components",
+    "vanilla js",
+    "forms",
+    "formkit",
+    "wc-forms-kit"
+  ],
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "vitest": "^2.1.3"

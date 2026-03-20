@@ -3,9 +3,9 @@
 Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https://formkit.com/getting-started/what-is-formkit) library.
 
 ## Demo
-[Github Pages](https://minasvisual.github.io/wc-forms/)
-[Alpine To-Do](https://minasvisual.github.io/wc-forms/examples/todo.html)
-[React Standalone](https://minasvisual.github.io/wc-forms/examples/index.html)
+- [Vanila complete form](https://minasvisual.github.io/wc-forms/)
+- [Alpine To-Do](https://minasvisual.github.io/wc-forms/examples/todo.html)
+- [React Standalone](https://minasvisual.github.io/wc-forms/examples/index.html)
 
 ## Features
 - Form group inputs
@@ -74,9 +74,14 @@ import 'wc-forms';
 export function ReactForm() {
   const formRef = useRef(null);
 
+  const handleSubmit = (e) => {
+    setData(e.detail)
+    console.log('Parser by lib', e.detail) 
+    console.log('Manual form parsing', getFormValues(e.target))
+  }
+
   useEffect(() => {
-    const form = formRef.current;
-    const handleSubmit = (e) => console.log('Payload:', e.detail);
+    const form = formRef.current; 
     
     if (form) form.addEventListener('submited', handleSubmit);
     return () => form?.removeEventListener('submited', handleSubmit);
@@ -104,6 +109,13 @@ export function ReactForm() {
   </form-input>
 </form>
 ```
+
+## Emitted Events
+
+| Component | Event Name | Payload (`e.detail`) | Description |
+|-----------|-----------|----------------------|-------------|
+| `<form-input>` | `change` | `string \| number \| array \| undefined` | Fired when the value of the field changes. The payload contains the parsed and unmasked value of the input. Bubbles up to the parent form. |
+| `<form is="form-control">` | `submited` | `Object` | Fired when the native `submit` form event applies. The payload is an object mapping all field names to their formatted values. The event also directly exposes `e.valid` (boolean) and `e.errors` (object containing active field errors). |
 
 ## Inputs type available  
 - text 

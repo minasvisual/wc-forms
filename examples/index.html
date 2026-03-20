@@ -1,28 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WC Forms - React Integration Standalone</title>
 
+  <!-- Load Twind -->
+  <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
+
   <!-- Load React and ReactDOM natively as globals directly from UNPKG -->
   <script src="https://unpkg.com/react@18.2.0/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.development.js" crossorigin></script>
-  
+
   <!-- Load Babel Standalone for JSX compilation directly on the browser -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <!-- Load wc-forms-kit native module -->
   <script type="module">
     import { Config } from '../src/config.js';
+    import { jsonToString, getFormValues } from '../src/helpers.js';
     import '../src/index.js';
+
+    // Expose Config and jsonToString globally so Babel standalone <script type="text/babel"> can access it
+    window.Config = Config;
+    window.jsonToString = jsonToString;
+    window.getFormValues = getFormValues;
 
     // Registra nosso Web Component personalizado aqui no escopo de módulo
     class FormPriority {
       constructor({ el, shadow, internals }) {
         this.name = el.getAttribute('name');
         this.label = el.getAttribute('label');
-        
+
         shadow.innerHTML = `
           <div class="wc-form-outer">
             <label class="wc-form-label">${this.label}</label>
@@ -35,10 +45,10 @@
             <small class="wc-errors hidden" style="color:red"></small>
           </div>
         `;
-        
+
         this.formitem = shadow.querySelector('input');
         this.erroritem = shadow.querySelector('.wc-errors');
-        
+
         const buttons = shadow.querySelectorAll('button');
         buttons.forEach(btn => {
           btn.addEventListener('click', () => {
@@ -49,14 +59,14 @@
           });
         });
       }
-      
+
       setError(error) {
         if (!error) {
-           this.erroritem.innerHTML = '';
-           this.erroritem.classList.add('hidden');
+          this.erroritem.innerHTML = '';
+          this.erroritem.classList.add('hidden');
         } else {
-           this.erroritem.innerHTML = error;
-           this.erroritem.classList.remove('hidden');
+          this.erroritem.innerHTML = error;
+          this.erroritem.classList.remove('hidden');
         }
       }
     }
@@ -64,7 +74,8 @@
     Config.registerInput('priority', FormPriority);
   </script>
 </head>
-<body>
+
+<body class="bg-gray-50 text-gray-800">
   <div id="root"></div>
 
   <!-- React code with Babel -->
@@ -78,12 +89,25 @@
       const [apiPosts, setApiPosts] = useState([]);
       const formRef = useRef(null);
 
+      const handleSubmit = (e) => {
+        setData(e.detail)
+        console.log('Parser by lib', e.detail)
+        console.log('Raw form parsing', Object.fromEntries(new FormData(e.target)))
+        console.log('Manual form parsing', getFormValues(e.target))
+      }
+
+      const handleChange = (e) => {
+        if (e.target.getAttribute('name') === 'api_user') {
+          setSelectedUser(e.detail);
+        }
+      };
+
       useEffect(() => {
         fetch('https://jsonplaceholder.typicode.com/users')
           .then(res => res.json())
           .then(users => {
             const optionsFormat = users.map(u => ({
-              label: `${u.name} (${u.email})`, 
+              label: `${u.name} (${u.email})`,
               value: String(u.id)
             }));
             setApiUsers([{ label: '▼ Select...', value: '' }, ...optionsFormat]);
@@ -101,7 +125,7 @@
           .then(res => res.json())
           .then(posts => {
             const optionsFormat = posts.map(p => ({
-              label: p.title.substring(0, 50) + '...', 
+              label: p.title.substring(0, 50) + '...',
               value: String(p.id)
             }));
             setApiPosts([{ label: '▼ Choose a Post from this User...', value: '' }, ...optionsFormat]);
@@ -113,17 +137,9 @@
         const formElement = formRef.current;
         if (!formElement) return;
 
-        const handleSubmit = (e) => setData(e.detail);
-
-        const handleChange = (e) => {
-          if (e.target.getAttribute('name') === 'api_user') {
-             setSelectedUser(e.detail);
-          }
-        };
-
         formElement.addEventListener('submited', handleSubmit);
         formElement.addEventListener('change', handleChange);
-        
+
         return () => {
           formElement.removeEventListener('submited', handleSubmit);
           formElement.removeEventListener('change', handleChange);
@@ -131,67 +147,64 @@
       }, []);
 
       return (
-        <div style={{ padding: '30px', fontFamily: 'sans-serif', maxWidth: '600px', margin: '0 auto' }}>
-          <h2>React App (Standalone) + <br/> wc-forms native without node_modules 🚀</h2>
-          <p style={{ color: '#555' }}>JSX transpiled locally on browser and React loaded via Global UMD.</p>
+        <div className="p-8 font-sans max-w-2xl mx-auto">
+          <h2 className="text-2xl font-bold mb-2">React App (Standalone) + <br /> wc-forms native without node_modules 🚀</h2>
+          <p className="text-gray-500 mb-6 font-medium">JSX transpiled locally on browser and Twind handles the styling.</p>
 
-          <form 
-            is="form-control" 
-            ref={formRef} 
-            style={{ display: 'flex', flexDirection: 'column', gap: '15px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}
+          <form
+            is="form-control"
+            ref={formRef}
+            className="flex flex-col gap-4 p-6 bg-white border border-gray-200 rounded-xl shadow-sm"
           >
             <form-input name="username" type="text" label="System Name" validations="required|minlen:5" />
             <form-input name="email" type="email" label="E-mail" validations="required|email" />
-            
-            <form-input 
-              name="platform" 
-              type="select" 
-              validations="required|in:react,vue,angular" 
-              label="Choose a Framework" 
-              options="[{'label':'','value':''}, {'label':'React','value':'react'}, {'label':'Vue','value':'vue'}, {'label':'Angular','value':'angular'}]" 
-            />
-            
+            <form-input name="frameworks" type="checkboxes" label="Frameworks" validations="required" options="[ 
+              {'label':'React','value':'react'}, 
+              {'label':'Vue','value':'vue'}, 
+              {'label':'Angular','value':'angular'}
+            ]"></form-input>
+
             <form-input name="priority" type="priority" label="Priority Level" validations="required" />
 
             {apiUsers.length === 0 ? (
-              <div style={{ color: '#666', fontStyle: 'italic', padding: '10px 0' }}>⏳ Loading Users Web Component via API...</div>
+              <div className="text-gray-500 italic py-2">⏳ Loading Users Web Component via API...</div>
             ) : (
-              <form-input 
-                key={"usr-"+apiUsers.length} 
-                name="api_user" 
-                type="select" 
-                label="User (JSONPlaceholder React State)" 
-                options={JSON.stringify(apiUsers).replace(/"/g, "'")} 
-                validations="required" 
+              <form-input
+                key={"usr-" + apiUsers.length}
+                name="api_user"
+                type="select"
+                label="User (JSONPlaceholder React State)"
+                options={jsonToString(apiUsers)}
+                validations="required"
               />
             )}
 
             {selectedUser && apiPosts.length === 0 && (
-              <div style={{ color: '#666', fontStyle: 'italic', padding: '10px 0' }}>⏳ Fetching linked posts from API...</div>
+              <div className="text-gray-500 italic py-2">⏳ Fetching linked posts from API...</div>
             )}
 
             {selectedUser && apiPosts.length > 0 && (
-              <div style={{ padding: '15px', background: '#f0f9ff', borderRadius: '6px', border: '1px dashed #bae6fd' }}>
-                <form-input 
-                  key={"post-"+selectedUser+"-"+apiPosts.length} 
-                  name="api_post" 
-                  type="select" 
-                  label={`Choose Post from User ${selectedUser}`} 
-                  options={JSON.stringify(apiPosts).replace(/"/g, "'")} 
-                  validations="required" 
+              <div className="p-4 bg-sky-50 rounded-lg border border-dashed border-sky-300 transition-all duration-300">
+                <form-input
+                  key={"post-" + selectedUser + "-" + apiPosts.length}
+                  name="api_post"
+                  type="select"
+                  label={`Choose Post from User ${selectedUser}`}
+                  options={jsonToString(apiPosts)}
+                  validations="required"
                 />
               </div>
             )}
 
-            <button type="submit" style={{ padding: '10px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '10px' }}>
+            <button type="submit" className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg cursor-pointer transition-colors shadow-sm">
               Submit Native Form
             </button>
           </form>
 
           {data && (
-            <div style={{ marginTop: '20px', padding: '15px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #eee' }}>
-              <h3 style={{ marginTop: 0 }}>Processed Payload:</h3>
-              <pre style={{ margin: 0, color: '#333' }}>{JSON.stringify(data, null, 2)}</pre>
+            <div className="mt-6 p-5 bg-gray-50 rounded-xl border border-gray-200 shadow-inner">
+              <h3 className="mt-0 text-gray-800 text-lg font-bold mb-3 border-b pb-2">Processed Payload:</h3>
+              <pre className="m-0 text-gray-700 text-sm overflow-auto whitespace-pre-wrap">{JSON.stringify(data, null, 2)}</pre>
             </div>
           )}
         </div>
@@ -202,4 +215,5 @@
     root.render(<App />);
   </script>
 </body>
+
 </html>
