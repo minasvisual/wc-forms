@@ -90,7 +90,9 @@ class FormComponent extends HTMLElement {
     if (Config.stylesText) {
       style.appendChild(document.createTextNode(Config.stylesText));
     } else {
-      let url = Config.stylesURL || `${Config.basePath}/style.css`
+      // Natively resolves style.css relative to this module's location across CDNs and Bundlers
+      let defaultUrl = new URL('./style.css', import.meta.url).href;
+      let url = Config.stylesURL || defaultUrl;
       style.appendChild(
         document.createTextNode(
           `@import "${url}";`

@@ -3,8 +3,8 @@ import React, { useRef, useState, useEffect } from 'react';
 // Here we natively import the installed module and its configurations
 // following 100% the official NPM documentation of your base boilerplate
 import { Config } from 'wc-forms-kit/config';
-import styles from 'wc-forms-kit/style.css?raw';
-Config.stylesText = styles;
+
+    
 
 class FormPriority {
   constructor({ el, shadow, internals }) {

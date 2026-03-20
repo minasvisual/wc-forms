@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Web Components Forms</title>
+  <script type="module">
+    import { Config } from './src/config.js'
+    import { FormCurrency } from './src/inputs/custominput.js'
+
+    if (location.href.includes('github.io'))
+      Config.basePath = '/wc-forms/src'
+
+    // Custom validation
+    Config.registerValidation('custom', {
+      message: (params, value) => `This field must quals ${params[0]}`,
+      handle: ({ value, params }) => value == params[0]
+    })
+    // Custom input
+    Config.registerInput('currency', FormCurrency)
+
+    // Custom mask
+    Config.registerMask('document', (el, maskInstance, maskInputAttribute) => {
+      var docMask = ['999.999.999-999', '99.999.999/9999-99'];
+      var inputHandler = (masks, max, event) => {
+        var c = event.target;
+        var v = c.value.replace(/\D/g, '');
+        var m = c.value.length > max ? 1 : 0;
+        maskInstance.unMask();
+        maskInstance.maskPattern(masks[m]);
+      }
+      maskInstance.maskPattern(docMask[0]);
+      el.addEventListener('input', inputHandler.bind(undefined, docMask, 14), false);
+    })
+
+  </script>
+  <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
+  <script type="module" src="./src/index.js" defer async></script>
+
+  <style>
+    /* Exemplo de customização de estilo para os componentes */
+    :root {
+      --wcf-input-radius: 8px;
+    }
+
+    /* Customização através de Shadow Parts */
+    form-input::part(input) {
+      border: 1px solid #cbd5e1;
+      border-radius: var(--wcf-input-radius);
+      transition: all 0.2s ease;
+    }
+
+    form-input::part(input):focus {
+      border-color: #3b82f6;
+      outline: none;
+      box-shadow: 0 0 0 1px #3b82f6;
+    }
+
+    form-input::part(help) {
+      font-style: italic;
+      color: #64748b;
+    }
+  </style>
+</head>
+
+<body>
+  <form is="form-control" class="w-1/2 m-auto flex flex-col gap-4 p-3">
+    <form-input name="textField" type="text" label="Text field" validations="required|minlen:5">
+      <span slot="label">
+        <h1 style="color:red">Text field 1 Custom label slot</h1>
+      </span>
+      <span slot="suffix"><button type="button" class="border-2 px-2">OK</button></span>
+    </form-input>
+    <form-input name="emailField" type="email" label="Email field" validations="required|email" help="Help attribute">
+    </form-input>
+    <form-input name="passwordField" type="password" label="Password field"
+      validations="required|minlen:5|maxlen:50|confirm:textField">
+    </form-input>
+    <form-input name="selectField" type="select" validations="required|in:2,3,5" label="Select field" options="[
+        {'value': '', 'label': 'Select an option'},
+        {'value': 1, 'label': 'Option 1'},
+        {'value': 2, 'label': 'Option 2'},
+        {'value': 3, 'label': 'Option 3'},
+        {'value': 4, 'label': 'Option 4'},
+        {'value': 5, 'label': 'Option 5'},
+        {'value': 6, 'label': 'Option 6'},
+        {'value': 7, 'label': 'Option 7'},
+        {'value': 8, 'label': 'Option 8'},
+        {'value': 9, 'label': 'Option 9'},
+        {'value': 10, 'label': 'Option 10'}
+      ]">
+    </form-input>
+    <form-input name="dateField" type="date" label="Date field"
+      validations="required|isdate|isafter:2020-01-01|isbefore:2020-12-31">
+    </form-input>
+    <form-input name="numberField" type="number" label="Number" validations="required|isnumber|min:5|max:100">
+    </form-input>
+    <form-input name="radioboxesField" type="radioboxes" validations="required|in:2,3" label="Radioboxes field"
+      options="['radio1','radio2','radio3']">
+    </form-input>
+    <form-input name="checkboxField" type="checkboxes" validations="required|in:2" label="Checkboxes field"
+      options="['check1','check2','check3']">
+    </form-input>
+    <form-input name="textareaField" type="textarea" rows="5" validations="required|maxlen:255|minlen:5"
+      label="Textarea field">
+    </form-input>
+    <form-input name="urlField" type="url" label="Url field" validations="required|url"
+      placeholder="ex. https://domain.com">
+    </form-input>
+    <form-input name="searchField" type="search" label="Search field" validations="required|minlen:5">
+    </form-input>
+    <form-input name="colorField" type="color" label="Color field" validations="required|custom:#ffffff">
+    </form-input>
+    <form-input name="dateTimeField" type="datetime-local" label="Date time"
+      validations="required|isdate|isafter:2026-01-01|isbefore:2026-12-31">
+    </form-input>
+    <form-input name="booleanField" type="checkbox" validations="required|istrue" label="Checkbox boolean field">
+    </form-input>
+    <form-input name="checkboxValueField" type="checkbox" value="optin" label="Checkbox value field">
+    </form-input>
+    <form-input name="currencyField" type="currency" label="Custom field type" validations="required">
+    </form-input>
+    <form-input name="maskField" type="text" label="Mask field" validations="required" mask mask:format="currency">
+    </form-input>
+    <form-input name="maskFieldUnmaskedReturn" type="text" label="Mask field unmasked return" validations="required"
+      mask="(99) 99999-9999" unmask="true">
+    </form-input>
+    <form-input name="customMaskField" type="text" label="Custom mask" mask mask:format="document"
+      validations="required">
+    </form-input>
+    <button class="border-2 border-black bg-zinc-300 p-2">
+      Enter
+    </button>
+  </form>
+  <!-- <script src="../src/mask.js"></script> -->
+  <script src="./examples/scripts.js"></script>
+</body>
+
+</html>

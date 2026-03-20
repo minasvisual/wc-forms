@@ -4,51 +4,111 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <title>Web Components Forms</title>   
+  <title>Web Components Forms</title>
   <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
-  <script type="module" src="../src/index.js" defer async></script> 
+  <script type="module">
+    import { Config } from '../src/config.js';
+    
+    if (location.href.includes('github.io'))
+      Config.basePath = '/wc-forms/src';
+      
+    Config.stylesURL = '../src/style.css';
+
+    class FormPriority {
+      constructor({ el, shadow, internals }) {
+        this.name = el.getAttribute('name');
+        this.label = el.getAttribute('label');
+
+        shadow.innerHTML = `
+          <div class="wc-form-outer">
+            <label class="wc-form-label">${this.label}</label>
+            <div class="wc-form-wrapper" style="display: flex; gap: 8px;">
+              <input type="hidden" name="${this.name}" />
+              <button type="button" data-val="low" style="padding: 4px 8px; border: 1px solid #ccc; cursor: pointer; background: #a7f3d0">Low</button>
+              <button type="button" data-val="medium" style="padding: 4px 8px; border: 1px solid #ccc; cursor: pointer; background: #fde047">Medium</button>
+              <button type="button" data-val="high" style="padding: 4px 8px; border: 1px solid #ccc; cursor: pointer; background: #fca5a5">High</button>
+            </div>
+            <small class="wc-errors hidden" style="color:red"></small>
+          </div>
+        `;
+
+        this.formitem = shadow.querySelector('input');
+        this.erroritem = shadow.querySelector('.wc-errors');
+
+        const buttons = shadow.querySelectorAll('button');
+        buttons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            this.formitem.value = btn.dataset.val;
+
+            // Highlight selected
+            buttons.forEach(b => b.style.outline = 'none');
+            btn.style.outline = '2px solid black';
+
+            // Trigger native change to validate the form
+            this.formitem.dispatchEvent(new Event('change', { bubbles: true }));
+          });
+        });
+      }
+
+      setError(error) {
+        if (!error) {
+          this.erroritem.innerHTML = '';
+          this.erroritem.classList.add('hidden');
+        } else {
+          this.erroritem.innerHTML = error;
+          this.erroritem.classList.remove('hidden');
+        }
+      }
+    }
+
+    Config.registerInput('priority', FormPriority);
+  </script>
+  <script type="module">
+    // Initializes the local Web Component 100% safely after the previous script finishes
+    import '../src/index.js'; 
+  </script>
   <script src="//unpkg.com/alpinejs" defer></script>
 </head>
 
 <body x-data="todos">
-  <form is="form-control" class="w-1/2 m-auto flex flex-row gap-4 p-3 items-end" @submited="addTask"> 
-      <span>New task</span>
-      <form-input name="name" type="text" label="Name" validations="required|minlen:5"></form-input>  
-      <form-input name="duedate" type="date" label="Due date" validations="required|isafter:2024-01-01"></form-input>
-      <button type="submit" class="border-2 border-black bg-zinc-300 h-8 px-2">
-        Enter
-      </button>  
+  <form is="form-control" class="w-1/2 m-auto flex flex-row gap-4 p-3 items-end" @submited="addTask">
+    <span>New task</span>
+    <form-input name="name" type="text" label="Name" validations="required|minlen:5"></form-input>
+    <form-input name="duedate" type="date" label="Due date" validations="required|isafter:2024-01-01"></form-input>
+    <form-input name="priority" type="priority" label="Priority" validations="required"></form-input>
+    <button type="submit" class="border-2 border-black bg-zinc-300 h-8 px-2">
+      Enter
+    </button>
   </form>
   <hr />
   <div id="tasks" class="w-1/2 m-auto flex flex-col gap-4">
     <div x-show="!tasks.length" class="text-center w-full">No tasks</div>
     <template x-for="task in tasks">
-      <div class="w-full grid grid-cols-4 border-b-2">
+      <div class="w-full grid grid-cols-5 border-b-2">
         <span x-text="task.name"></span>
         <span x-text="task.duedate"></span>
-        <form-input name="done" type="checkbox" 
-              label="Done" 
-              @change="e => task.done = !task.done"> 
+        <span x-text="task.priority" style="text-transform: capitalize;"></span>
+        <form-input name="done" type="checkbox" label="Done" @change="e => task.done = !task.done">
         </form-input>
         <button type="button" @click="e => removeTask(task)">Remove</button>
       </div>
     </template>
     <pre x-html="JSON.stringify(tasks, null, 2)"></pre>
-  </div> 
-  <script >  
+  </div>
+  <script>
     document.addEventListener('alpine:init', () => {
-        Alpine.data('todos', () => ({
-            tasks: [],  
-            addTask(e) { 
-              const { name, duedate } = e.detail
-              if(!name || !duedate) return alert('required')
-              this.tasks.push(e.detail)
-            }, 
-            removeTask(task) {  
-              const index = this.tasks.indexOf(task)
-              this.tasks.splice(index, 1)
-            }
-        }))
+      Alpine.data('todos', () => ({
+        tasks: [],
+        addTask(e) {
+          const { name, duedate } = e.detail
+          if (!name || !duedate) return alert('required')
+          this.tasks.push(e.detail)
+        },
+        removeTask(task) {
+          const index = this.tasks.indexOf(task)
+          this.tasks.splice(index, 1)
+        }
+      }))
     }) 
   </script>
 </body>
