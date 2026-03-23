@@ -6,13 +6,13 @@ test.describe('Form Fields Independent Validations', () => {
   });
 
   test('Text field validation (minlen)', async ({ page }) => {
-    const input = page.locator('form-input[name="test"] input');
-    const errors = page.locator('form-input[name="test"] .wc-errors');
+    const input = page.locator('form-input[name="textField"] input');
+    const errors = page.locator('form-input[name="textField"] .wc-errors');
 
     await input.fill('abc');
     await input.blur();
     await expect(errors).not.toHaveClass(/hidden/);
-    await expect(errors).toContainText('at least 5');
+    await expect(errors).toContainText('pelo menos 5');
 
     await input.fill('abcdef');
     await input.blur();
@@ -20,13 +20,13 @@ test.describe('Form Fields Independent Validations', () => {
   });
 
   test('Email field validation', async ({ page }) => {
-    const input = page.locator('form-input[name="test2"] input');
-    const errors = page.locator('form-input[name="test2"] .wc-errors');
+    const input = page.locator('form-input[name="emailField"] input');
+    const errors = page.locator('form-input[name="emailField"] .wc-errors');
 
     await input.fill('invalidemail');
     await input.blur();
     await expect(errors).not.toHaveClass(/hidden/);
-    await expect(errors).toContainText('valid email');
+    await expect(errors).toContainText('e-mail válido');
 
     await input.fill('valid@example.com');
     await input.blur();
@@ -34,23 +34,23 @@ test.describe('Form Fields Independent Validations', () => {
   });
 
   test('Password field validation and confirm', async ({ page }) => {
-    const password = page.locator('form-input[name="test3"] input');
-    const errors = page.locator('form-input[name="test3"] .wc-errors');
+    const password = page.locator('form-input[name="passwordField"] input');
+    const errors = page.locator('form-input[name="passwordField"] .wc-errors');
 
     await password.fill('abc');
     await password.blur();
     await expect(errors).not.toHaveClass(/hidden/);
     
-    // Confirm test is tied to main "test" param on validations
-    await page.locator('form-input[name="test"] input').fill('matchpwd');
+    // Confirm test is tied to main "textField" param on validations
+    await page.locator('form-input[name="textField"] input').fill('matchpwd');
     await password.fill('matchpwd');
     await password.blur();
     await expect(errors).toHaveClass(/hidden/);
   });
 
   test('Select field validation', async ({ page }) => {
-    const select = page.locator('form-input[name="test4"] select');
-    const errors = page.locator('form-input[name="test4"] .wc-errors');
+    const select = page.locator('form-input[name="selectField"] select');
+    const errors = page.locator('form-input[name="selectField"] .wc-errors');
 
     await select.selectOption('1');
     await select.blur();
@@ -61,8 +61,8 @@ test.describe('Form Fields Independent Validations', () => {
   });
 
   test('Date field validation', async ({ page }) => {
-    const input = page.locator('form-input[name="test5"] input');
-    const errors = page.locator('form-input[name="test5"] .wc-errors');
+    const input = page.locator('form-input[name="dateField"] input');
+    const errors = page.locator('form-input[name="dateField"] .wc-errors');
 
     // out of boundary validation
     await input.fill('2019-12-31');
@@ -70,14 +70,14 @@ test.describe('Form Fields Independent Validations', () => {
     await expect(errors).not.toHaveClass(/hidden/);
 
     // valid input date
-    await input.fill('2020-06-15');
+    await input.fill('2026-06-15');
     await input.blur();
     await expect(errors).toHaveClass(/hidden/);
   });
 
   test('Number field validation', async ({ page }) => {
-    const input = page.locator('form-input[name="test6"] input');
-    const errors = page.locator('form-input[name="test6"] .wc-errors');
+    const input = page.locator('form-input[name="numberField"] input');
+    const errors = page.locator('form-input[name="numberField"] .wc-errors');
 
     await input.fill('4'); 
     await input.blur();
@@ -89,9 +89,9 @@ test.describe('Form Fields Independent Validations', () => {
   });
 
   test('Radioboxes validation', async ({ page }) => {
-    const radio1 = page.locator('form-input[name="test7"] input[type="radio"]').nth(0);
-    const radio3 = page.locator('form-input[name="test7"] input[type="radio"]').nth(2); 
-    const errors = page.locator('form-input[name="test7"] .wc-errors');
+    const radio1 = page.locator('form-input[name="radioboxesField"] input[type="radio"]').nth(0);
+    const radio3 = page.locator('form-input[name="radioboxesField"] input[type="radio"]').nth(2); 
+    const errors = page.locator('form-input[name="radioboxesField"] .wc-errors');
 
     await radio1.check();
     await expect(errors).not.toHaveClass(/hidden/);
@@ -101,21 +101,25 @@ test.describe('Form Fields Independent Validations', () => {
   });
 
   test('Checkboxes validation', async ({ page }) => {
-    const check1 = page.locator('form-input[name="test8"] input[type="checkbox"]').nth(0); 
-    const check3 = page.locator('form-input[name="test8"] input[type="checkbox"]').nth(2);
-    const errors = page.locator('form-input[name="test8"] .wc-errors');
+    // in:0,2 means only indices 0 (check1) and 2 (check3) are valid.
+    // index 1 (check2) is invalid.
+    const check2 = page.locator('form-input[name="checkboxField"] input[type="checkbox"]').nth(1);
+    const check3 = page.locator('form-input[name="checkboxField"] input[type="checkbox"]').nth(2);
+    const errors = page.locator('form-input[name="checkboxField"] .wc-errors');
 
-    await check1.check();
+    // index 1 is NOT in allowed [0, 2]
+    await check2.check();
     await expect(errors).not.toHaveClass(/hidden/);
 
-    await check1.uncheck();
+    // uncheck index 1, check only index 2 which IS in the allowed list
+    await check2.uncheck();
     await check3.check();
     await expect(errors).toHaveClass(/hidden/);
   });
 
   test('Textarea validation', async ({ page }) => {
-    const textarea = page.locator('form-input[name="test9"] textarea');
-    const errors = page.locator('form-input[name="test9"] .wc-errors');
+    const textarea = page.locator('form-input[name="textareaField"] textarea');
+    const errors = page.locator('form-input[name="textareaField"] .wc-errors');
 
     await textarea.fill('abc');
     await textarea.blur();
@@ -127,8 +131,8 @@ test.describe('Form Fields Independent Validations', () => {
   });
 
   test('URL field validation', async ({ page }) => {
-    const input = page.locator('form-input[name="test10"] input');
-    const errors = page.locator('form-input[name="test10"] .wc-errors');
+    const input = page.locator('form-input[name="urlField"] input');
+    const errors = page.locator('form-input[name="urlField"] .wc-errors');
 
     await input.fill('invalid-url');
     await input.blur();
@@ -140,8 +144,8 @@ test.describe('Form Fields Independent Validations', () => {
   });
 
   test('Search field behavior', async ({ page }) => {
-    const input = page.locator('form-input[name="test10b"] input');
-    const errors = page.locator('form-input[name="test10b"] .wc-errors');
+    const input = page.locator('form-input[name="searchField"] input');
+    const errors = page.locator('form-input[name="searchField"] .wc-errors');
 
     await input.fill('dev');
     await input.blur();
@@ -153,14 +157,14 @@ test.describe('Form Fields Independent Validations', () => {
   });
 
   test('Currency custom mask reaction', async ({ page }) => {
-    const input = page.locator('form-input[name="test15"] input');
+    const input = page.locator('form-input[name="currencyField"] input');
     
     await input.pressSequentially('12345');
     await expect(input).toHaveValue('123.45');
   });
 
   test('Document native mask format', async ({ page }) => {
-    const input = page.locator('form-input[name="test18"] input');
+    const input = page.locator('form-input[name="customMaskField"] input');
     
     await input.pressSequentially('12345678901');
     await expect(input).toHaveValue('123.456.789-01');

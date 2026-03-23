@@ -8,6 +8,11 @@
   <script type="module">
     import { Config } from '../src/config.js'
     import { FormCurrency } from '../src/inputs/custominput.js'
+    import pt from '../src/lang/pt.js'
+
+    // Register Portuguese library
+    Config.registerLanguage('pt', pt);
+    Config.setLanguage('pt')
 
     if (location.href.includes('github.io'))
       Config.basePath = '/wc-forms/src'
@@ -75,19 +80,28 @@
       <nav class="flex-1 p-4">
         <ul class="space-y-2">
           <li>
-            <a href="../index.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Complete Form</a>
+            <a href="../index.html"
+              class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Complete
+              Form</a>
           </li>
           <li>
-            <a href="./index.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">React 18</a>
+            <a href="./index.html"
+              class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">React
+              18</a>
           </li>
           <li>
-            <a href="./vue.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Vue 3</a>
+            <a href="./vue.html"
+              class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Vue
+              3</a>
           </li>
           <li>
-            <a href="./vanila.html" class="block px-4 py-2 rounded-lg bg-blue-50 text-blue-700 font-medium">Vanilla JS</a>
+            <a href="./vanila.html" class="block px-4 py-2 rounded-lg bg-blue-50 text-blue-700 font-medium">Vanilla
+              JS</a>
           </li>
           <li>
-            <a href="./todo.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Alpine To-Do</a>
+            <a href="./todo.html"
+              class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Alpine
+              To-Do</a>
           </li>
         </ul>
       </nav>
@@ -96,83 +110,86 @@
     <!-- Conteudo Principal -->
     <main class="flex-1 overflow-y-auto p-6 md:p-10">
       <div class="max-w-2xl m-auto">
-        <h2 class="text-2xl font-bold mb-6">Vanilla JS Example 🚀</h2>
         <form is="form-control" class="flex flex-col gap-4 p-6 bg-white shadow-xl rounded-2xl border border-gray-100">
-    <form-input name="textField" type="text" label="Text field" validations="required|minlen:5">
-      <span slot="label">
-        <h1 style="color:red">Text field 1 Custom label slot</h1>
-      </span>
-      <span slot="suffix"><button type="button" class="border-2 px-2">OK</button></span>
-    </form-input>
-    <form-input name="emailField" type="email" label="Email field" validations="required|email" help="Help attribute">
-    </form-input>
-    <form-input name="passwordField" type="password" label="Password field"
-      validations="required|minlen:5|maxlen:50|confirm:textField">
-    </form-input>
-    <form-input name="selectField" type="select" validations="required|in:2,3,5" label="Select field" options="[
-        {'value': '', 'label': 'Select an option'},
-        {'value': 1, 'label': 'Option 1'},
-        {'value': 2, 'label': 'Option 2'},
-        {'value': 3, 'label': 'Option 3'},
-        {'value': 4, 'label': 'Option 4'},
-        {'value': 5, 'label': 'Option 5'},
-        {'value': 6, 'label': 'Option 6'},
-        {'value': 7, 'label': 'Option 7'},
-        {'value': 8, 'label': 'Option 8'},
-        {'value': 9, 'label': 'Option 9'},
-        {'value': 10, 'label': 'Option 10'}
-      ]">
-    </form-input>
-    <form-input name="selectFieldHtml" type="select" validations="required|in:2,3,5" label="Select field (HTML Options)">
-      <option value="">Select an option</option>
-      <option value="1">Option 1</option>
-      <option value="2">Option 2</option>
-      <option value="3">Option 3</option>
-      <option value="4">Option 4</option>
-      <option value="5">Option 5</option>
-    </form-input>
-    <form-input name="dateField" type="date" label="Date field"
-      validations="required|isdate|isafter:2026-01-01|isbefore:2026-12-31">
-    </form-input>
-    <form-input name="numberField" type="number" label="Number" validations="required|isnumber|min:5|max:100">
-    </form-input>
-    <form-input name="radioboxesField" type="radioboxes" validations="required|in:2,3" label="Radioboxes field"
-      options="['radio1','radio2','radio3']">
-    </form-input>
-    <form-input name="checkboxField" type="checkboxes" validations="required|in:0,2" label="Checkboxes field"
-      options="['check1','check2','check3']">
-    </form-input>
-    <form-input name="textareaField" type="textarea" rows="5" validations="required|maxlen:255|minlen:5"
-      label="Textarea field">
-    </form-input>
-    <form-input name="urlField" type="url" label="Url field" validations="required|url"
-      placeholder="ex. https://domain.com">
-    </form-input>
-    <form-input name="searchField" type="search" label="Search field" validations="required|minlen:5">
-    </form-input>
-    <form-input name="colorField" type="color" label="Color field" validations="required|custom:#ffffff">
-    </form-input>
-    <form-input name="dateTimeField" type="datetime-local" label="Date time"
-      validations="required|isdate|isafter:2026-01-01|isbefore:2026-12-31">
-    </form-input>
-    <form-input name="booleanField" type="checkbox" validations="required|istrue" label="Checkbox boolean field">
-    </form-input>
-    <form-input name="checkboxValueField" type="checkbox" value="optin" label="Checkbox value field">
-    </form-input>
-    <form-input name="currencyField" type="currency" label="Custom field type" validations="required">
-    </form-input>
-    <form-input name="maskField" type="text" label="Mask field" validations="required" mask mask:format="currency">
-    </form-input>
-    <form-input name="maskFieldUnmaskedReturn" type="text" label="Mask field unmasked return" validations="required"
-      mask="(99) 99999-9999" unmask="true">
-    </form-input>
-    <form-input name="customMaskField" type="text" label="Custom mask" mask mask:format="document"
-      validations="required">
-    </form-input>
-    <button class="border-2 border-black bg-zinc-300 p-2">
-      Enter
-    </button>
-  </form>
+          <h4>Form with custom error messages (PT)</h4>
+          <form-input name="textField" type="text" label="Text field" validations="required|minlen:5">
+            <span slot="label">
+              <h1 style="color:red">Text field 1 Custom label slot</h1>
+            </span>
+            <span slot="suffix"><button type="button" class="border-2 px-2">OK</button></span>
+          </form-input>
+          <form-input name="emailField" type="email" label="Email field" validations="required|email"
+            help="Help attribute">
+          </form-input>
+          <form-input name="passwordField" type="password" label="Password field"
+            validations="required|minlen:5|maxlen:50|confirm:textField">
+          </form-input>
+          <form-input name="selectField" type="select" validations="required|in:2,3,5" label="Select field" options="[
+            {'value': '', 'label': 'Select an option'},
+            {'value': 1, 'label': 'Option 1'},
+            {'value': 2, 'label': 'Option 2'},
+            {'value': 3, 'label': 'Option 3'},
+            {'value': 4, 'label': 'Option 4'},
+            {'value': 5, 'label': 'Option 5'},
+            {'value': 6, 'label': 'Option 6'},
+            {'value': 7, 'label': 'Option 7'},
+            {'value': 8, 'label': 'Option 8'},
+            {'value': 9, 'label': 'Option 9'},
+            {'value': 10, 'label': 'Option 10'}
+          ]">
+          </form-input>
+          <form-input name="selectFieldHtml" type="select" validations="required|in:2,3,5"
+            label="Select field (HTML Options)">
+            <option value="">Select an option</option>
+            <option value="1">Option 1</option>
+            <option value="2">Option 2</option>
+            <option value="3">Option 3</option>
+            <option value="4">Option 4</option>
+            <option value="5">Option 5</option>
+          </form-input>
+          <form-input name="dateField" type="date" label="Date field"
+            validations="required|isdate|isafter:2026-01-01|isbefore:2026-12-31">
+          </form-input>
+          <form-input name="numberField" type="number" label="Number" validations="required|isnumber|min:5|max:100">
+          </form-input>
+          <form-input name="radioboxesField" type="radioboxes" validations="required|in:2,3" label="Radioboxes field"
+            options="['radio1','radio2','radio3']">
+          </form-input>
+          <form-input name="checkboxField" type="checkboxes" validations="required|in:0,2" label="Checkboxes field"
+            options="['check1','check2','check3']">
+          </form-input>
+          <form-input name="textareaField" type="textarea" rows="5" validations="required|maxlen:255|minlen:5"
+            label="Textarea field">
+          </form-input>
+          <form-input name="urlField" type="url" label="Url field" validations="required|url"
+            placeholder="ex. https://domain.com">
+          </form-input>
+          <form-input name="searchField" type="search" label="Search field" validations="required|minlen:5">
+          </form-input>
+          <form-input name="colorField" type="color" label="Color field" validations="required|custom:#ffffff">
+          </form-input>
+          <form-input name="dateTimeField" type="datetime-local" label="Date time"
+            validations="required|isdate|isafter:2026-01-01|isbefore:2026-12-31">
+          </form-input>
+          <form-input name="booleanField" type="checkbox" validations="required|istrue" label="Checkbox boolean field">
+          </form-input>
+          <form-input name="checkboxValueField" type="checkbox" value="optin" label="Checkbox value field">
+          </form-input>
+          <form-input name="currencyField" type="currency" label="Custom field type" validations="required">
+          </form-input>
+          <form-input name="maskField" type="text" label="Mask field" validations="required" mask
+            mask:format="currency">
+          </form-input>
+          <form-input name="maskFieldUnmaskedReturn" type="text" label="Mask field unmasked return"
+            validations="required" mask="(99) 99999-9999" unmask="true">
+          </form-input>
+          <form-input name="customMaskField" type="text" label="Custom mask" mask mask:format="document"
+            validations="required">
+          </form-input>
+          <button class="border-2 border-black bg-gray-300 p-2">
+            Enter
+          </button>
+        </form>
       </div>
     </main>
   </div>

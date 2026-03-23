@@ -27,7 +27,7 @@ Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https:/
 - [x] NPM Package installation
 - [x] React Adapter
 - [x] Vue Integration / Example
-- [ ] Internacionalization
+- [x] Internacionalization
 - [ ] Plugins
 
 #### bug fix
@@ -329,6 +329,44 @@ Next, import `Config` store and import your class. register your new input type:
 ```
 
 Use your new input on html:
-```
+```html
 <form-input name="test" type="currency" label="Currency field" ></form-input>
+```
+
+## Internationalization (i18n)
+
+The library has native support for multiple languages in its validation error messages. By default, all messages are in English (`en`).
+
+### Changing the Language
+
+You can easily switch the active language globally before initializing your form:
+
+```javascript
+import { Config } from 'wc-forms/config'
+
+// Change the active language (e.g., to Spanish)
+Config.setLanguage('es')
+```
+
+### Registering a New Language
+
+To add a completely new language dictionary, create an object mapping the validation rules to their translated messages. You can use `{0}`, `{1}`, etc., as dynamic placeholders for validation arguments (like the number of characters in `minlen`).
+
+```javascript
+import { Config } from 'wc-forms/config'
+
+const portuguese = {
+  required: 'Este campo é obrigatório',
+  email: 'Este deve ser um email válido',
+  minlen: 'Este campo deve ter pelo menos {0} caracteres',
+  maxlen: 'Este campo deve ter no máximo {0} caracteres',
+  confirm: 'Este campo deve ser igual ao campo {0}',
+  // Add other matching rules from the validation list...
+}
+
+// 1. Register the language dictionary
+Config.registerLanguage('pt', portuguese)
+
+// 2. Set it as the active language
+Config.setLanguage('pt')
 ```

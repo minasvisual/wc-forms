@@ -1,16 +1,16 @@
 function send(e) {
   e.preventDefault()
-  const form = e.target; 
+  const form = e.target;
   const values = Object.fromEntries(new FormData(form));
   console.log('Submited validation', e.valid)
   console.log('Submited validation errors', e.errors)
   console.log('Submited data parsed', e.detail)
   console.log('Submited by event', values)
   alert('Sent! See the console.')
-} 
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('onload' ) 
+  console.log('onload')
 
   document.querySelector('form').addEventListener('submit', () => console.log('submit'))
   document.querySelector('form').addEventListener('submited', send)
@@ -18,5 +18,5 @@ document.addEventListener('DOMContentLoaded', () => {
   let input = document.querySelector('form-input[name="textField"]')
   input.addEventListener('typing', e => console.log('typing', e.detail))
   input.addEventListener('change', e => console.log('change', e.detail))
-   
+
 })

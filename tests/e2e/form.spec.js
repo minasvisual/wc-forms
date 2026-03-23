@@ -5,6 +5,8 @@ test('fills form fields and validates parsed submit payload', async ({ page }) =
   let submittedErrors = null;
   let submittedData = null;
 
+  page.on('dialog', dialog => dialog.dismiss());
+
   page.on('console', async (msg) => {
     const text = msg.text();
     const args = msg.args();
@@ -29,12 +31,13 @@ test('fills form fields and validates parsed submit payload', async ({ page }) =
   await page.locator('form-input[name="emailField"]').locator('input').fill('user@example.com');
   await page.locator('form-input[name="passwordField"]').locator('input').fill('match1');
   await page.locator('form-input[name="selectField"]').locator('select').selectOption('2');
+  await page.locator('form-input[name="selectFieldHtml"]').locator('select').selectOption('2');
   await page.locator('form-input[name="dateField"]').locator('input').fill('2026-06-10');
   await page.locator('form-input[name="numberField"]').locator('input').fill('25');
   
   await page.locator('form-input[name="radioboxesField"]').locator('input[type="radio"]').nth(2).check();
   
-  // Select multiple items on the checkbox field!!
+  // check index 0 (check1) and index 2 (check3), both satisfy in:0,2
   await page.locator('form-input[name="checkboxField"]').locator('input[type="checkbox"]').nth(0).check();
   await page.locator('form-input[name="checkboxField"]').locator('input[type="checkbox"]').nth(2).check();
   
@@ -73,7 +76,7 @@ test('fills form fields and validates parsed submit payload', async ({ page }) =
     dateField: '2026-06-10',
     numberField: 25,
     radioboxesField: 2,
-    checkboxField: ['0', '2'], // <--- CHECKBOX ARRAY ASSERTION
+    checkboxField: ['0', '2'], // indices from FormChecks (item.value || index)
     textareaField: 'a valid textarea content',
     urlField: 'https://example.com',
     searchField: 'developer',

@@ -66,12 +66,16 @@ class FormComponent extends HTMLElement {
       let valueRaw = this.unmaskIt(e.target.value)
       this.formitem.value = e.target.value
       
-      if (Array.isArray(valueRaw)) {
-        let fd = new FormData();
-        valueRaw.forEach(v => fd.append(this.getAttribute('name'), v));
-        this.internals.setFormValue(valueRaw.length ? fd : null);
-      } else {
-        this.internals.setFormValue(valueRaw);
+      // Only update internals form value if the raw value is defined.
+      // Composite inputs (like checkboxes) call setFormValue themselves via emitValue.
+      if (valueRaw !== undefined) {
+        if (Array.isArray(valueRaw)) {
+          let fd = new FormData();
+          valueRaw.forEach(v => fd.append(this.getAttribute('name'), v));
+          this.internals.setFormValue(valueRaw.length ? fd : null);
+        } else {
+          this.internals.setFormValue(valueRaw);
+        }
       }
       
       this.emitEvent('change', valueRaw)
@@ -120,7 +124,7 @@ class FormComponent extends HTMLElement {
   }
 
   getFormValues() {
-    return Object.fromEntries(new FormData(this.internals.form));
+    return getFormValues(this.internals.form)
   }
 
   handleSubmit(){
@@ -136,16 +140,16 @@ class FormComponent extends HTMLElement {
   validate() {
     this.instance.setError(false)
     this.errors = {}
-    let value = this.formitem.value
+    let name = this.getAttribute('name')
+    let formValues = this.internals.form ? this.getFormValues() : {}
+    let value = formValues[name] !== undefined ? formValues[name] : this.formitem.value
     let validAttrs = extractValidations(this.getAttribute('validations')) 
     if (!validAttrs || !validAttrs.length) return; 
     for (let attr of validAttrs) { 
       this.internals.setValidity({ valueMissing: false }, [], this.formitem)
       let vdt = new Validate(attr)
-      if (vdt.validate(value, this.formitem, this.getFormValues()))
+      if (vdt.validate(value, this.formitem, formValues))
         continue;
-      if (this.itype === 'date')
-        console.log('date', value, vdt)
       this.errors[attr] = vdt.errors
       this.internals.setValidity({ valueMissing: true }, vdt.errors, this.formitem)
     }

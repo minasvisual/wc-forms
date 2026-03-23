@@ -1,0 +1,20 @@
+export default {
+    required: 'Este campo é obrigatório',
+    email: 'Este deve ser um e-mail válido',
+    url: 'Este campo deve ser uma URL válida',
+    minlen: 'Este campo deve ter pelo menos {0} caracteres',
+    maxlen: 'Este campo deve ter no máximo {0} caracteres',
+    confirm: 'Este campo deve ser igual ao campo {0}',
+    isdate: 'Este campo deve ser uma data válida',
+    isafter: 'Este campo deve ser posterior a {0}',
+    isbefore: 'Este campo deve ser anterior a {0}',
+    isnumber: 'Este campo deve ser um número válido',
+    startwith: 'Este campo deve começar com {0}',
+    endswith: 'Este campo deve terminar com {0}',
+    in: 'Este campo deve conter os valores: {0}',
+    notin: 'Este campo não deve conter: {0}',
+    max: 'Este campo deve ser menor ou igual a {0}',
+    min: 'Este campo deve ser maior ou igual a {0}',
+    istrue: 'Este campo deve ser marcado como verdadeiro',
+    isfalse: 'Este campo deve ser marcado como falso'
+}
