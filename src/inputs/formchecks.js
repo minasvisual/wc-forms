@@ -11,7 +11,7 @@ export class FormChecks {
     this.error = ''
     this.internals = internals
     const template = document.createElement("template");
- 
+
     if (!this.options || !this.isJson(this.options)) {
       throw new Error('No options received');
     }
@@ -19,7 +19,7 @@ export class FormChecks {
     template.innerHTML = ` 
       <div class="wc-form-outer" part="outer">
         <slot name="before"></slot>
-        <slot name="label">${ this.label ? `<label class="wc-form-label" part="label">${this.label} </label>`:'' }</slot>
+        <slot name="label">${this.label ? `<label class="wc-form-label" part="label">${this.label} </label>` : ''}</slot>
         <div class="wc-form-wrapper" part="wrapper">
           <div class="wc-form-checks" part="checks-wrapper" tabindex="0">
             <slot name="prefix"></slot>
@@ -35,7 +35,7 @@ export class FormChecks {
 
     shadow.appendChild(template.content.cloneNode(true));
     this.erroritem = shadow.querySelector('.wc-errors');
-    this.formitem = shadow.querySelector('.wc-form-checks') 
+    this.formitem = shadow.querySelector('.wc-form-checks')
     this.inputs = shadow.querySelectorAll('input')
   }
 
@@ -44,7 +44,7 @@ export class FormChecks {
       inpt.addEventListener('change', (evt) => {
         evt.stopPropagation();
         this.emitValue(evt);
-      }) 
+      })
     })
   }
   onDestroy() {
@@ -76,14 +76,14 @@ export class FormChecks {
     return optsHtml
   }
 
-  isChecked(item, index){
+  isChecked(item, index) {
     return (item.value || index) === this.inputvalue ? 'checked' : ''
   }
 
   emitValue(e) {
     this.formitem.value = e.target.value
     this.internals.states.add('--checked');
-    this.internals.setFormValue('on', '--checked'); 
+    this.internals.setFormValue('on', '--checked');
     this.formitem.dispatchEvent(new Event('change'));
   }
 
@@ -111,11 +111,11 @@ export class FormChecksBoxes extends FormChecks {
     let checks = [...this.inputs].filter(inpt => inpt.checked)
     let values = checks.map(inpt => inpt.value)
     this.formitem.value = values
-    
+
     let fd = new FormData();
     values.forEach(v => fd.append(this.name, v));
     this.internals.setFormValue(values.length ? fd : null)
-    
+
     this.formitem.dispatchEvent(new Event('change'));
   }
 }
@@ -125,13 +125,13 @@ export class FormCheckBox {
     this.itype = el.getAttribute('type')
     this.name = el.getAttribute('name')
     this.help = el.getAttribute('help')
-    this.label = el.getAttribute('label') 
-    this.checked = el.getAttribute('checked') 
+    this.label = el.getAttribute('label')
+    this.checked = el.getAttribute('checked')
     this.defaultValue = el.getAttribute('value')
     this.isBoolean = !this.defaultValue
     this.error = ''
     this.internals = internals
-    const template = document.createElement("template"); 
+    const template = document.createElement("template");
 
     template.innerHTML = ` 
       <div class="wc-form-outer" part="outer">
@@ -141,7 +141,7 @@ export class FormCheckBox {
             <slot name="prefix"></slot> 
             <label class="wc-form-check" part="check-label" for="${this.name}">
               <input type="checkbox" id="${this.name}" part="input" name="${this.name}" value="${this.defaultValue || 0}" ${this.isChecked()} />
-              <span part="check-text">${this.label}</span>
+              <span part="check-text"><slot name="label">${this.label}</slot></span>
             </label> 
             <slot name="suffix"></slot>
           </div>  
@@ -154,25 +154,25 @@ export class FormCheckBox {
 
     shadow.appendChild(template.content.cloneNode(true));
     this.erroritem = shadow.querySelector('.wc-errors');
-    this.formitem = shadow.querySelector('input')  
+    this.formitem = shadow.querySelector('input')
     this.formitem.addEventListener('change', (e) => this.emitValue(e))
   }
 
-  isChecked( ){
+  isChecked() {
     return this.internals.states.has('--checked') ? 'checked' : ''
   }
 
-  emitValue(e) {  
-    if(e.target.checked) {
+  emitValue(e) {
+    if (e.target.checked) {
       this.internals.states.add('--checked');
-      this.internals.setFormValue('on', '--checked');  
-      this.formitem.checked = true 
-      this.formitem.value = this.defaultValue || 'true' 
+      this.internals.setFormValue('on', '--checked');
+      this.formitem.checked = true
+      this.formitem.value = this.defaultValue || 'true'
     } else {
       this.internals.states.delete('--checked');
-      this.internals.setFormValue('off', '--checked'); 
-      this.formitem.checked = false 
-      this.formitem.value = this.defaultValue ? null : 'false' 
+      this.internals.setFormValue('off', '--checked');
+      this.formitem.checked = false
+      this.formitem.value = this.defaultValue ? null : 'false'
     }
   }
   setError(error) {

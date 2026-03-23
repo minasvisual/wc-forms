@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Web Components Forms</title>
+    <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
+    <script type="module">
+        import { Config } from '../src/config.js';
+
+        if (location.href.includes('github.io'))
+            Config.basePath = '/wc-forms/src';
+
+        Config.stylesURL = '../src/style.css';
+
+    </script>
+    <script type="module">
+        // Initializes the local Web Component 100% safely after the previous script finishes
+        import '../src/index.js'; 
+    </script>
+</head>
+
+<body x-data="todos" class="bg-gray-50 flex h-screen overflow-hidden font-sans">
+    <div class="flex w-full">
+        <!-- Menu Lateral -->
+        <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col flex-shrink-0">
+            <div class="p-6 border-b border-gray-100">
+                <h2 class="text-xl font-bold text-gray-800">WC Forms</h2>
+                <p class="text-sm text-gray-500 mt-1">Component Examples</p>
+            </div>
+            <nav class="flex-1 p-4">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="../index.html"
+                            class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Complete
+                            Form</a>
+                    </li>
+                    <li>
+                        <a href="./index.html"
+                            class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">React
+                            18</a>
+                    </li>
+                    <li>
+                        <a href="./vue.html"
+                            class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Vue
+                            3</a>
+                    </li>
+                    <li>
+                        <a href="./vanila.html"
+                            class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Vanilla
+                            JS</a>
+                    </li>
+                    <li>
+                        <a href="./todo.html"
+                            class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Alpine
+                            To-Do</a>
+                    </li>
+                    <li>
+                        <a href="./slots.html"
+                            class="block px-4 py-2 rounded-lg bg-blue-50 text-blue-700 font-medium">Slots</a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Conteudo Principal -->
+        <main class="flex-1 overflow-y-auto p-6 md:p-10 ">
+            <div class="max-w-4xl flex flex-col gap-6 m-auto bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-2xl font-bold mb-2">Slots example</h2>
+                <p class="border-b">Slots</p>
+                <form-input name="textField" type="text" label="Text field" validations="required|minlen:5">
+                    <span slot="before">Before slot</span>
+                    <span slot="prefix">Prefix</span>
+                    <span slot="label">
+                        <h1 style="color:red">Text field 1 Custom label slot</h1>
+                    </span>
+                    <span slot="help">Help slot</span>
+                    <span slot="errors">Error slot</span>
+                    <span slot="suffix">Suffix</span>
+                    <span slot="after">After slot</span>
+                </form-input>
+                <form-input name="textField2" type="checkbox" label="Text field" validations="required|minlen:5">
+                    <span slot="before">Before slot</span>
+                    <span slot="prefix">Prefix</span>
+                    <span slot="label">
+                        <h1 style="color:red">Checkbox field custom label slot</h1>
+                    </span>
+                    <span slot="help">Help slot</span>
+                    <span slot="errors">Error slot</span>
+                    <span slot="suffix">Suffix</span>
+                    <span slot="after">After slot</span>
+                </form-input>
+                <form-input name="selectFieldHtml" type="select" validations="required|in:2,3,5"
+                    label="Select field (HTML Options)">
+                    <span slot="before">Before slot</span>
+                    <span slot="prefix">Prefix</span>
+                    <span slot="label">
+                        <h1 style="color:red">Select field custom label slot</h1>
+                    </span>
+                    <option value="">Select an option</option>
+                    <option value="1">Option 1</option>
+                    <option value="2">Option 2</option>
+                    <option value="3">Option 3</option>
+                    <option value="4">Option 4</option>
+                    <option value="5">Option 5</option>
+                    <span slot="help">Help slot</span>
+                    <span slot="errors">Error slot</span>
+                    <span slot="suffix">Suffix</span>
+                    <span slot="after">After slot</span>
+                </form-input>
+                <form-input name="radioboxesField" type="radioboxes" validations="required|in:2,3"
+                    label="Radioboxes field"
+                    options="['radio1','radio2','radio3', {'value': 'check4', 'label': 'Option 4'}]">
+                    <span slot="before">Before slot</span>
+                    <span slot="prefix">Prefix</span>
+                    <span slot="label">
+                        <h1 style="color:red">Radioboxes field custom label slot</h1>
+                    </span>
+                    <span slot="help">Help slot</span>
+                    <span slot="errors">Error slot</span>
+                    <span slot="suffix">Suffix</span>
+                    <span slot="after">After slot</span>
+                </form-input>
+                <form-input name="checkboxField" type="checkboxes" validations="required|in:0,2"
+                    label="Checkboxes field"
+                    options="['check1','check2','check3', {'value': 'check4', 'label': 'Option 4'}]">
+                    <span slot="before">Before slot</span>
+                    <span slot="prefix">Prefix</span>
+                    <span slot="label">
+                        <h1 style="color:red">Checkboxes field custom label slot</h1>
+                    </span>
+                    <span slot="help">Help slot</span>
+                    <span slot="errors">Error slot</span>
+                    <span slot="suffix">Suffix</span>
+                    <span slot="after">After slot</span>
+                </form-input>
+                <form-input name="textareaField" type="textarea" rows="5" validations="required|maxlen:255|minlen:5"
+                    label="Textarea field">
+                    <span slot="before">Before slot</span>
+                    <span slot="prefix">Prefix</span>
+                    <span slot="label">
+                        <h1 style="color:red">Textarea field custom label slot</h1>
+                    </span>
+                    <span slot="help">Help slot</span>
+                    <span slot="errors">Error slot</span>
+                    <span slot="suffix">Suffix</span>
+                    <span slot="after">After slot</span>
+                </form-input>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>
