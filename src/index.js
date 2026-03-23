@@ -60,7 +60,24 @@ class FormComponent extends HTMLElement {
     this.shadowRoot.appendChild(this.addStyles())
     this.formitem = this.instance.formitem
     this.formitem.value = this.getAttribute('value')
-    this.formitem.setAttribute('data-type', InputSource.output) 
+    this.formitem.setAttribute('data-type', InputSource.output)
+
+    // Seed internals so the initial value attribute is reflected in FormData on submit
+    if (this.itype !== 'checkbox') {
+      const initialValue = this.unmaskIt(this.getAttribute('value'))
+      if (initialValue !== null && initialValue !== undefined) {
+        const name = this.getAttribute('name')
+        let parsed;
+        try { parsed = JSON.parse(initialValue); } catch { parsed = initialValue; }
+        if (Array.isArray(parsed)) {
+          const fd = new FormData();
+          parsed.forEach(v => fd.append(name, String(v)));
+          this.internals.setFormValue(parsed.length ? fd : null);
+        } else {
+          this.internals.setFormValue(initialValue);
+        }
+      }
+    }
     this.maskIt(InputSource)
     this.formitem.addEventListener('change', (e) => { 
       let valueRaw = this.unmaskIt(e.target.value)

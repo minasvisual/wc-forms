@@ -66,10 +66,11 @@
 
         <!-- Conteudo Principal -->
         <main class="flex-1 overflow-y-auto p-6 md:p-10 ">
-            <div class="max-w-4xl flex flex-col gap-6 m-auto bg-white p-6 rounded-lg shadow-md">
+            <form is="form-control" class="max-w-4xl flex flex-col gap-6 m-auto bg-white p-6 rounded-lg shadow-md">
                 <h2 class="text-2xl font-bold mb-2">Slots example</h2>
                 <p class="border-b">Slots</p>
-                <form-input name="textField" type="text" label="Text field" validations="required|minlen:5">
+                <form-input name="textField" type="text" label="Text field" validations="required|minlen:5"
+                    value="Default value 1">
                     <span slot="before">Before slot</span>
                     <span slot="prefix">Prefix</span>
                     <span slot="label">
@@ -80,7 +81,8 @@
                     <span slot="suffix">Suffix</span>
                     <span slot="after">After slot</span>
                 </form-input>
-                <form-input name="textField2" type="checkbox" label="Text field" validations="required|minlen:5">
+                <form-input name="textField2" type="checkbox" label="Text field" validations="required|minlen:5"
+                    value="optin" checked>
                     <span slot="before">Before slot</span>
                     <span slot="prefix">Prefix</span>
                     <span slot="label">
@@ -92,7 +94,7 @@
                     <span slot="after">After slot</span>
                 </form-input>
                 <form-input name="selectFieldHtml" type="select" validations="required|in:2,3,5"
-                    label="Select field (HTML Options)">
+                    label="Select field (HTML Options)" value="3">
                     <span slot="before">Before slot</span>
                     <span slot="prefix">Prefix</span>
                     <span slot="label">
@@ -110,7 +112,7 @@
                     <span slot="after">After slot</span>
                 </form-input>
                 <form-input name="radioboxesField" type="radioboxes" validations="required|in:2,3"
-                    label="Radioboxes field"
+                    label="Radioboxes field" value="2"
                     options="['radio1','radio2','radio3', {'value': 'check4', 'label': 'Option 4'}]">
                     <span slot="before">Before slot</span>
                     <span slot="prefix">Prefix</span>
@@ -123,7 +125,7 @@
                     <span slot="after">After slot</span>
                 </form-input>
                 <form-input name="checkboxField" type="checkboxes" validations="required|in:0,2"
-                    label="Checkboxes field"
+                    label="Checkboxes field" value="[0,2]"
                     options="['check1','check2','check3', {'value': 'check4', 'label': 'Option 4'}]">
                     <span slot="before">Before slot</span>
                     <span slot="prefix">Prefix</span>
@@ -136,7 +138,7 @@
                     <span slot="after">After slot</span>
                 </form-input>
                 <form-input name="textareaField" type="textarea" rows="5" validations="required|maxlen:255|minlen:5"
-                    label="Textarea field">
+                    label="Textarea field" value="Default value 1">
                     <span slot="before">Before slot</span>
                     <span slot="prefix">Prefix</span>
                     <span slot="label">
@@ -147,9 +149,11 @@
                     <span slot="suffix">Suffix</span>
                     <span slot="after">After slot</span>
                 </form-input>
-            </div>
+                <button type="submit">Submit</button>
+            </form>
         </main>
     </div>
+    <script src="./scripts.js"></script>
 </body>
 
 </html>

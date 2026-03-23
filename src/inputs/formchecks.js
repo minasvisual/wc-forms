@@ -7,7 +7,7 @@ export class FormChecks {
     this.help = el.getAttribute('help')
     this.label = el.getAttribute('label')
     this.options = el.getAttribute('options')
-    this.inputvalue = el.value || ''
+    this.inputvalue = el.value || el.getAttribute('value') || ''
     this.error = ''
     this.internals = internals
     const template = document.createElement("template");
@@ -77,7 +77,20 @@ export class FormChecks {
   }
 
   isChecked(item, index) {
-    return (item.value || index) === this.inputvalue ? 'checked' : ''
+    let val = String(item.value !== undefined ? item.value : index);
+    let currentVal = this.inputvalue;
+    
+    if (typeof currentVal === 'string' && currentVal.trim().startsWith('[')) {
+      try {
+        currentVal = JSON.parse(currentVal);
+      } catch (e) {}
+    }
+
+    if (Array.isArray(currentVal)) {
+      return currentVal.map(String).includes(val) ? 'checked' : '';
+    }
+    
+    return val === String(currentVal) ? 'checked' : '';
   }
 
   emitValue(e) {
@@ -158,21 +171,30 @@ export class FormCheckBox {
     this.formitem.addEventListener('change', (e) => this.emitValue(e))
   }
 
+  onMounted() {
+    if (this.checked !== null) {
+      this.internals.states.add('--checked');
+      this.internals.setFormValue(this.defaultValue || 'true', '--checked');
+      this.formitem.checked = true;
+      this.formitem.value = this.defaultValue || 'true';
+    }
+  }
+
   isChecked() {
-    return this.internals.states.has('--checked') ? 'checked' : ''
+    return (this.checked !== null || this.internals.states.has('--checked')) ? 'checked' : ''
   }
 
   emitValue(e) {
     if (e.target.checked) {
       this.internals.states.add('--checked');
-      this.internals.setFormValue('on', '--checked');
+      this.internals.setFormValue(this.defaultValue || 'true', '--checked');
       this.formitem.checked = true
       this.formitem.value = this.defaultValue || 'true'
     } else {
       this.internals.states.delete('--checked');
-      this.internals.setFormValue('off', '--checked');
+      this.internals.setFormValue(null, '--checked');
       this.formitem.checked = false
-      this.formitem.value = this.defaultValue ? null : 'false'
+      this.formitem.value = ''
     }
   }
   setError(error) {
