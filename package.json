@@ -1,6 +1,6 @@
 {
   "name": "wc-forms-kit",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "author": "Ulisses Mantovani",
   "description": "Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https://formkit.com/getting-started/what-is-formkit) library.",
   "repository": {
@@ -14,7 +14,8 @@
     ".": "./src/index.js",
     "./config": "./src/config.js",
     "./helpers": "./src/helpers.js",
-    "./style.css": "./src/style.css"
+    "./style.css": "./src/style.css",
+    "./react": "./src/react.js"
   },
   "files": [
     "src"

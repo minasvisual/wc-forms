@@ -212,10 +212,75 @@ class FormWrapper extends HTMLFormElement {
     Object.defineProperties(evt, { valid: { value: this.isValid }, errors:{ value:this.errors} })
     this.dispatchEvent(evt)
   }
-
-
 }
 
 customElements.define('form-input', FormComponent);
+
+// Proxy properties passed by frameworks dynamically to Attributes, 
+// ensuring perfect integration across Vue, React, Svelte, etc.
+const proxyProps = [
+  'validations', 'mask', 'unmask', 'type', 'name', 
+  'label', 'help', 'options', 'value', 'checked'
+];
+
+for (let prop of proxyProps) {
+  // If no setter exists (or if it doesn't exist at all), proxy it to setAttribute
+  const descriptor = Object.getOwnPropertyDescriptor(FormComponent.prototype, prop);
+  if (!descriptor || !descriptor.set) {
+    Object.defineProperty(FormComponent.prototype, prop, {
+      get() {
+        if (descriptor && descriptor.get) return descriptor.get.call(this);
+        return this.getAttribute(prop);
+      },
+      set(value) {
+        if (typeof value === 'boolean' || prop === 'checked') {
+          if (value) this.setAttribute(prop, '');
+          else this.removeAttribute(prop);
+        } else if (value && typeof value === 'object') {
+          this.setAttribute(prop, JSON.stringify(value));
+        } else {
+          this.setAttribute(prop, value);
+        }
+        
+        if (this.formitem) {
+          if (prop === 'checked' && this.formitem.checked !== undefined) {
+             this.formitem.checked = value;
+          } else {
+             this.formitem[prop] = value;
+          }
+        }
+      },
+      enumerable: true,
+      configurable: true
+    });
+  }
+}
+
+function addEventProxy(prototype, eventName) {
+  const camelName = `on${eventName.charAt(0).toUpperCase()}${eventName.slice(1)}`;
+  const lowerName = `on${eventName}`;
+
+  [camelName, lowerName].forEach(prop => {
+    Object.defineProperty(prototype, prop, {
+      enumerable: true,
+      configurable: true,
+      set(fn) {
+        if (this[`_listener_${prop}`]) {
+          this.removeEventListener(eventName, this[`_listener_${prop}`]);
+        }
+        this[`_listener_${prop}`] = fn;
+        if (typeof fn === 'function') {
+          this.addEventListener(eventName, fn);
+        }
+      },
+      get() {
+        return this[`_listener_${prop}`];
+      }
+    });
+  });
+}
+
+addEventProxy(FormComponent.prototype, 'change');
+addEventProxy(FormWrapper.prototype, 'submited');
 
 customElements.define("form-control",FormWrapper,{ extends: 'form' })

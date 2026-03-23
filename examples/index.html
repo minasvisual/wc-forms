@@ -21,11 +21,14 @@
     import { Config } from '../src/config.js';
     import { jsonToString, getFormValues } from '../src/helpers.js';
     import '../src/index.js';
+    import { FormInput, FormControl } from '../src/react.js';
 
     // Expose Config and jsonToString globally so Babel standalone <script type="text/babel"> can access it
     window.Config = Config;
     window.jsonToString = jsonToString;
     window.getFormValues = getFormValues;
+    window.FormInput = FormInput;
+    window.FormControl = FormControl;
 
     // Registra nosso Web Component personalizado aqui no escopo de módulo
     class FormPriority {
@@ -87,7 +90,7 @@
       const [apiUsers, setApiUsers] = useState([]);
       const [selectedUser, setSelectedUser] = useState(null);
       const [apiPosts, setApiPosts] = useState([]);
-      const formRef = useRef(null);
+      // const formRef = useRef(null);
 
       const handleSubmit = (e) => {
         setData(e.detail)
@@ -133,49 +136,52 @@
           .catch(err => console.error("Failed to fetch posts", err));
       }, [selectedUser]);
 
-      useEffect(() => {
-        const formElement = formRef.current;
-        if (!formElement) return;
+      // useEffect(() => {
+      //   const formElement = formRef.current;
+      //   if (!formElement) return;
 
-        formElement.addEventListener('submited', handleSubmit);
-        formElement.addEventListener('change', handleChange);
+      //   formElement.addEventListener('submited', handleSubmit);
+      //   formElement.addEventListener('change', handleChange);
 
-        return () => {
-          formElement.removeEventListener('submited', handleSubmit);
-          formElement.removeEventListener('change', handleChange);
-        };
-      }, []);
+      //   return () => {
+      //     formElement.removeEventListener('submited', handleSubmit);
+      //     formElement.removeEventListener('change', handleChange);
+      //   };
+      // }, []);
+
+
+      const optionsData = [
+        { label: 'React', value: 'react' },
+        { label: 'Vue', value: 'vue' },
+        { label: 'Angular', value: 'angular' }
+      ]
 
       return (
         <div className="p-8 font-sans max-w-2xl mx-auto">
           <h2 className="text-2xl font-bold mb-2">React App (Standalone) + <br /> wc-forms native without node_modules 🚀</h2>
           <p className="text-gray-500 mb-6 font-medium">JSX transpiled locally on browser and Twind handles the styling.</p>
 
-          <form
-            is="form-control"
-            ref={formRef}
+          <FormControl
+            onSubmited={handleSubmit}
             className="flex flex-col gap-4 p-6 bg-white border border-gray-200 rounded-xl shadow-sm"
           >
-            <form-input name="username" type="text" label="System Name" validations="required|minlen:5" />
-            <form-input name="email" type="email" label="E-mail" validations="required|email" />
-            <form-input name="frameworks" type="checkboxes" label="Frameworks" validations="required" options="[ 
-              {'label':'React','value':'react'}, 
-              {'label':'Vue','value':'vue'}, 
-              {'label':'Angular','value':'angular'}
-            ]"></form-input>
+            <FormInput name="username" type="text" label="System Name" validations="required|minlen:5" />
+            <FormInput name="email" type="email" label="E-mail" validations="required|email" />
+            <FormInput name="frameworks" type="checkboxes" label="Frameworks" validations="required" options={optionsData} />
 
-            <form-input name="priority" type="priority" label="Priority Level" validations="required" />
+            <FormInput name="priority" type="priority" label="Priority Level" validations="required" />
 
             {apiUsers.length === 0 ? (
               <div className="text-gray-500 italic py-2">⏳ Loading Users Web Component via API...</div>
             ) : (
-              <form-input
+              <FormInput
                 key={"usr-" + apiUsers.length}
                 name="api_user"
                 type="select"
                 label="User (JSONPlaceholder React State)"
-                options={jsonToString(apiUsers)}
+                options={apiUsers}
                 validations="required"
+                onChange={handleChange}
               />
             )}
 
@@ -185,12 +191,12 @@
 
             {selectedUser && apiPosts.length > 0 && (
               <div className="p-4 bg-sky-50 rounded-lg border border-dashed border-sky-300 transition-all duration-300">
-                <form-input
+                <FormInput
                   key={"post-" + selectedUser + "-" + apiPosts.length}
                   name="api_post"
                   type="select"
                   label={`Choose Post from User ${selectedUser}`}
-                  options={jsonToString(apiPosts)}
+                  options={apiPosts}
                   validations="required"
                 />
               </div>
@@ -199,7 +205,7 @@
             <button type="submit" className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg cursor-pointer transition-colors shadow-sm">
               Submit Native Form
             </button>
-          </form>
+          </FormControl>
 
           {data && (
             <div className="mt-6 p-5 bg-gray-50 rounded-xl border border-gray-200 shadow-inner">

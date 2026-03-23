@@ -27,7 +27,7 @@ Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https:/
 - [ ] Internacionalization
 - [ ] Plugins
 
-#### bugs 
+#### bug fix
 - [x] Validation style and help
 - [x] input url - force pattern
 
@@ -61,40 +61,56 @@ import 'wc-forms'
 ```
 
 ### Usage with React
-Native custom events like `submited` require a `useRef` to attach event listeners in React. Assure your bundler injects the raw CSS.
+
+For deep integration with React architectures (particularly React < 19 where Complex Object properties and Custom Events are mismatched with Web Components natively), we provide a zero-dependency React Adapter.
 
 ```jsx
-import React, { useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Config } from 'wc-forms/config';
-import styles from 'wc-forms/style.css?raw';
 
+// 1. Import the React generic Wrappers directly from the react export
+import { FormInput, FormControl } from 'wc-forms/react';
+
+// Initialize styles or configs
+import styles from 'wc-forms/style.css?raw';
 Config.stylesText = styles;
 import 'wc-forms';
 
 export function ReactForm() {
-  const formRef = useRef(null);
-
-  const handleSubmit = (e) => {
-    setData(e.detail)
-    console.log('Parser by lib', e.detail) 
-    console.log('Manual form parsing', getFormValues(e.target))
-  }
-
-  useEffect(() => {
-    const form = formRef.current; 
-    
-    if (form) form.addEventListener('submited', handleSubmit);
-    return () => form?.removeEventListener('submited', handleSubmit);
-  }, []);
+  const [data, setData] = useState(null);
 
   return (
-    <form is="form-control" ref={formRef}>
-      <form-input name="user" type="text" label="Name" validations="required"></form-input>
+    // 2. Map standard Synthetic Event listeners cleanly:
+    <FormControl onSubmited={(e) => setData(e.detail)}>
+      <FormInput 
+        name="user" 
+        type="text" 
+        label="Name" 
+        validations="required" 
+      />
+      <FormInput 
+        name="frameworks" 
+        type="checkboxes" 
+        label="Frameworks" 
+        validations="required"
+        // 3. Complex Arrays/Objects can now be passed natively without stringifying!
+        options={[
+          { label: 'React', value: 'react' },
+          { label: 'Vue', value: 'vue' },
+        ]}
+        // 4. Standard synthetic onChange applies naturally
+        onChange={(e) => console.log(e.target.value)}
+      />
+      
       <button type="submit">Send</button>
-    </form>
+
+      { data && <pre>{JSON.stringify(data, null, 2)}</pre> }
+    </FormControl>
   );
 }
 ```
+
+> **Note**: For standalone CDN implementations (like `<script src="https://unpkg.com/@babel/standalone">` tags without Bundlers), the script strictly looks for `window.React` during evaluation, generating `window.FormInput` and `window.FormControl` effortlessly out-of-the-box.
 
 ### Basic HTML usage
 ```html

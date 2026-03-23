@@ -12,8 +12,9 @@ export class FormChecks {
     this.internals = internals
     const template = document.createElement("template");
  
-    if (!this.options || !this.isJson(this.options))
+    if (!this.options || !this.isJson(this.options)) {
       throw new Error('No options received');
+    }
 
     template.innerHTML = ` 
       <div class="wc-form-outer" part="outer">
