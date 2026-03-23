@@ -24,6 +24,8 @@ Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https:/
 - [x] Unit tests
 - [x] Extensible style
 - [x] NPM Package installation
+- [x] React Adapter
+- [x] Vue Integration / Example
 - [ ] Internacionalization
 - [ ] Plugins
 

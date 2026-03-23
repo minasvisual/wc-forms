@@ -157,11 +157,41 @@
       ]
 
       return (
-        <div className="p-8 font-sans max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold mb-2">React App (Standalone) + <br /> wc-forms native without node_modules 🚀</h2>
-          <p className="text-gray-500 mb-6 font-medium">JSX transpiled locally on browser and Twind handles the styling.</p>
+        <div className="flex min-h-screen bg-gray-50">
+          {/* Menu Lateral */}
+          <aside className="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col flex-shrink-0">
+            <div className="p-6 border-b border-gray-100">
+              <h2 className="text-xl font-bold text-gray-800">WC Forms</h2>
+              <p className="text-sm text-gray-500 mt-1">Component Examples</p>
+            </div>
+            <nav className="flex-1 p-4">
+              <ul className="space-y-2">
+                <li>
+                  <a href="../index.html" className="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Complete Form</a>
+                </li>
+                <li>
+                  <a href="./index.html" className="block px-4 py-2 rounded-lg bg-blue-50 text-blue-700 font-medium">React 18</a>
+                </li>
+                <li>
+                  <a href="./vue.html" className="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Vue 3</a>
+                </li>
+                <li>
+                  <a href="./vanila.html" className="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Vanilla JS</a>
+                </li>
+                <li>
+                  <a href="./todo.html" className="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Alpine To-Do</a>
+                </li>
+              </ul>
+            </nav>
+          </aside>
 
-          <FormControl
+          {/* Conteudo Principal */}
+          <main className="flex-1 overflow-y-auto p-6 md:p-10">
+            <div className="max-w-2xl m-auto">
+              <h2 className="text-2xl font-bold mb-2">React App (Standalone) + <br /> wc-forms native without node_modules 🚀</h2>
+              <p className="text-gray-500 mb-6 font-medium">JSX transpiled locally on browser and Twind handles the styling.</p>
+
+              <FormControl
             onSubmited={handleSubmit}
             className="flex flex-col gap-4 p-6 bg-white border border-gray-200 rounded-xl shadow-sm"
           >
@@ -207,12 +237,14 @@
             </button>
           </FormControl>
 
-          {data && (
-            <div className="mt-6 p-5 bg-gray-50 rounded-xl border border-gray-200 shadow-inner">
-              <h3 className="mt-0 text-gray-800 text-lg font-bold mb-3 border-b pb-2">Processed Payload:</h3>
-              <pre className="m-0 text-gray-700 text-sm overflow-auto whitespace-pre-wrap">{JSON.stringify(data, null, 2)}</pre>
+              {data && (
+                <div className="mt-6 p-5 bg-gray-50 rounded-xl border border-gray-200 shadow-inner">
+                  <h3 className="mt-0 text-gray-800 text-lg font-bold mb-3 border-b pb-2">Processed Payload:</h3>
+                  <pre className="m-0 text-gray-700 text-sm overflow-auto whitespace-pre-wrap">{JSON.stringify(data, null, 2)}</pre>
+                </div>
+              )}
             </div>
-          )}
+          </main>
         </div>
       );
     }

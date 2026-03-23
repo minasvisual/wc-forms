@@ -64,8 +64,38 @@
   </style>
 </head>
 
-<body>
-  <form is="form-control" class="w-1/2 m-auto flex flex-col gap-4 p-3">
+<body class="bg-gray-50 flex h-screen overflow-hidden font-sans">
+
+  <!-- Lateral Menu -->
+  <aside class="w-64 bg-white border-r border-gray-200 flex-shrink-0 flex flex-col overflow-y-auto">
+    <div class="p-6 border-b border-gray-100">
+      <h2 class="text-xl font-bold text-gray-800">WC Forms</h2>
+      <p class="text-sm text-gray-500 mt-1">Component Examples</p>
+    </div>
+    <nav class="flex-1 p-4">
+      <ul class="space-y-2">
+        <li>
+          <a href="./index.html" class="block px-4 py-2 rounded-lg bg-blue-50 text-blue-700 font-medium">Complete Form</a>
+        </li>
+        <li>
+          <a href="./examples/index.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">React 18</a>
+        </li>
+        <li>
+          <a href="./examples/vue.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Vue 3</a>
+        </li>
+        <li>
+          <a href="./examples/vanila.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Vanilla JS</a>
+        </li>
+        <li>
+          <a href="./examples/todo.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Alpine To-Do</a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto p-6 md:p-10">
+    <form is="form-control" class="max-w-3xl m-auto flex flex-col gap-4 p-8 bg-white shadow-xl rounded-2xl border border-gray-100">
     <form-input name="textField" type="text" label="Text field" validations="required|minlen:5">
       <span slot="label">
         <h1 style="color:red">Text field 1 Custom label slot</h1>
@@ -133,6 +163,7 @@
       Enter
     </button>
   </form>
+  </main>
   <!-- <script src="../src/mask.js"></script> -->
   <script src="./examples/scripts.js"></script>
 </body>
