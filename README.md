@@ -6,6 +6,7 @@ Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https:/
 - [Vanila complete form](https://minasvisual.github.io/wc-forms/)
 - [Alpine To-Do](https://minasvisual.github.io/wc-forms/examples/todo.html)
 - [React Standalone](https://minasvisual.github.io/wc-forms/examples/index.html)
+- [Vue Standalone](https://minasvisual.github.io/wc-forms/examples/vue.html)
 
 ## Features
 - Form group inputs
