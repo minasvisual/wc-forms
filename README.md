@@ -28,6 +28,7 @@ Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https:/
 - [x] React Adapter
 - [x] Vue Integration / Example
 - [x] Internacionalization
+- [x] NextJS compatibility
 - [ ] Plugins
 
 #### bug fix
@@ -63,20 +64,16 @@ Config.basePath = '/your/public/assets'
 import 'wc-forms'
 ```
 
-### Usage with React
+### Usage with React (Compatible with Next.js SSR)
 
-For deep integration with React architectures (particularly React < 19 where Complex Object properties and Custom Events are mismatched with Web Components natively), we provide a zero-dependency React Adapter.
+For deep integration with React architectures (particularly React < 19 where Complex Object properties and Custom Events are mismatched with Web Components natively), we provide a React Adapter. The adapter is 100% compatible with Server-Side Rendering (SSR) and Next.js App Router (`use client` directives) out-of-the-box, without requiring dynamic imports.
 
 ```jsx
 import React, { useState } from 'react';
 import { Config } from 'wc-forms/config';
 
-// 1. Import the React generic Wrappers directly from the react export
 import { FormInput, FormControl } from 'wc-forms/react';
 
-// Initialize styles or configs
-import styles from 'wc-forms/style.css?raw';
-Config.stylesText = styles;
 import 'wc-forms';
 
 export function ReactForm() {
@@ -278,9 +275,9 @@ form-input::part(input):focus {
 If you need to replace the default structural styles, you can inject a raw CSS string or load a custom URL using `Config` before importing the module:
 ```javascript
 import { Config } from 'wc-forms/config'
-import styles from 'wc-forms/style.css?raw' // (Vite example)
+import customStyles from './my-custom-style.css?raw' // (Vite example)
 
-Config.stylesText = styles // Injects raw CSS
+Config.stylesText = customStyles // Injects the custom raw CSS
 // Config.stylesURL = '/your-custom-styles.css' // Or loads from URL
 
 import 'wc-forms'

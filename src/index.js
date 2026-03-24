@@ -3,7 +3,9 @@ import { Validate } from './validation.js'
 import Masks from './mask.js'
 import { Config } from './config.js'
 
-class FormComponent extends HTMLElement {
+const BaseHTMLElement = typeof HTMLElement !== 'undefined' ? HTMLElement : class {};
+
+class FormComponent extends BaseHTMLElement {
   static formAssociated = true;
   
   static get observedAttributes() {
@@ -199,7 +201,9 @@ class FormComponent extends HTMLElement {
   }
 }
  
-class FormWrapper extends HTMLFormElement {
+const BaseHTMLFormElement = typeof HTMLFormElement !== 'undefined' ? HTMLFormElement : class {};
+
+class FormWrapper extends BaseHTMLFormElement {
   constructor() {
     super()  
   }
@@ -235,7 +239,9 @@ class FormWrapper extends HTMLFormElement {
   }
 }
 
-customElements.define('form-input', FormComponent);
+if (typeof customElements !== 'undefined') {
+  customElements.define('form-input', FormComponent);
+}
 
 // Proxy properties passed by frameworks dynamically to Attributes, 
 // ensuring perfect integration across Vue, React, Svelte, etc.
@@ -304,4 +310,6 @@ function addEventProxy(prototype, eventName) {
 addEventProxy(FormComponent.prototype, 'change');
 addEventProxy(FormWrapper.prototype, 'submited');
 
-customElements.define("form-control",FormWrapper,{ extends: 'form' })
+if (typeof customElements !== 'undefined') {
+  customElements.define("form-control",FormWrapper,{ extends: 'form' })
+}

@@ -1,3 +1,4 @@
+"use client";
 /**
  * React Adapter for wc-forms-kit
  * Creates React Wrappers for the web components without requiring bundlers or import maps.
