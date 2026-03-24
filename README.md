@@ -2,6 +2,8 @@
 
 Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https://formkit.com/getting-started/what-is-formkit) library.
 
+- In Development
+
 ## Demo
 - [Vanila complete form](https://minasvisual.github.io/wc-forms/)
 - [Alpine To-Do](https://minasvisual.github.io/wc-forms/examples/todo.html)
@@ -39,29 +41,29 @@ Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https:/
 ## Installation
 You can install via NPM:
 ```sh
-npm install wc-forms
+npm install wc-forms-kit
 ```
 
 Or consume it directly via CDN (like unpkg):
 ```html
-<script type="module" src="https://unpkg.com/wc-forms"></script>
+<script type="module" src="https://unpkg.com/wc-forms-kit"></script>
 ```
 
 #### Usage with NPM:
 Import the library in your Javascript module:
 ```javascript
-import 'wc-forms'
+import 'wc-forms-kit'
 ```
 
 If you need custom validations or custom styles paths, configure before importing the module:
 ```javascript
-import { Config } from 'wc-forms/config'
+import { Config } from 'wc-forms-kit/config'
 
 // Customizing path for styles or exposing from a server public folder:
 Config.basePath = '/your/public/assets' 
 
 // Later import the form library
-import 'wc-forms'
+import 'wc-forms-kit'
 ```
 
 ### Usage with React (Compatible with Next.js SSR)
@@ -70,11 +72,11 @@ For deep integration with React architectures (particularly React < 19 where Com
 
 ```jsx
 import React, { useState } from 'react';
-import { Config } from 'wc-forms/config';
+import { Config } from 'wc-forms-kit/config';
 
-import { FormInput, FormControl } from 'wc-forms/react';
+import { FormInput, FormControl } from 'wc-forms-kit/react';
 
-import 'wc-forms';
+import 'wc-forms-kit';
 
 export function ReactForm() {
   const [data, setData] = useState(null);
@@ -274,13 +276,13 @@ form-input::part(input):focus {
 
 If you need to replace the default structural styles, you can inject a raw CSS string or load a custom URL using `Config` before importing the module:
 ```javascript
-import { Config } from 'wc-forms/config'
+import { Config } from 'wc-forms-kit/config'
 import customStyles from './my-custom-style.css?raw' // (Vite example)
 
 Config.stylesText = customStyles // Injects the custom raw CSS
 // Config.stylesURL = '/your-custom-styles.css' // Or loads from URL
 
-import 'wc-forms'
+import 'wc-forms-kit'
 ```
 
 ## Custom field types
@@ -339,7 +341,7 @@ The library has native support for multiple languages in its validation error me
 You can easily switch the active language globally before initializing your form:
 
 ```javascript
-import { Config } from 'wc-forms/config'
+import { Config } from 'wc-forms-kit/config'
 
 // Change the active language (e.g., to Spanish)
 Config.setLanguage('es')
@@ -350,7 +352,7 @@ Config.setLanguage('es')
 To add a completely new language dictionary, create an object mapping the validation rules to their translated messages. You can use `{0}`, `{1}`, etc., as dynamic placeholders for validation arguments (like the number of characters in `minlen`).
 
 ```javascript
-import { Config } from 'wc-forms/config'
+import { Config } from 'wc-forms-kit/config'
 
 const portuguese = {
   required: 'Este campo é obrigatório',
