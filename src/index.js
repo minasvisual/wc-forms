@@ -2,6 +2,7 @@ import { isValidNumber, extractValidations, get, getFormValues } from './helpers
 import { Validate } from './validation.js'
 import Masks from './mask.js'
 import { Config } from './config.js'
+import { defaultStyles } from './style-content.js'
 
 const BaseHTMLElement = typeof HTMLElement !== 'undefined' ? HTMLElement : class {};
 
@@ -120,15 +121,10 @@ class FormComponent extends BaseHTMLElement {
     })
     if (Config.stylesText) {
       style.appendChild(document.createTextNode(Config.stylesText));
+    } else if (Config.stylesURL) {
+      style.appendChild(document.createTextNode(`@import "${Config.stylesURL}";`));
     } else {
-      // Natively resolves style.css relative to this module's location across CDNs and Bundlers
-      let defaultUrl = new URL('./style.css', import.meta.url).href;
-      let url = Config.stylesURL || defaultUrl;
-      style.appendChild(
-        document.createTextNode(
-          `@import "${url}";`
-        )
-      );
+      style.appendChild(document.createTextNode(defaultStyles));
     }
     return style
   }
