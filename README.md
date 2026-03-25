@@ -73,10 +73,12 @@ For deep integration with React architectures (particularly React < 19 where Com
 ```jsx
 import React, { useState } from 'react';
 import { Config } from 'wc-forms-kit/config';
+// Add on your root file (nextjs/react)
+import 'wc-forms-kit';
 
+// Add on your component file
 import { FormInput, FormControl } from 'wc-forms-kit/react';
 
-import 'wc-forms-kit';
 
 export function ReactForm() {
   const [data, setData] = useState(null);
