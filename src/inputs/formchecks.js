@@ -66,10 +66,12 @@ export class FormChecks {
     let optsHtml = ''
     let itype = this.itype === 'radioboxes' ? 'radio' : 'checkbox'
     for (const [index, item] of options.entries()) {
+      let val = typeof item === 'object' ? (item.value ?? index) : item;
+      let label = typeof item === 'object' ? (item.label ?? item.value) : item;
       optsHtml += `
         <label class="wc-form-check" part="check-label" for="${this.name}_${index}">
-          <input type="${itype}" name="${this.name}" part="input" value="${item.value || index}" id="${this.name}_${index}" ${this.isChecked(item, index)} />
-          <span part="check-text">${item.label || item}</span>
+          <input type="${itype}" name="${this.name}" part="input" value="${val}" id="${this.name}_${index}" ${this.isChecked(item, index)} />
+          <span part="check-text">${label}</span>
         </label>
        `
     }
@@ -77,7 +79,7 @@ export class FormChecks {
   }
 
   isChecked(item, index) {
-    let val = String(item.value !== undefined ? item.value : index);
+    let val = String(typeof item === 'object' ? (item.value !== undefined ? item.value : index) : item);
     let currentVal = this.inputvalue;
     
     if (typeof currentVal === 'string' && currentVal.trim().startsWith('[')) {

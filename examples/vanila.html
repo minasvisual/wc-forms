@@ -190,6 +190,38 @@
           <form-input name="customMaskField" type="text" label="Custom mask" mask mask:format="document"
             validations="required">
           </form-input>
+          <form-input 
+            name="autocompleteField" 
+            type="autocomplete" 
+            label="Autocomplete field" 
+            options="[ 
+            {'value': 1, 'label': 'Option 1'},
+            {'value': 2, 'label': 'Option 2'},
+            {'value': 3, 'label': 'Option 3'},
+            {'value': 4, 'label': 'Option 4'},
+            {'value': 5, 'label': 'Option 5'},
+            {'value': 6, 'label': 'Option 6'},
+            {'value': 7, 'label': 'Option 7'},
+            {'value': 8, 'label': 'Option 8'},
+            {'value': 9, 'label': 'Option 9'},
+            {'value': 10, 'label': 'Option 10'}
+            ]"
+            help="Digite para ver sugestões" 
+            validations="required"
+          >
+          </form-input>
+          <form-input 
+            name="autocompleteHtmlField" 
+            type="autocomplete" 
+            label="Autocomplete field (HTML Options)" 
+            help="Digite 'Opção' para ver sugestões" 
+            validations="required"
+          >
+            <option value="1">Opção 1</option>
+            <option value="2">Opção 2</option>
+            <option value="3">Opção 3</option>
+            <option value="4">Opção 4</option>
+          </form-input>
           <button class="border-2 border-black bg-gray-300 p-2">
             Enter
           </button>

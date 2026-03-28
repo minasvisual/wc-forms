@@ -127,6 +127,15 @@ export function ReactForm() {
     validations="required|minlen:5|maxlen:128" 
   >  
   </form-input>
+  
+  <form-input 
+    name="country" 
+    type="autocomplete" 
+    label="Country" 
+  >
+    <option value="br">Brazil</option>
+    <option value="us">USA</option>
+  </form-input>
 </form>
 ```
 
@@ -152,6 +161,7 @@ export function ReactForm() {
 - checkboxes // multiple
 - checkbox   // unique
 - textarea 
+- autocomplete
 
 
 ## Validations available  
@@ -371,3 +381,14 @@ Config.registerLanguage('pt', portuguese)
 // 2. Set it as the active language
 Config.setLanguage('pt')
 ```
+
+## Changelog
+
+[![GitHub last commit](https://img.shields.io/github/last-commit/minasvisual/wc-forms?style=flat-square&color=blue)](https://github.com/minasvisual/wc-forms/commits/main)
+[![GitHub commits since](https://img.shields.io/github/commits-since/minasvisual/wc-forms/v1.0.0?style=flat-square)](https://github.com/minasvisual/wc-forms/commits/main)
+
+### Recent Activity
+![Recent Activity](https://github-readme-recent-activity.vercel.app/api?user=minasvisual&repo=wc-forms&limit=5&theme=react&hide_header=true)
+
+For the full list of changes, see the [Commit History](https://github.com/minasvisual/wc-forms/commits/main).
+

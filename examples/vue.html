@@ -136,7 +136,7 @@
 
     // Treat form- elements as Custom Elements to suppress Vue warnings
     app.config.compilerOptions.isCustomElement = (tag) => tag.startsWith('form-');
-    
+
     app.mount('#app');
   </script>
 </head>
@@ -152,22 +152,31 @@
       <nav class="flex-1 p-4">
         <ul class="space-y-2">
           <li>
-            <a href="../index.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Complete Form</a>
+            <a href="../index.html"
+              class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Complete
+              Form</a>
           </li>
           <li>
-            <a href="./index.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">React 18</a>
+            <a href="./index.html"
+              class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">React
+              18</a>
           </li>
           <li>
             <a href="./vue.html" class="block px-4 py-2 rounded-lg bg-blue-50 text-blue-700 font-medium">Vue 3</a>
           </li>
           <li>
-            <a href="./vanila.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Vanilla JS</a>
+            <a href="./vanila.html"
+              class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Vanilla
+              JS</a>
           </li>
           <li>
-            <a href="./todo.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Alpine To-Do</a>
+            <a href="./todo.html"
+              class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Alpine
+              To-Do</a>
           </li>
           <li>
-            <a href="./slots.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Slots</a>
+            <a href="./slots.html"
+              class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Slots</a>
           </li>
         </ul>
       </nav>
@@ -177,57 +186,68 @@
     <main class="flex-1 overflow-y-auto p-6 md:p-10">
       <div class="max-w-2xl m-auto">
         <h2 class="text-2xl font-bold mb-2">Vue App (Standalone) + <br /> wc-forms native without node_modules 🚀</h2>
-        <p class="text-gray-500 mb-6 font-medium">Vue 3 handles the Virtual DOM natively and Twind handles the styling.</p>
+        <p class="text-gray-500 mb-6 font-medium">Vue 3 handles the Virtual DOM natively and Twind handles the styling.
+        </p>
 
-    <!-- Vue correctly handles custom events out-of-the-box using the @ prefix -->
-    <form
-      is="form-control"
-      @submited="handleSubmit"
-      class="flex flex-col gap-4 p-6 bg-white border border-gray-200 rounded-xl shadow-sm"
-    >
-      <form-input name="username" type="text" label="System Name" validations="required|minlen:5"></form-input>
-      <form-input name="email" type="email" label="E-mail" validations="required|email"></form-input>
-      
-      <!-- Vue binds properties flawlessly avoiding string conversion bugs via generic attribute matching mapping object assignments reliably to setters -->
-      <form-input name="frameworks" type="checkboxes" label="Frameworks" validations="required" :options="optionsData"></form-input>
+        <!-- Vue correctly handles custom events out-of-the-box using the @ prefix -->
+        <form is="form-control" @submited="handleSubmit"
+          class="flex flex-col gap-4 p-6 bg-white border border-gray-200 rounded-xl shadow-sm">
+          <form-input name="username" type="text" label="System Name" validations="required|minlen:5"></form-input>
+          <form-input name="email" type="email" label="E-mail" validations="required|email"></form-input>
 
-      <form-input name="priority" type="priority" label="Priority Level" validations="required"></form-input>
+          <!-- Vue binds properties flawlessly avoiding string conversion bugs via generic attribute matching mapping object assignments reliably to setters -->
+          <form-input name="frameworks" type="checkboxes" label="Frameworks" validations="required"
+            :options="optionsData"></form-input>
 
-      <div v-if="apiUsers.length === 0" class="text-gray-500 italic py-2">⏳ Loading Users Web Component via API...</div>
-      <form-input
-        v-else
-        :key="'usr-' + apiUsers.length"
-        name="api_user"
-        type="select"
-        label="User (JSONPlaceholder Vue State)"
-        :options="apiUsers"
-        validations="required"
-        @change="handleChange"
-      ></form-input>
+          <form-input name="priority" type="priority" label="Priority Level" validations="required"></form-input>
 
-      <div v-if="selectedUser && apiPosts.length === 0" class="text-gray-500 italic py-2">⏳ Fetching linked posts from API...</div>
+          <form-input name="autocompleteField" type="autocomplete" label="Autocomplete field" options="[ 
+            {'value': 1, 'label': 'Option 1'},
+            {'value': 2, 'label': 'Option 2'},
+            {'value': 3, 'label': 'Option 3'},
+            {'value': 4, 'label': 'Option 4'},
+            {'value': 5, 'label': 'Option 5'},
+            {'value': 6, 'label': 'Option 6'},
+            {'value': 7, 'label': 'Option 7'},
+            {'value': 8, 'label': 'Option 8'},
+            {'value': 9, 'label': 'Option 9'},
+            {'value': 10, 'label': 'Option 10'}
+            ]" help="Digite para ver sugestões" validations="required">
+          </form-input>
+          <form-input name="autocompleteHtmlField" type="autocomplete" label="Autocomplete field (HTML Options)"
+            help="Digite 'Opção' para ver sugestões" validations="required">
+            <option value="1">Opção 1</option>
+            <option value="2">Opção 2</option>
+            <option value="3">Opção 3</option>
+            <option value="4">Opção 4</option>
+          </form-input>
+          <div v-if="apiUsers.length === 0" class="text-gray-500 italic py-2">⏳ Loading Users Web Component via API...
+          </div>
+          <form-input v-else :key="'usr-' + apiUsers.length" name="api_user" type="select"
+            label="User (JSONPlaceholder Vue State)" :options="apiUsers" validations="required"
+            @change="handleChange"></form-input>
 
-      <div v-if="selectedUser && apiPosts.length > 0" class="p-4 bg-sky-50 rounded-lg border border-dashed border-sky-300 transition-all duration-300">
-        <form-input
-          :key="'post-' + selectedUser + '-' + apiPosts.length"
-          name="api_post"
-          type="select"
-          :label="'Choose Post from User ' + selectedUser"
-          :options="apiPosts"
-          validations="required"
-        ></form-input>
+          <div v-if="selectedUser && apiPosts.length === 0" class="text-gray-500 italic py-2">⏳ Fetching linked posts
+            from API...</div>
+
+          <div v-if="selectedUser && apiPosts.length > 0"
+            class="p-4 bg-sky-50 rounded-lg border border-dashed border-sky-300 transition-all duration-300">
+            <form-input :key="'post-' + selectedUser + '-' + apiPosts.length" name="api_post" type="select"
+              :label="'Choose Post from User ' + selectedUser" :options="apiPosts" validations="required"></form-input>
+          </div>
+
+          <button type="submit"
+            class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg cursor-pointer transition-colors shadow-sm">
+            Submit Native Form
+          </button>
+        </form>
+
+        <div v-if="data" class="mt-6 p-5 bg-gray-50 rounded-xl border border-gray-200 shadow-inner">
+          <h3 class="mt-0 text-gray-800 text-lg font-bold mb-3 border-b pb-2">Processed Payload:</h3>
+          <pre
+            class="m-0 text-gray-700 text-sm overflow-auto whitespace-pre-wrap">{{ JSON.stringify(data, null, 2) }}</pre>
+        </div>
       </div>
-
-      <button type="submit" class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg cursor-pointer transition-colors shadow-sm">
-        Submit Native Form
-      </button>
-    </form>
-
-    <div v-if="data" class="mt-6 p-5 bg-gray-50 rounded-xl border border-gray-200 shadow-inner">
-      <h3 class="mt-0 text-gray-800 text-lg font-bold mb-3 border-b pb-2">Processed Payload:</h3>
-      <pre class="m-0 text-gray-700 text-sm overflow-auto whitespace-pre-wrap">{{ JSON.stringify(data, null, 2) }}</pre>
-    </div>
-    </div>
     </main>
   </div>
 </body>

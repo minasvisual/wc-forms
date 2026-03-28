@@ -55,6 +55,12 @@ test('fills form fields and validates parsed submit payload', async ({ page }) =
   await page.locator('form-input[name="maskFieldUnmaskedReturn"]').locator('input').fill('11987654321');
   await page.locator('form-input[name="customMaskField"]').locator('input').fill('12345678901234');
 
+  await page.locator('form-input[name="autocompleteField"]').locator('input').fill('Option');
+  await page.locator('li[part="autocomplete-item"]').filter({ hasText: 'Option 2' }).click();
+  
+  await page.locator('form-input[name="autocompleteHtmlField"]').locator('input').fill('Opção');
+  await page.locator('li[part="autocomplete-item"]').filter({ hasText: 'Opção 3' }).click();
+
   await page.evaluate(() => {
     let form = document.querySelector('form');
     let invalids = [];
@@ -84,5 +90,7 @@ test('fills form fields and validates parsed submit payload', async ({ page }) =
     dateTimeField: '2026-06-10T12:30',
     booleanField: true,
     checkboxValueField: 'optin',
+    autocompleteField: 2,
+    autocompleteHtmlField: '3'
   });
 });

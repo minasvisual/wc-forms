@@ -41,7 +41,7 @@
   <style>
     /* Exemplo de customização de estilo para os componentes */
     :root {
-      --wcf-input-radius: 8px;
+      --wcf-input-radius: 5px;
     }
 
     /* Customização através de Shadow Parts */
@@ -140,10 +140,10 @@
       </form-input>
       <form-input name="numberField" type="number" label="Number" validations="required|isnumber|min:5|max:100">
       </form-input>
-      <form-input name="radioboxesField" type="radioboxes" validations="required|in:2,3" label="Radioboxes field"
-        options="['radio1','radio2','radio3']">
+      <form-input name="radioboxesField" type="radioboxes" validations="required|in:radio2,radio3"
+        label="Radioboxes field" options="['radio1','radio2','radio3']">
       </form-input>
-      <form-input name="checkboxField" type="checkboxes" validations="required|in:2" label="Checkboxes field"
+      <form-input name="checkboxField" type="checkboxes" validations="required|in:check2" label="Checkboxes field"
         options="['check1','check2','check3']">
       </form-input>
       <form-input name="textareaField" type="textarea" rows="5" validations="required|maxlen:255|minlen:5"
@@ -175,6 +175,18 @@
       </form-input>
       <form-input name="customMaskField" type="text" label="Custom mask" mask mask:format="document"
         validations="required">
+      </form-input>
+      <form-input name="autocompleteField" type="autocomplete" label="Autocomplete field (JSON Objects)" options='[
+          {"label": "Option 1", "value": 1},
+          {"label": "Option 2", "value": 2},
+          {"label": "Option 3", "value": 3}
+        ]' help="Digite 'Option' para ver sugestões" validations="required">
+      </form-input>
+      <form-input name="autocompleteHtmlField" type="autocomplete" label="Autocomplete field (HTML Options)"
+        help="Digite 'Opção' para ver sugestões" validations="required">
+        <option value="1">Opção 1</option>
+        <option value="2">Opção 2</option>
+        <option value="3">Opção 3</option>
       </form-input>
       <button class="border-2 border-black bg-zinc-300 p-2">
         Enter

@@ -2,6 +2,7 @@ import { FormText } from './inputs/forminput.js'
 import { FormSelect } from './inputs/formselect.js'
 import { FormTextarea, } from './inputs/formtext.js'
 import { FormCheckBox, FormChecksBoxes, FormChecksRadio } from './inputs/formchecks.js'
+import { FormAutocomplete } from './inputs/formautocomplete.js'
 import { splitValues, get, dateRegex, emailRegex, isValidNumber } from './helpers.js'
 import english from './lang/en.js'
 
@@ -150,9 +151,9 @@ export const validations = {
     handle: ({ value, params }) => {
       let isarr = Array.isArray(value);
       params = params.map(String)
-      if (isarr) return value.every(v => params.includes(v))
+      if (isarr) return value.some(v => params.includes(String(v)))
       if (value && String(value).includes(',')) {
-        return splitValues(String(value)).some(v => params.includes(v)); // <--- WAIT! Original used .some() !
+        return splitValues(String(value)).some(v => params.includes(v));
       } else {
         return value && params.includes(String(value));
       }
@@ -253,6 +254,10 @@ export const inputs = {
   textarea: {
     output: 'text',
     source: FormTextarea,
+  },
+  autocomplete: {
+    output: 'text',
+    source: FormAutocomplete,
   },
 }
 
