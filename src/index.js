@@ -6,6 +6,20 @@ import { defaultStyles } from './style-content.js'
 
 const BaseHTMLElement = typeof HTMLElement !== 'undefined' ? HTMLElement : class {};
 
+/** Dispatches a native DOM Event with optional `detail` and extra enumerable properties (same pattern as `submited` valid/errors). */
+function dispatchNativeEvent(target, type, detail, extraProps) {
+  const evt = new Event(type, { bubbles: true, cancelable: true, composed: true })
+  if (detail !== undefined) {
+    Object.defineProperty(evt, 'detail', { value: detail, enumerable: true, configurable: true })
+  }
+  if (extraProps) {
+    for (const key of Object.keys(extraProps)) {
+      Object.defineProperty(evt, key, { value: extraProps[key], enumerable: true, configurable: true })
+    }
+  }
+  return target.dispatchEvent(evt)
+}
+
 class FormComponent extends BaseHTMLElement {
   static formAssociated = true;
   
@@ -107,7 +121,7 @@ class FormComponent extends BaseHTMLElement {
         this.validate()
       })
     } else if (this.itype !== 'currency' && this.itype !== 'group') {
-      this.formitem.addEventListener('change', (e) => { 
+      const handleFormItemValueUpdate = (e, emitType) => {
         let valueRaw = this.unmaskIt(e.target.value)
         this.formitem.value = e.target.value
         if (this.itype === 'range') {
@@ -118,7 +132,7 @@ class FormComponent extends BaseHTMLElement {
             valueRaw = Number.isFinite(n) ? n : undefined
           }
         }
-      
+
         // Only update internals form value if the raw value is defined.
         // Composite inputs (like checkboxes) call setFormValue themselves via emitValue.
         if (valueRaw !== undefined) {
@@ -130,10 +144,14 @@ class FormComponent extends BaseHTMLElement {
             this.internals.setFormValue(valueRaw);
           }
         }
-      
-        this.emitEvent('change', valueRaw)
-        this.validate() 
-      });
+
+        this.emitEvent(emitType, valueRaw)
+        this.validate()
+      }
+      if (this.itype === 'range') {
+        this.formitem.addEventListener('input', (e) => handleFormItemValueUpdate(e, 'input'))
+      }
+      this.formitem.addEventListener('change', (e) => handleFormItemValueUpdate(e, 'change'))
     }
 
     if (this.instance?.onMounted)
@@ -163,13 +181,37 @@ class FormComponent extends BaseHTMLElement {
     return style
   }
 
-  emitEvent(type, detail) {
-    let data = {
-      bubbles: true,
-      cancelable: true,
-      detail
+  /**
+   * Keeps ElementInternals in sync with the inner control so `form-input.value` and `event.target.value`
+   * match the current UI state (not only after `change`). Required for `input` events fired while typing.
+   */
+  syncInternalsFromFormItem() {
+    if (!this.formitem || ['file', 'group', 'button', 'submit', 'currency'].includes(this.itype)) return
+    let valueRaw = this.unmaskIt(this.formitem.value)
+    if (this.itype === 'range') {
+      const v = this.formitem.value
+      if (v === '' || v == null) valueRaw = undefined
+      else {
+        const n = Number(v)
+        valueRaw = Number.isFinite(n) ? n : undefined
+      }
     }
-    this.dispatchEvent(new CustomEvent(type, data))
+    if (valueRaw !== undefined) {
+      if (Array.isArray(valueRaw)) {
+        const fd = new FormData()
+        valueRaw.forEach(v => fd.append(this.getAttribute('name'), v))
+        this.internals.setFormValue(valueRaw.length ? fd : null)
+      } else {
+        this.internals.setFormValue(valueRaw)
+      }
+    }
+  }
+
+  emitEvent(type, detail) {
+    if (type === 'input') {
+      this.syncInternalsFromFormItem()
+    }
+    dispatchNativeEvent(this, type, detail)
   }
 
   getFormValues() {
@@ -267,10 +309,8 @@ class FormWrapper extends BaseHTMLFormElement {
     })
   }
 
-  emitEvent(values) {  
-    const evt = new CustomEvent('submited', { detail:this.values })
-    Object.defineProperties(evt, { valid: { value: this.isValid }, errors:{ value:this.errors} })
-    this.dispatchEvent(evt)
+  emitEvent(values) {
+    dispatchNativeEvent(this, 'submited', this.values, { valid: this.isValid, errors: this.errors })
   }
 }
 
@@ -344,6 +384,7 @@ function addEventProxy(prototype, eventName) {
 }
 
 addEventProxy(FormComponent.prototype, 'change');
+addEventProxy(FormComponent.prototype, 'input');
 addEventProxy(FormComponent.prototype, 'click');
 addEventProxy(FormWrapper.prototype, 'submited');
 

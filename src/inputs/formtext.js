@@ -31,8 +31,8 @@ export class FormTextarea {
     shadow.appendChild(template.content.cloneNode(true));
     this.erroritem = shadow.querySelector('.wc-errors');
     this.formitem = shadow.querySelector('textarea');
-    this.formitem.addEventListener('input', (e) => {
-      el.emitEvent('typing', this.formitem.value)
+    this.formitem.addEventListener('input', () => {
+      el.emitEvent('input', this.formitem.value)
     });
   }
 

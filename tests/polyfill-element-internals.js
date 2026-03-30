@@ -21,6 +21,16 @@ function patchInternalsObject(internals, hostEl) {
     }
   }
 
+  if (!Object.getOwnPropertyDescriptor(internals, 'value')) {
+    Object.defineProperty(internals, 'value', {
+      get() {
+        return internals._wcSubmissionValue
+      },
+      enumerable: true,
+      configurable: true,
+    })
+  }
+
   if (typeof internals.checkValidity !== 'function') {
     internals.checkValidity = function () { return true }
   }

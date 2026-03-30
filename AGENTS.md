@@ -75,6 +75,7 @@
 
 ## Tests
 - Use Vitest for automated tests.
+- `tests/form-input-events-submit.test.js` locks host `input` / `change` `e.detail` to the same `formatTypeValue` rules as the `submited` payload for each registered input type (see README “Event detail and submit payload”).
 - When changing helpers, validations, parsing, or deterministic behavior, add or adjust tests in `tests/`.
 - Follow the current test pattern:
   - `describe(...)`

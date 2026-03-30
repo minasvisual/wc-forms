@@ -15,7 +15,9 @@ export function createWcFormsReact(ReactInstance) {
   const FormInput = React.forwardRef((props, ref) => {
     const { 
       validations, options, mask, unmask, 
-      onChange, onTyping, onClick, className,
+      onChange, onInput, onTyping, onClick,
+      onKeyDown, onKeyUp, onFocus, onBlur,
+      className,
       ...rest 
     } = props;
     
@@ -42,17 +44,29 @@ export function createWcFormsReact(ReactInstance) {
       const node = internalRef.current;
       if (!node) return;
 
-      // Event mapping
+      // Native `input` / `change` on the host (see README). `onTyping` listens to `input` for backward compatibility.
+      // React does not reliably attach synthetic handlers (onKeyUp, etc.) to custom elements — use addEventListener.
       if (onChange) node.addEventListener('change', onChange);
-      if (onTyping) node.addEventListener('typing', onTyping);
+      if (onInput) node.addEventListener('input', onInput);
+      if (onTyping) node.addEventListener('input', onTyping);
       if (onClick) node.addEventListener('click', onClick);
+      if (onKeyDown) node.addEventListener('keydown', onKeyDown);
+      if (onKeyUp) node.addEventListener('keyup', onKeyUp);
+      // focus/blur do not bubble from shadow; focusin/focusout do (inner input → host).
+      if (onFocus) node.addEventListener('focusin', onFocus);
+      if (onBlur) node.addEventListener('focusout', onBlur);
 
       return () => {
         if (onChange) node.removeEventListener('change', onChange);
-        if (onTyping) node.removeEventListener('typing', onTyping);
+        if (onInput) node.removeEventListener('input', onInput);
+        if (onTyping) node.removeEventListener('input', onTyping);
         if (onClick) node.removeEventListener('click', onClick);
+        if (onKeyDown) node.removeEventListener('keydown', onKeyDown);
+        if (onKeyUp) node.removeEventListener('keyup', onKeyUp);
+        if (onFocus) node.removeEventListener('focusin', onFocus);
+        if (onBlur) node.removeEventListener('focusout', onBlur);
       };
-    }, [onChange, onTyping, onClick]);
+    }, [onChange, onInput, onTyping, onClick, onKeyDown, onKeyUp, onFocus, onBlur]);
 
     React.useImperativeHandle(ref, () => internalRef.current, []);
 

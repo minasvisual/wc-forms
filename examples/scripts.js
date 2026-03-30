@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const textField = qsFormInput('textField')
   if (textField) {
-    textField.addEventListener('typing', (e) => console.log('typing', e.detail))
+    textField.addEventListener('input', (e) => console.log('input', e.detail))
     textField.addEventListener('change', (e) => console.log('change', e.detail))
   }
 

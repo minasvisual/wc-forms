@@ -1,4 +1,4 @@
-﻿# Web Components Forms
+# Web Components Forms
 
 ## About
 
@@ -116,6 +116,8 @@ export function ReactForm() {
 }
 ```
 
+The adapter wires native listeners on the host: `onChange`, `onInput`, `onClick`, `onKeyDown`, `onKeyUp`, `onFocus`, and `onBlur` (focus uses `focusin` / `focusout` so events from the inner field reach the host in the shadow tree). The legacy `onTyping` prop listens to `input` (same as `onInput`). Use `onInput` for the field value in `e.detail`; `onKeyUp` receives a native `KeyboardEvent` (no `e.detail` for the value—use `e.currentTarget.value` or `onInput`).
+
 ---
 
 ## Inputs
@@ -201,11 +203,25 @@ Validation string format:
 
 ### Emitted Events
 
+Events are standard DOM `Event` instances (`bubbles`, `composed`). When a payload is documented below, it is attached as `e.detail` (not `CustomEvent`).
+
+`e.detail` is the value at dispatch time. `e.target.value` on `<form-input>` reads the **current** form-associated submission value (same as the element’s `value` property); in a synchronous listener it matches `e.detail`, but if you read `e.target.value` later (for example after `await` or further typing), it may have changed—use `e.detail` for a stable snapshot.
+
 | Component | Event Name | Payload (`e.detail`) | Description |
 |-----------|------------|----------------------|-------------|
-| `<form-input>` | `change` | `string \| number \| array \| undefined \| File \| File[]` | Fired when field value changes. Payload contains parsed/unmasked value. For `type="file"`, returns `File` or `File[]` (when `multiple`). |
+| `<form-input>` | `input` | `string \| number \| ...` | Fired while the value updates (same role as a native `<input>` / `<textarea>` `input` event). Used for `type="text"`, `textarea`, `autocomplete`, `currency` (each edit), and `range` (while dragging). |
+| `<form-input>` | `change` | `string \| number \| array \| undefined \| File \| File[]` | Fired when the value is committed (blur / selection / etc.), matching native `change` semantics where applicable. Payload contains parsed/unmasked value. For `type="file"`, returns `File` or `File[]` (when `multiple`). For `type="currency"`, fires on blur after live updates (`input` carries each parsed step). |
 | `<form-input type="button">` | `click` | native event | Native click bubbles from inner `<button type="button">`. |
 | `<form is="form-control">` | `submited` | object | Fired on submit. Exposes parsed payload in `e.detail`, boolean in `e.valid`, and validation map in `e.errors` (dot-path keys for groups, e.g. `address.street`). |
+
+#### Event `detail` and submit payload
+
+The submit handler builds field values with the same parsing rules as `formatTypeValue` in `src/helpers.js` (using each control’s `data-type` / configured output). For a given field, **`e.detail` on the final `change`** (after the user commits the value) should match that field’s entry in `submited`’s `e.detail` once passed through `formatTypeValue` for that control’s output type.
+
+- **`input` on the host** follows the live value (string, parsed number for `range` / `currency`, etc.). After editing stops, the **last** `input` and the **last** `change` agree with submit for text-like fields, `range`, and `currency` (after blur).
+- **`type="autocomplete"`**: while filtering, host `input` events carry the raw filter text; only **`change`** after choosing a suggestion matches the submitted value.
+
+Automated checks live in `tests/form-input-events-submit.test.js` (covers registered input types except `button` / `submit`, which are not part of the data payload).
 
 ---
 
@@ -396,6 +412,9 @@ Config.registerLanguage('pt', {
 [![GitHub commits since](https://img.shields.io/github/commits-since/minasvisual/wc-forms/v1.0.0?style=flat-square)](https://github.com/minasvisual/wc-forms/commits/main)
 
 ### Recent Activity
+
+- Host events (`input`, `change`, `submited`) use native `Event` with `e.detail` attached; the former `typing` event was replaced by `input`.
+- Vitest suite `tests/form-input-events-submit.test.js` verifies `e.detail` on `input`/`change` matches submit parsing per field type.
 
 ![Recent Activity](https://github-readme-recent-activity.vercel.app/api?user=minasvisual&repo=wc-forms&limit=5&theme=react&hide_header=true)
 

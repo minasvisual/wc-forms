@@ -178,7 +178,7 @@ export class FormAutocomplete {
     this.highlighted = -1;
     this.renderSuggestions();
     // Custom event para parent
-    this.inputItem.closest('form-input')?.emitEvent?.('typing', val);
+    this.inputItem.closest('form-input')?.emitEvent?.('input', val);
   }
 
   renderSuggestions() {

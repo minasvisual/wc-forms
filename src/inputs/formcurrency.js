@@ -53,7 +53,7 @@ export class FormCurrency {
     this.formitem.value = masked
     const n = this.parseNumber(masked)
     this.internals.setFormValue(n === null ? null : n)
-    this.el.emitEvent('change', n === null ? undefined : n)
+    this.el.emitEvent('input', n === null ? undefined : n)
     if (typeof this.el.validate === 'function') this.el.validate()
   }
 
@@ -61,6 +61,11 @@ export class FormCurrency {
     const run = () => this.syncFromInput()
     this.formitem.addEventListener('focus', run)
     this.formitem.addEventListener('input', run)
+    this.formitem.addEventListener('blur', () => {
+      const masked = this.maskCurrency(this.formitem.value)
+      const n = this.parseNumber(masked)
+      this.el.emitEvent('change', n === null ? undefined : n)
+    })
     if (this.el.getAttribute('value')) {
       this.formitem.value = this.maskCurrency(this.el.getAttribute('value'))
       this.syncFromInput()
