@@ -1,4 +1,4 @@
-import { isValidNumber, extractValidations, get, getFormValues } from './helpers.js'
+import { isValidNumber, extractValidations, get, getFormValues, getFormValuesNested, getFormInputPathKey, syncFormInputValidations, collectFormControls } from './helpers.js'
 import { Validate } from './validation.js'
 import Masks from './mask.js'
 import { Config } from './config.js'
@@ -62,11 +62,14 @@ class FormComponent extends BaseHTMLElement {
 
     this.shadowRoot.appendChild(this.addStyles())
     this.formitem = this.instance.formitem
-    this.formitem.value = this.getAttribute('value')
+    if (!['button', 'submit', 'file', 'currency', 'group'].includes(this.itype)) {
+      this.formitem.value = this.getAttribute('value')
+    }
     this.formitem.setAttribute('data-type', InputSource.output)
 
     // Seed internals so the initial value attribute is reflected in FormData on submit
-    if (this.itype !== 'checkbox') {
+    const skipInitialFormValue = ['checkbox', 'button', 'submit', 'file', 'currency', 'group'].includes(this.itype)
+    if (!skipInitialFormValue) {
       const initialValue = this.unmaskIt(this.getAttribute('value'))
       if (initialValue !== null && initialValue !== undefined) {
         const name = this.getAttribute('name')
@@ -82,25 +85,56 @@ class FormComponent extends BaseHTMLElement {
       }
     }
     this.maskIt(InputSource)
-    this.formitem.addEventListener('change', (e) => { 
-      let valueRaw = this.unmaskIt(e.target.value)
-      this.formitem.value = e.target.value
-      
-      // Only update internals form value if the raw value is defined.
-      // Composite inputs (like checkboxes) call setFormValue themselves via emitValue.
-      if (valueRaw !== undefined) {
-        if (Array.isArray(valueRaw)) {
-          let fd = new FormData();
-          valueRaw.forEach(v => fd.append(this.getAttribute('name'), v));
-          this.internals.setFormValue(valueRaw.length ? fd : null);
+    if (this.itype === 'file') {
+      this.formitem.addEventListener('change', (e) => {
+        const input = e.target
+        const files = input.files
+        const name = this.getAttribute('name')
+        if (!files || files.length === 0) {
+          this.internals.setFormValue(null)
+          this.emitEvent('change', undefined)
+        } else if (input.hasAttribute('multiple')) {
+          const fd = new FormData()
+          for (let i = 0; i < files.length; i++) {
+            fd.append(name, files[i])
+          }
+          this.internals.setFormValue(fd)
+          this.emitEvent('change', Array.from(files))
         } else {
-          this.internals.setFormValue(valueRaw);
+          this.internals.setFormValue(files[0])
+          this.emitEvent('change', files[0])
         }
-      }
+        this.validate()
+      })
+    } else if (this.itype !== 'currency' && this.itype !== 'group') {
+      this.formitem.addEventListener('change', (e) => { 
+        let valueRaw = this.unmaskIt(e.target.value)
+        this.formitem.value = e.target.value
+        if (this.itype === 'range') {
+          const v = this.formitem.value
+          if (v === '' || v == null) valueRaw = undefined
+          else {
+            const n = Number(v)
+            valueRaw = Number.isFinite(n) ? n : undefined
+          }
+        }
       
-      this.emitEvent('change', valueRaw)
-      this.validate() 
-    });
+        // Only update internals form value if the raw value is defined.
+        // Composite inputs (like checkboxes) call setFormValue themselves via emitValue.
+        if (valueRaw !== undefined) {
+          if (Array.isArray(valueRaw)) {
+            let fd = new FormData();
+            valueRaw.forEach(v => fd.append(this.getAttribute('name'), v));
+            this.internals.setFormValue(valueRaw.length ? fd : null);
+          } else {
+            this.internals.setFormValue(valueRaw);
+          }
+        }
+      
+        this.emitEvent('change', valueRaw)
+        this.validate() 
+      });
+    }
 
     if (this.instance?.onMounted)
       this.instance?.onMounted()
@@ -143,7 +177,9 @@ class FormComponent extends BaseHTMLElement {
   }
 
   handleSubmit(){
-    let submitElement = this.internals.form.querySelector('button:not([type="button"])') 
+    const form = this.internals.form
+    if (!form) return
+    let submitElement = form.querySelector('button:not([type="button"])') 
     if(!submitElement) return;
     submitElement.addEventListener('click', e => { 
       this.validate()
@@ -208,19 +244,22 @@ class FormWrapper extends BaseHTMLFormElement {
       e.preventDefault()
       e.stopPropagation()
       const form = e.target
-      this.values = getFormValues(form)
+      syncFormInputValidations(form)
+
+      this.values = getFormValuesNested(form)
       this.isValid = true 
       this.errors = {} 
 
-      for (let el of form.elements){
+      for (let el of collectFormControls(form)) {
         let name = el.getAttribute('name')
         if (!name) continue;
         let type = el.getAttribute('data-type') || el.getAttribute('type') 
-        if( ['button','submit'].includes(type) ) continue;
+        if( ['button','submit','group'].includes(type) ) continue;
           
         if(!el.checkValidity()) {
           this.isValid = false
-          this.errors[name] = el.validationMessage 
+          const errorKey = getFormInputPathKey(el, form) || name
+          this.errors[errorKey] = el.validationMessage 
         }
       } 
  
@@ -243,7 +282,8 @@ if (typeof customElements !== 'undefined') {
 // ensuring perfect integration across Vue, React, Svelte, etc.
 const proxyProps = [
   'validations', 'mask', 'unmask', 'type', 'name', 
-  'label', 'help', 'options', 'value', 'checked'
+  'label', 'help', 'options', 'value', 'checked',
+  'multiple', 'min', 'max', 'step'
 ];
 
 for (let prop of proxyProps) {
@@ -304,6 +344,7 @@ function addEventProxy(prototype, eventName) {
 }
 
 addEventProxy(FormComponent.prototype, 'change');
+addEventProxy(FormComponent.prototype, 'click');
 addEventProxy(FormWrapper.prototype, 'submited');
 
 if (typeof customElements !== 'undefined') {

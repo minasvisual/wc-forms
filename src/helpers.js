@@ -60,6 +60,28 @@ export function formatTypeValue(type, value) {
     return String(value).split(',');
   }
 
+  if (type === 'file') {
+    if (value === undefined || value === null || value === '') return undefined
+    if (Array.isArray(value)) {
+      const files = value.filter((v) => typeof File !== 'undefined' && v instanceof File)
+      if (files.length === 0) return undefined
+      return files.length === 1 ? files[0] : files
+    }
+    if (typeof File !== 'undefined' && value instanceof File) return value
+    return value
+  }
+
+  if (type === 'range') {
+    if (['', null, undefined, NaN].includes(value)) return undefined
+    const n = Number(value)
+    return Number.isFinite(n) ? n : undefined
+  }
+
+  if (type === 'hidden') {
+    if (['', null, undefined, NaN].includes(value)) return undefined
+    return String(value)
+  }
+
   if (['', null, undefined, NaN].includes(value)) return undefined;
   if (type === 'radioboxes' && value?.includes(',')) return String(value).split(',');
   if (type === 'object' && value?.includes(',')) return String(value).split(',');
@@ -70,6 +92,34 @@ export function formatTypeValue(type, value) {
   if (type === 'number') return Number(value);
   if (type === 'currency') return Number(value);
   return value;
+}
+
+export function resolveLabel(el) {
+  return el?.getAttribute?.('label') ?? ''
+}
+
+export function resolvePlaceholder(el, fallbackLabel = '') {
+  if (!el || typeof el.getAttribute !== 'function') return ''
+  const explicit = el.getAttribute('placeholder')
+  if (explicit !== null && explicit !== undefined) return explicit
+  return fallbackLabel || ''
+}
+
+/** Listed controls plus <form-input> hosts (not always present in form.elements). */
+export function collectFormControls(formElement) {
+  if (!formElement || !formElement.querySelectorAll) return new Set()
+  return new Set([
+    ...Array.from(formElement.elements),
+    ...formElement.querySelectorAll('form-input'),
+  ])
+}
+
+/** Applies Config-driven rules to ElementInternals so checkValidity/reportValidity work. */
+export function syncFormInputValidations(formElement) {
+  if (!formElement || !formElement.querySelectorAll) return
+  for (const fi of formElement.querySelectorAll('form-input')) {
+    if (typeof fi.validate === 'function') fi.validate()
+  }
 }
 
 export function getFormValues(formElement) {
@@ -87,14 +137,81 @@ export function getFormValues(formElement) {
   }
 
   let values = {};
-  for (let el of Array.from(formElement.elements)) {
+  const controls = collectFormControls(formElement)
+  for (let el of controls) {
     let name = el.getAttribute('name');
     if (!name) continue;
     let type = el.getAttribute('data-type') || el.getAttribute('type');
-    if (['button', 'submit'].includes(type)) continue;
+    if (['button', 'submit', 'group'].includes(type)) continue;
 
     let value = rawValues[name];
     values[name] = formatTypeValue(type, value);
   }
   return values;
+}
+
+export function getFormInputGroupPath(el, formElement) {
+  const segments = []
+  if (!el) return segments
+  let node = el.parentElement
+  while (node && node !== formElement && node.tagName !== 'FORM') {
+    if (node.localName === 'form-input' && node.getAttribute('type') === 'group') {
+      const name = node.getAttribute('name')
+      if (name) segments.unshift(name)
+    }
+    node = node.parentElement
+  }
+  return segments
+}
+
+export function getFormInputPathKey(el, formElement) {
+  const leafName = el?.getAttribute?.('name')
+  if (!leafName) return null
+  const groupSegments = getFormInputGroupPath(el, formElement)
+  if (!groupSegments.length) return leafName
+  return `${groupSegments.join('.')}.${leafName}`
+}
+
+function setNested(obj, pathSegments, leafKey, value) {
+  if (!pathSegments.length) {
+    obj[leafKey] = value
+    return
+  }
+  let cur = obj
+  for (let i = 0; i < pathSegments.length; i++) {
+    const k = pathSegments[i]
+    if (i === pathSegments.length - 1) {
+      cur[k] = cur[k] || {}
+      cur[k][leafKey] = value
+      return
+    }
+    cur[k] = cur[k] || {}
+    cur = cur[k]
+  }
+}
+
+/**
+ * Builds a nested values object for submit payloads when `type="group"` is used.
+ * Notes:
+ * - This keeps validation logic flat (leaf values) and only nests the final submit `detail`.
+ * - Collisions between leaf fields with the same name across different groups are not fully
+ *   disambiguated (existing behavior is already name-based).
+ */
+export function getFormValuesNested(formElement) {
+  const flat = getFormValues(formElement)
+  const nested = {}
+  const controls = collectFormControls(formElement)
+
+  for (let el of controls) {
+    const leafName = el.getAttribute('name')
+    if (!leafName) continue
+    const type = el.getAttribute('data-type') || el.getAttribute('type')
+    if (['button', 'submit', 'group'].includes(type)) continue
+
+    const groupSegments = getFormInputGroupPath(el, formElement)
+    const value = flat[leafName]
+    setNested(nested, groupSegments, leafName, value)
+  }
+
+  return nested
 }

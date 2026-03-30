@@ -1,386 +1,394 @@
-# Web Components Forms
+﻿# Web Components Forms
 
-Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https://formkit.com/getting-started/what-is-formkit) library.
+## About
 
-- In Development
+`wc-forms-kit` is a modular, framework-agnostic form library built with native Web Components and 100% vanilla JavaScript.
 
-## Demo
-- [Vanila complete form](https://minasvisual.github.io/wc-forms/)
+- Status: In development
+- Main API:
+  - `<form-input>` for fields
+  - `<form is="form-control">` for submit orchestration and parsed payload
+
+### Demos
+- [Vanilla complete form](https://minasvisual.github.io/wc-forms/)
 - [Alpine To-Do](https://minasvisual.github.io/wc-forms/examples/todo.html)
 - [React Standalone](https://minasvisual.github.io/wc-forms/examples/index.html)
 - [Vue Standalone](https://minasvisual.github.io/wc-forms/examples/vue.html)
 
-## Features
-- Form group inputs
-- Modular validation attribute
-- Slot space customization (soon)
-- Works on any framework
-
-## Roadmap
-- [x] Basic inputs map
-- [x] Basic validation map
-- [X] Slot customization
-- [X] Custom validations
-- [X] Custom input types
-- [X] Mask native
-- [X] Custom Masks native
-- [x] Unit tests
-- [x] Extensible style
-- [x] NPM Package installation
-- [x] React Adapter
-- [x] Vue Integration / Example
-- [x] Internacionalization
-- [x] NextJS compatibility
-- [ ] Plugins
-
-#### bug fix
-- [x] Validation style and help
-- [x] input url - force pattern
-
+---
 
 ## Installation
-You can install via NPM:
+
+Install with npm:
+
 ```sh
 npm install wc-forms-kit
 ```
 
-Or consume it directly via CDN (like unpkg):
+Or use it directly from a CDN:
+
 ```html
 <script type="module" src="https://unpkg.com/wc-forms-kit"></script>
 ```
 
-#### Usage with NPM:
-Import the library in your Javascript module:
-```javascript
-import 'wc-forms-kit'
-```
+---
 
-If you need custom validations or custom styles paths, configure before importing the module:
-```javascript
+## Basic Vanilla Implementation (with and without npm)
+
+### With npm
+
+```js
 import { Config } from 'wc-forms-kit/config'
 
-// Customizing path for styles or exposing from a server public folder:
-Config.basePath = '/your/public/assets' 
+// Optional: configure before registering custom elements
+Config.basePath = '/your/public/assets'
 
-// Later import the form library
 import 'wc-forms-kit'
 ```
 
-### Usage with React (Compatible with Next.js SSR)
+```html
+<form is="form-control">
+  <form-input
+    name="fullname"
+    type="text"
+    label="Name"
+    help="Should be your fullname"
+    validations="required|minlen:5|maxlen:128">
+  </form-input>
 
-For deep integration with React architectures (particularly React < 19 where Complex Object properties and Custom Events are mismatched with Web Components natively), we provide a React Adapter. The adapter is 100% compatible with Server-Side Rendering (SSR) and Next.js App Router (`use client` directives) out-of-the-box, without requiring dynamic imports.
+  <form-input name="country" type="autocomplete" label="Country">
+    <option value="br">Brazil</option>
+    <option value="us">USA</option>
+  </form-input>
+
+  <form-input type="submit" label="Send"></form-input>
+</form>
+```
+
+### Without npm (CDN)
+
+```html
+<script type="module">
+  import { Config } from 'https://unpkg.com/wc-forms-kit/config'
+  Config.basePath = '/src' // optional
+</script>
+<script type="module" src="https://unpkg.com/wc-forms-kit"></script>
+```
+
+---
+
+## Basic React Implementation (with npm)
+
+React / Next.js SSR is supported through the adapter package export.
 
 ```jsx
-import React, { useState } from 'react';
-import { Config } from 'wc-forms-kit/config';
-// Add on your root file (nextjs/react)
-import 'wc-forms-kit';
-
-// Add on your component file
-import { FormInput, FormControl } from 'wc-forms-kit/react';
-
+import React, { useState } from 'react'
+import 'wc-forms-kit'
+import { FormInput, FormControl } from 'wc-forms-kit/react'
 
 export function ReactForm() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState(null)
 
   return (
-    // 2. Map standard Synthetic Event listeners cleanly:
     <FormControl onSubmited={(e) => setData(e.detail)}>
-      <FormInput 
-        name="user" 
-        type="text" 
-        label="Name" 
-        validations="required" 
-      />
-      <FormInput 
-        name="frameworks" 
-        type="checkboxes" 
-        label="Frameworks" 
+      <FormInput
+        name="user"
+        type="text"
+        label="Name"
         validations="required"
-        // 3. Complex Arrays/Objects can now be passed natively without stringifying!
+      />
+
+      <FormInput
+        name="frameworks"
+        type="checkboxes"
+        label="Frameworks"
+        validations="required"
         options={[
           { label: 'React', value: 'react' },
           { label: 'Vue', value: 'vue' },
         ]}
-        // 4. Standard synthetic onChange applies naturally
-        onChange={(e) => console.log(e.target.value)}
       />
-      
-      <button type="submit">Send</button>
 
-      { data && <pre>{JSON.stringify(data, null, 2)}</pre> }
+      <button type="submit">Send</button>
+      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
     </FormControl>
-  );
+  )
 }
 ```
 
-> **Note**: For standalone CDN implementations (like `<script src="https://unpkg.com/@babel/standalone">` tags without Bundlers), the script strictly looks for `window.React` during evaluation, generating `window.FormInput` and `window.FormControl` effortlessly out-of-the-box.
+---
 
-### Basic HTML usage
-```html
-<form >
-  <form-input 
-    name="fullname" 
-    type="text" 
-    label="Name" 
-    help="Should be your fullname"
-    validations="required|minlen:5|maxlen:128" 
-  >  
-  </form-input>
-  
-  <form-input 
-    name="country" 
-    type="autocomplete" 
-    label="Country" 
-  >
-    <option value="br">Brazil</option>
-    <option value="us">USA</option>
-  </form-input>
-</form>
-```
+## Inputs
 
-## Emitted Events
+Available input types:
 
-| Component | Event Name | Payload (`e.detail`) | Description |
-|-----------|-----------|----------------------|-------------|
-| `<form-input>` | `change` | `string \| number \| array \| undefined` | Fired when the value of the field changes. The payload contains the parsed and unmasked value of the input. Bubbles up to the parent form. |
-| `<form is="form-control">` | `submited` | `Object` | Fired when the native `submit` form event applies. The payload is an object mapping all field names to their formatted values. The event also directly exposes `e.valid` (boolean) and `e.errors` (object containing active field errors). |
-
-## Inputs type available  
-- text 
-- email            
+- text
+- email
 - url
 - search
-- number 
+- number
 - color
 - password
 - date
 - datetime-local
+- range
+- hidden
+- group (container; nests child fields under its `name` in submit payload)
+- file
+- currency
+- button (emits `click`, does not submit)
+- submit (submits parent form)
 - select
-- radioboxes // multiple
-- checkboxes // multiple
-- checkbox   // unique
-- textarea 
+- radioboxes
+- checkboxes
+- checkbox
+- textarea
 - autocomplete
 
+Notes:
 
-## Validations available  
-- required 
-- email            
-- minlen:<number>
-- maxlen:<number>
-- confirm:<other-field-name-above>
+- `label` is optional. If omitted, no default `<label>` tag is rendered.
+- For text-like controls (`text`, `email`, `url`, `search`, `number`, `password`, `textarea`, `autocomplete`, `currency`):
+  - if `placeholder` is not provided, the `label` value is used as placeholder.
+  - if both are missing, placeholder is empty.
+
+Nested group example:
+
+```html
+<form is="form-control">
+  <form-input type="group" name="address">
+    <form-input type="text" name="street" label="Street"></form-input>
+    <form-input type="number" name="number" label="Number"></form-input>
+  </form-input>
+
+  <form-input type="submit" label="Send"></form-input>
+</form>
+```
+
+Submit payload (`submited` event detail):
+
+```js
+{ address: { street: 'Main St', number: 333 } }
+```
+
+---
+
+## Validations
+
+Built-in validation rules:
+
+- required
+- email
+- minlen:`<number>`
+- maxlen:`<number>`
+- confirm:`<other-field-name>`
 - isdate
-- isafter:<yyyy-mm-dd>
-- isbefore:<yyyy-mm-dd>
+- isafter:`<yyyy-mm-dd>`
+- isbefore:`<yyyy-mm-dd>`
 - isnumber
-- max:<number>
-- min:<number>
-- in:<values-comma-separatelly> 
-- notin:<values-comma-separatelly> 
-- startwith:<any>
-- endswith:<any>
+- max:`<number>`
+- min:`<number>`
+- in:`<comma-separated-values>`
+- notin:`<comma-separated-values>`
+- startwith:`<text>`
+- endswith:`<text>`
 
-
-## Custom validations
-Inside `<head>` tag, import `Config` as module before import `index.js` and add:
-```html
-  ....
-  <script type="module" >
-    import { Config } from '/src/config.js' 
-
-    Config.registerValidation('custom', {
-      // Build error message
-      message: (params, value, values) 
-        => `The value is ${value} and the param is ${params[0]} and the form values is ${JSON.stringify(values)}`,
-      // Validate changed input
-      handle: ({ value, params }) => {
-        // value is field value | params is array of validation params: "custom:param1:param2 ...."
-        return true // true if is valid | false if is invalid
-      }
-    }) 
-  </script> 
-  <script type="module" src="/src/index.js" defer async></script>
-  ... 
-```
-
-Use your validation on html:
-```
-<form-input name="test" type="email" label="Email field" validations="required|custom:param1"></form-input>
-```
-
-## Native masks by VMasker
-Use mask to format output of input texts
-```html
-<form-input name="test" type="text" mask="(99) 99999-9999" label="Phone field" validations="required">
-</form-input>
-```
-#### Replace map:
-- S: any character
-- A: any letter (A-Za-z)
-- 9: any number (0-9) 
-
-#### Mask types:
-- pattern: default, let empty mask:type attribute
-- currency: add attribute `mask:format="currency"`
-- number: add attribute `mask:format="number"`
-- alpha: add attribute `mask:format="alpha"`
+Validation string format:
 
 ```html
-<form-input name="test" type="text" mask mask:format="currency" label="Money field" >
-</form-input>
+<form-input validations="required|minlen:5|maxlen:128"></form-input>
 ```
 
-#### Mask with unmask return: 
+### Emitted Events
+
+| Component | Event Name | Payload (`e.detail`) | Description |
+|-----------|------------|----------------------|-------------|
+| `<form-input>` | `change` | `string \| number \| array \| undefined \| File \| File[]` | Fired when field value changes. Payload contains parsed/unmasked value. For `type="file"`, returns `File` or `File[]` (when `multiple`). |
+| `<form-input type="button">` | `click` | native event | Native click bubbles from inner `<button type="button">`. |
+| `<form is="form-control">` | `submited` | object | Fired on submit. Exposes parsed payload in `e.detail`, boolean in `e.valid`, and validation map in `e.errors` (dot-path keys for groups, e.g. `address.street`). |
+
+---
+
+## Masks
+
+Native mask formats (via VanillaMasker):
+
+- pattern (default)
+- currency (`mask:format="currency"`)
+- number (`mask:format="number"`)
+- alpha (`mask:format="alpha"`)
+
+Examples:
+
 ```html
-<form-input name="test" type="text" mask="(99) 9999-9999" unmask label="Money field" >
-</form-input>
+<form-input name="phone" type="text" mask="(99) 99999-9999" validations="required"></form-input>
+<form-input name="money" type="text" mask mask:format="currency"></form-input>
+<form-input name="phoneRaw" type="text" mask="(99) 9999-9999" unmask></form-input>
 ```
 
-#### Custom Mask: 
-HTML header example:
-- A mask that changes pattern through characters length
-```html
-  ....
-  <script type="module" >
-    import { Config } from '/src/config.js' 
-    // See more in VMasker Docs: https://github.com/vanilla-masker/vanilla-masker/tree/master
-    Config.registerMask('document', (el, maskInstance, maskInputAttribute) => {
-      var docMask = ['999.999.999-999', '99.999.999/9999-99'];
-      var inputHandler = (masks, max, event) => {
-        var c = event.target;
-        var v = c.value.replace(/\D/g, '');
-        var m = c.value.length > max ? 1 : 0;
-        maskInstance.unMask();
-        maskInstance.maskPattern(masks[m]); 
-      }
-      maskInstance.maskPattern(docMask[0]);
-      el.addEventListener('input', inputHandler.bind(undefined, docMask, 14), false);
-    })
-  </script> 
-  <script type="module" src="/src/index.js" defer async></script>
-  ... 
-```
-HTML Content
-```html
- <form-input name="test18" type="text" label="Custom mask" mask mask:format="document" validations="required" >  
- </form-input>  
-```
+Mask tokens:
 
+- `S`: any character
+- `A`: any letter (`A-Za-z`)
+- `9`: any digit (`0-9`)
 
+---
 
-## Theming and Customization
-This library uses isolated Shadow DOM but exposes internal elements using the `part` attribute for easy styling in your global CSS.
+## Customization and Custom Inputs/Mask/Validation
 
-Available parts: `outer`, `label`, `wrapper`, `input-wrapper`, `input`, `help`, `errors`, `checks-wrapper`, `check-label`, `check-text`.
+### Theming (Shadow Parts)
+
+Exposed parts:
+
+- `outer`, `label`, `wrapper`, `input-wrapper`, `input`, `help`, `errors`
+- `checks-wrapper`, `check-label`, `check-text`
+- range-only: `range-min`, `range-max`, `range-value-popup`, `range-control`, `range-track`
 
 ```css
-/* Example: Styling the native input globally */
 form-input::part(input) {
   border: 1px solid #ddd;
   border-radius: 6px;
 }
+
 form-input::part(input):focus {
   border-color: blue;
   outline: none;
 }
 ```
 
-If you need to replace the default structural styles, you can inject a raw CSS string or load a custom URL using `Config` before importing the module:
-```javascript
-import { Config } from 'wc-forms-kit/config'
-import customStyles from './my-custom-style.css?raw' // (Vite example)
+Override default styles globally:
 
-Config.stylesText = customStyles // Injects the custom raw CSS
-// Config.stylesURL = '/your-custom-styles.css' // Or loads from URL
+```js
+import { Config } from 'wc-forms-kit/config'
+import customStyles from './my-custom-style.css?raw'
+
+Config.stylesText = customStyles
+// or Config.stylesURL = '/your-custom-styles.css'
 
 import 'wc-forms-kit'
 ```
 
-## Custom field types
-- First: Create a class that implements the template and store `formitem` as public variable of form element to receive event handlers
-- Second: Create a method to trigger error message on the template
-```js
-export class FormCurrency {
-  constructor({ el, shadow, internals }) { 
-    this.label = el.getAttribute('label')
-    this.name = el.getAttribute('name')  
+### Custom Validation
 
-    shadow.innerHTML = ` 
-      <div class="wc-form-outer"> 
-        <label class="wc-form-label">${this.label} </label>
-        <div class="wc-form-wrapper"> 
-          <div class="wc-form-input-wrapper"> 
-            R$ <input class="wc-form-input" type="text" name="${this.name}" />
-          </div>  
-        </div> 
+```html
+<script type="module">
+  import { Config } from '/src/config.js'
+
+  Config.registerValidation('custom', {
+    message: (params, value, values) =>
+      `The value is ${value} and param is ${params[0]}`,
+    handle: ({ value, params }) => true,
+  })
+</script>
+```
+
+Usage:
+
+```html
+<form-input
+  name="test"
+  type="email"
+  label="Email field"
+  validations="required|custom:param1">
+</form-input>
+```
+
+### Custom Mask
+
+```html
+<script type="module">
+  import { Config } from '/src/config.js'
+
+  Config.registerMask('document', (el, maskInstance) => {
+    const docMask = ['999.999.999-999', '99.999.999/9999-99']
+    const inputHandler = (masks, max, event) => {
+      const c = event.target
+      const m = c.value.length > max ? 1 : 0
+      maskInstance.unMask()
+      maskInstance.maskPattern(masks[m])
+    }
+
+    maskInstance.maskPattern(docMask[0])
+    el.addEventListener('input', inputHandler.bind(undefined, docMask, 14), false)
+  })
+</script>
+```
+
+Usage:
+
+```html
+<form-input
+  name="doc"
+  type="text"
+  label="Custom mask"
+  mask
+  mask:format="document"
+  validations="required">
+</form-input>
+```
+
+### Custom Input Type
+
+`currency` is built-in. To create your own type:
+
+```js
+export class FormExample {
+  constructor({ el, shadow, internals }) {
+    this.label = el.getAttribute('label') || ''
+    this.name = el.getAttribute('name')
+
+    const template = document.createElement('template')
+    template.innerHTML = `
+      <div class="wc-form-outer">
+        <label class="wc-form-label">${this.label}</label>
+        <div class="wc-form-wrapper">
+          <div class="wc-form-input-wrapper">
+            <input class="wc-form-input" type="text" name="${this.name}" />
+          </div>
+        </div>
       </div>
     `
-  
-    // REQUIRED
-    this.formitem = shadow.querySelector('input');
+
+    shadow.appendChild(template.content.cloneNode(true))
+    this.formitem = shadow.querySelector('input')
   }
-  
-  setError(error) { // false or `string of errors separatelly of <br/>`
-    console.log('Do anything with error message', error)
+
+  setError(error) {
+    console.log(error)
   }
 }
-
 ```
-Next, import `Config` store and import your class. register your new input type:
+
+Register and use:
+
 ```html
-  <script type="module" >
-    import { Config } from '/src/config.js'
-    import { FormCurrency } from '/path/of/file/custominput.js'
-  
-    Config.registerInput('currency', FormCurrency)
-  </script> 
-  <script type="module" src="/src/index.js" defer async></script>
-  ...
+<script type="module">
+  import { Config } from '/src/config.js'
+  import { FormExample } from '/path/custominput.js'
+
+  Config.registerInput('example', FormExample)
+</script>
+
+<form-input name="test" type="example" label="Example field"></form-input>
 ```
 
-Use your new input on html:
-```html
-<form-input name="test" type="currency" label="Currency field" ></form-input>
-```
+### Internationalization (i18n)
 
-## Internationalization (i18n)
-
-The library has native support for multiple languages in its validation error messages. By default, all messages are in English (`en`).
-
-### Changing the Language
-
-You can easily switch the active language globally before initializing your form:
-
-```javascript
+```js
 import { Config } from 'wc-forms-kit/config'
 
-// Change the active language (e.g., to Spanish)
 Config.setLanguage('es')
-```
 
-### Registering a New Language
-
-To add a completely new language dictionary, create an object mapping the validation rules to their translated messages. You can use `{0}`, `{1}`, etc., as dynamic placeholders for validation arguments (like the number of characters in `minlen`).
-
-```javascript
-import { Config } from 'wc-forms-kit/config'
-
-const portuguese = {
+Config.registerLanguage('pt', {
   required: 'Este campo é obrigatório',
   email: 'Este deve ser um email válido',
   minlen: 'Este campo deve ter pelo menos {0} caracteres',
   maxlen: 'Este campo deve ter no máximo {0} caracteres',
   confirm: 'Este campo deve ser igual ao campo {0}',
-  // Add other matching rules from the validation list...
-}
-
-// 1. Register the language dictionary
-Config.registerLanguage('pt', portuguese)
-
-// 2. Set it as the active language
-Config.setLanguage('pt')
+})
 ```
+
+---
 
 ## Changelog
 
@@ -388,7 +396,7 @@ Config.setLanguage('pt')
 [![GitHub commits since](https://img.shields.io/github/commits-since/minasvisual/wc-forms/v1.0.0?style=flat-square)](https://github.com/minasvisual/wc-forms/commits/main)
 
 ### Recent Activity
+
 ![Recent Activity](https://github-readme-recent-activity.vercel.app/api?user=minasvisual&repo=wc-forms&limit=5&theme=react&hide_header=true)
 
 For the full list of changes, see the [Commit History](https://github.com/minasvisual/wc-forms/commits/main).
-

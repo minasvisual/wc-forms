@@ -5,7 +5,7 @@ export class FormChecks {
     this.itype = el.getAttribute('type')
     this.name = el.getAttribute('name')
     this.help = el.getAttribute('help')
-    this.label = el.getAttribute('label')
+    this.label = el.getAttribute('label') || ''
     this.options = el.getAttribute('options')
     this.inputvalue = el.value || el.getAttribute('value') || ''
     this.error = ''
@@ -19,7 +19,7 @@ export class FormChecks {
     template.innerHTML = ` 
       <div class="wc-form-outer" part="outer">
         <slot name="before"></slot>
-        <slot name="label">${this.label ? `<label class="wc-form-label" part="label">${this.label} </label>` : ''}</slot>
+        <slot name="label">${this.label ? `<label class="wc-form-label" part="label">${this.label}</label>` : ''}</slot>
         <div class="wc-form-wrapper" part="wrapper">
           <div class="wc-form-checks" part="checks-wrapper" tabindex="0">
             <slot name="prefix"></slot>
@@ -140,7 +140,7 @@ export class FormCheckBox {
     this.itype = el.getAttribute('type')
     this.name = el.getAttribute('name')
     this.help = el.getAttribute('help')
-    this.label = el.getAttribute('label')
+    this.label = el.getAttribute('label') || ''
     this.checked = el.getAttribute('checked')
     this.defaultValue = el.getAttribute('value')
     this.isBoolean = !this.defaultValue
@@ -156,7 +156,7 @@ export class FormCheckBox {
             <slot name="prefix"></slot> 
             <label class="wc-form-check" part="check-label" for="${this.name}">
               <input type="checkbox" id="${this.name}" part="input" name="${this.name}" value="${this.defaultValue || 0}" ${this.isChecked()} />
-              <span part="check-text"><slot name="label">${this.label}</slot></span>
+              <span part="check-text"><slot name="label">${this.label || ''}</slot></span>
             </label> 
             <slot name="suffix"></slot>
           </div>  
@@ -183,7 +183,7 @@ export class FormCheckBox {
   }
 
   isChecked() {
-    return (this.checked !== null || this.internals.states.has('--checked')) ? 'checked' : ''
+    return (this.checked !== null || this.internals.states?.has?.('--checked')) ? 'checked' : ''
   }
 
   emitValue(e) {

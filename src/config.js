@@ -3,6 +3,13 @@ import { FormSelect } from './inputs/formselect.js'
 import { FormTextarea, } from './inputs/formtext.js'
 import { FormCheckBox, FormChecksBoxes, FormChecksRadio } from './inputs/formchecks.js'
 import { FormAutocomplete } from './inputs/formautocomplete.js'
+import { FormButton } from './inputs/formbutton.js'
+import { FormSubmit } from './inputs/formsubmit.js'
+import { FormFile } from './inputs/formfile.js'
+import { FormRange } from './inputs/formrange.js'
+import { FormCurrency } from './inputs/formcurrency.js'
+import { FormHidden } from './inputs/formhidden.js'
+import { FormGroup } from './inputs/formgroup.js'
 import { splitValues, get, dateRegex, emailRegex, isValidNumber } from './helpers.js'
 import english from './lang/en.js'
 
@@ -258,6 +265,34 @@ export const inputs = {
   autocomplete: {
     output: 'text',
     source: FormAutocomplete,
+  },
+  button: {
+    output: 'button',
+    source: FormButton,
+  },
+  submit: {
+    output: 'submit',
+    source: FormSubmit,
+  },
+  file: {
+    output: 'file',
+    source: FormFile,
+  },
+  range: {
+    output: 'number',
+    source: FormRange,
+  },
+  currency: {
+    output: 'currency',
+    source: FormCurrency,
+  },
+  hidden: {
+    output: 'hidden',
+    source: FormHidden,
+  },
+  group: {
+    output: 'group',
+    source: FormGroup,
   },
 }
 

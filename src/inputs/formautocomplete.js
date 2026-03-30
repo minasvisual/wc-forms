@@ -1,4 +1,4 @@
-import { renderAttributes } from '../helpers.js';
+import { renderAttributes, resolveLabel, resolvePlaceholder } from '../helpers.js';
 import { normalizeJson } from '../helpers.js';
 
 export class FormAutocomplete {
@@ -8,7 +8,7 @@ export class FormAutocomplete {
     this.name = el.getAttribute('name');
     this.itype = el.getAttribute('type') || 'text';
     this.help = el.getAttribute('help');
-    this.label = el.getAttribute('label');
+    this.label = resolveLabel(el);
     this._options = this.parseOptions(el);
     this.inputvalue = el.value || el.getAttribute('value') || '';
     this.error = '';
@@ -21,14 +21,15 @@ export class FormAutocomplete {
     template.innerHTML = `
       <div class="wc-form-outer" part="outer">
         <slot name="before"></slot>
-        <slot name="label"><label class="wc-form-label" part="label">${this.label ?? ''}</label></slot>
+        <slot name="label">${this.label ? `<label class="wc-form-label" part="label">${this.label}</label>` : ''}</slot>
         <div class="wc-form-wrapper" part="wrapper">
           <div class="wc-form-input-wrapper" part="input-wrapper">
             <slot name="prefix"></slot>
             <slot name="input">
               <div class="wc-form-autocomplete-container" style="position:relative; width:100%;">
                 <input class="wc-form-input" part="input" autocomplete="off"
-                  ${renderAttributes(el, ['class', 'name', 'type'])} />
+                  placeholder="${resolvePlaceholder(el, this.label)}"
+                  ${renderAttributes(el, ['class', 'name', 'type','placeholder'])} />
                 <div class="wc-form-autocomplete-display" part="display-label" 
                   style="position:absolute; left:0; top:0; bottom:0; pointer-events:none; display:flex; align-items:center; padding-left:8px; color:#1e293b;"></div>
               </div>

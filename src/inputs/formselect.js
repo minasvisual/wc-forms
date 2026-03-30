@@ -1,10 +1,10 @@
-import { renderAttributes, normalizeJson } from '../helpers.js'
+import { renderAttributes, normalizeJson, resolveLabel } from '../helpers.js'
 
 export class FormSelect {
   constructor({ el, shadow, internals }) {
     this.name = el.getAttribute('name') 
     this.help = el.getAttribute('help')
-    this.label = el.getAttribute('label')
+    this.label = resolveLabel(el)
     this.options = el.getAttribute('options')
     this.error = ''
     const template = document.createElement("template");
@@ -12,7 +12,7 @@ export class FormSelect {
     template.innerHTML = ` 
       <div class="wc-form-outer" part="outer">
         <slot name="before"></slot>
-        <slot name="label"><label class="wc-form-label" part="label">${this.label} </label></slot>
+        <slot name="label">${this.label ? `<label class="wc-form-label" part="label">${this.label}</label>` : ''}</slot>
         <div class="wc-form-wrapper" part="wrapper">
           <div class="wc-form-input-wrapper" part="input-wrapper">
             <slot name="prefix"></slot>

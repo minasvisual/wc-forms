@@ -1,23 +1,23 @@
-import { renderAttributes } from '../helpers.js'
+import { renderAttributes, resolveLabel, resolvePlaceholder } from '../helpers.js'
 
 export class FormTextarea {
   constructor({ el, shadow, internals }) {
     this.name = el.getAttribute('name')
     this.itype = el.getAttribute('type')
     this.help = el.getAttribute('help')
-    this.label = el.getAttribute('label')
+    this.label = resolveLabel(el)
     this.error = ''
     const template = document.createElement("template");
 
     template.innerHTML = ` 
       <div class="wc-form-outer" part="outer">
         <slot name="before"></slot>
-        <slot name="label"><label class="wc-form-label" part="label">${this.label} </label></slot>
+        <slot name="label">${this.label ? `<label class="wc-form-label" part="label">${this.label}</label>` : ''}</slot>
         <div class="wc-form-wrapper" part="wrapper">
           <div class="wc-form-input-wrapper" part="input-wrapper">
             <slot name="prefix"></slot>
             <slot name="input">
-              <textarea class="wc-form-textarea" part="input" ${renderAttributes(el, ['class', 'type'])} >${el.getAttribute('placeholder') ?? ''}</textarea>
+              <textarea class="wc-form-textarea" part="input" placeholder="${resolvePlaceholder(el, this.label)}" ${renderAttributes(el, ['class', 'type','placeholder'])} ></textarea>
             </slot> 
             <slot name="suffix"></slot>
           </div>

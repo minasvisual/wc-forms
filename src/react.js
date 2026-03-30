@@ -15,7 +15,7 @@ export function createWcFormsReact(ReactInstance) {
   const FormInput = React.forwardRef((props, ref) => {
     const { 
       validations, options, mask, unmask, 
-      onChange, onTyping, className,
+      onChange, onTyping, onClick, className,
       ...rest 
     } = props;
     
@@ -45,12 +45,14 @@ export function createWcFormsReact(ReactInstance) {
       // Event mapping
       if (onChange) node.addEventListener('change', onChange);
       if (onTyping) node.addEventListener('typing', onTyping);
+      if (onClick) node.addEventListener('click', onClick);
 
       return () => {
         if (onChange) node.removeEventListener('change', onChange);
         if (onTyping) node.removeEventListener('typing', onTyping);
+        if (onClick) node.removeEventListener('click', onClick);
       };
-    }, [onChange, onTyping]);
+    }, [onChange, onTyping, onClick]);
 
     React.useImperativeHandle(ref, () => internalRef.current, []);
 
