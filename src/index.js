@@ -101,6 +101,8 @@ class FormComponent extends BaseHTMLElement {
     this.maskIt(InputSource)
     if (this.itype === 'file') {
       this.formitem.addEventListener('change', (e) => {
+        // Prevent native change from bubbling; host will emit its own `change`.
+        e.stopPropagation();
         const input = e.target
         const files = input.files
         const name = this.getAttribute('name')
@@ -122,6 +124,8 @@ class FormComponent extends BaseHTMLElement {
       })
     } else if (this.itype !== 'currency' && this.itype !== 'group') {
       const handleFormItemValueUpdate = (e, emitType) => {
+        // Prevent native input/change from bubbling; host will emit its own event.
+        e.stopPropagation();
         let valueRaw = this.unmaskIt(e.target.value)
         this.formitem.value = e.target.value
         if (this.itype === 'range') {

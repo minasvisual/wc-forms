@@ -31,7 +31,9 @@ export class FormTextarea {
     shadow.appendChild(template.content.cloneNode(true));
     this.erroritem = shadow.querySelector('.wc-errors');
     this.formitem = shadow.querySelector('textarea');
-    this.formitem.addEventListener('input', () => {
+    this.formitem.addEventListener('input', (e) => {
+      // Avoid double host `input`: stop native InputEvent bubbling and re-emit from the host.
+      e.stopPropagation();
       el.emitEvent('input', this.formitem.value)
     });
   }

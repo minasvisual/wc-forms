@@ -60,7 +60,11 @@ export class FormCurrency {
   onMounted() {
     const run = () => this.syncFromInput()
     this.formitem.addEventListener('focus', run)
-    this.formitem.addEventListener('input', run)
+    this.formitem.addEventListener('input', (e) => {
+      // Avoid double host `input`: stop native InputEvent bubbling and re-emit from the host.
+      e.stopPropagation()
+      run()
+    })
     this.formitem.addEventListener('blur', () => {
       const masked = this.maskCurrency(this.formitem.value)
       const n = this.parseNumber(masked)
