@@ -16,5 +16,11 @@ export default {
     max: 'Este campo deve ser menor ou igual a {0}',
     min: 'Este campo deve ser maior ou igual a {0}',
     istrue: 'Este campo deve ser marcado como verdadeiro',
-    isfalse: 'Este campo deve ser marcado como falso'
+    isfalse: 'Este campo deve ser marcado como falso',
+    alphanumeric: 'Este campo deve conter apenas letras latinas e números',
+    alpha: 'Este campo deve conter apenas letras latinas',
+    regex: 'Este campo não corresponde ao padrão requerido: {0}',
+    passwordstrength: 'Este campo não atende aos requisitos de força de senha: {0}',
+    slug: 'Este campo deve ser um slug válido',
+    contains: 'Este campo deve conter os caracteres obrigatórios: {0}'
 }

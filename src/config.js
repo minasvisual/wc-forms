@@ -10,6 +10,7 @@ import { FormRange } from './inputs/formrange.js'
 import { FormCurrency } from './inputs/formcurrency.js'
 import { FormHidden } from './inputs/formhidden.js'
 import { FormGroup } from './inputs/formgroup.js'
+import { FormPills } from './inputs/formpills.js'
 import { splitValues, get, dateRegex, emailRegex, isValidNumber } from './helpers.js'
 import english from './lang/en.js'
 
@@ -203,6 +204,63 @@ export const validations = {
     handle: ({ value }) => {
       return value && (value === 'false' || value === false)
     }
+  },
+  alphanumeric: {
+    message: () => t('alphanumeric', [], 'This field must contain only latin letters and numbers'),
+    handle: ({ value }) => {
+      if (!value || typeof value !== 'string') return false
+      return /^[\p{Script=Latin}\p{Mark}\d]+$/u.test(value)
+    }
+  },
+  alpha: {
+    message: () => t('alpha', [], 'This field must contain only latin letters'),
+    handle: ({ value }) => {
+      if (!value || typeof value !== 'string') return false
+      return /^[\p{Script=Latin}\p{Mark}]+$/u.test(value)
+    }
+  },
+  regex: {
+    message: (params = []) => t('regex', [get(params, '[0]', '')], 'This field does not match required pattern'),
+    handle: ({ value, params = [] }) => {
+      if (!get(params, '[0]')) throw new Error('Parameter 1 not found')
+      if (!value || typeof value !== 'string') return false
+      try {
+        const rx = new RegExp(params[0])
+        return rx.test(value)
+      } catch (error) {
+        return false
+      }
+    }
+  },
+  passwordstrength: {
+    message: (params = []) => t('passwordstrength', [params.join(',')], 'This field does not meet password strength requirements'),
+    handle: ({ value, params = [] }) => {
+      if (!value || typeof value !== 'string') return false
+      if (!params.length) throw new Error('Parameters is required')
+      const required = params.map(String)
+      for (const rule of required) {
+        if (rule === 'A' && !/[A-Z]/.test(value)) return false
+        if (rule === '0' && !/\d/.test(value)) return false
+        if (rule === '$' && !/[^\p{Script=Latin}\p{Mark}\d]/u.test(value)) return false
+      }
+      return true
+    }
+  },
+  slug: {
+    message: () => t('slug', [], 'This field must be a valid slug'),
+    handle: ({ value }) => {
+      if (!value || typeof value !== 'string') return false
+      return /^[\p{Script=Latin}\p{Mark}\d_.-]+$/u.test(value)
+    }
+  },
+  contains: {
+    message: (params = []) => t('contains', [get(params, '[0]', '')], 'This field must contain required characters'),
+    handle: ({ value, params = [] }) => {
+      if (!get(params, '[0]')) throw new Error('Parameter 1 not found')
+      if (!value || typeof value !== 'string') return false
+      const requiredChars = String(params[0]).split('').filter(Boolean)
+      return requiredChars.every((ch) => value.includes(ch))
+    }
   }
 }
 
@@ -257,6 +315,10 @@ export const inputs = {
   checkboxes: {
     output: 'array',
     source: FormChecksBoxes,
+  },
+  pills: {
+    output: 'array',
+    source: FormPills,
   },
   textarea: {
     output: 'text',

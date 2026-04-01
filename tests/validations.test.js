@@ -210,6 +210,75 @@ describe('Config validations - Max and Min', () => {
   })
 })
 
+describe('Config validations - Alphanumeric (latin)', () => {
+  test('should validate latin letters and numbers only', async () => {
+    const sut = Config.validations.alphanumeric.handle
+    const message = Config.validations.alphanumeric.message
+    expect(sut({ value: 'abc123' })).toBe(true)
+    expect(sut({ value: 'ação2026' })).toBe(true)
+    expect(sut({ value: 'abc-123' })).toBe(false)
+    expect(sut({ value: 'abc 123' })).toBe(false)
+    expect(message([])).toBe('This field must contain only latin letters and numbers')
+  })
+})
+
+describe('Config validations - Alpha (latin)', () => {
+  test('should validate latin letters only', async () => {
+    const sut = Config.validations.alpha.handle
+    const message = Config.validations.alpha.message
+    expect(sut({ value: 'abc' })).toBe(true)
+    expect(sut({ value: 'ação' })).toBe(true)
+    expect(sut({ value: 'abc123' })).toBe(false)
+    expect(sut({ value: 'abc-' })).toBe(false)
+    expect(message([])).toBe('This field must contain only latin letters')
+  })
+})
+
+describe('Config validations - Regex', () => {
+  test('should validate by provided regex', async () => {
+    const sut = Config.validations.regex.handle
+    const message = Config.validations.regex.message
+    expect(sut({ value: 'AB-123', params: ['^[A-Z]{2}-\\d{3}$'] })).toBe(true)
+    expect(sut({ value: 'ab-123', params: ['^[A-Z]{2}-\\d{3}$'] })).toBe(false)
+    expect(sut({ value: 'abc', params: ['['] })).toBe(false)
+    expect(message(['^[A-Z]{2}-\\d{3}$'])).toBe('This field does not match required pattern: ^[A-Z]{2}-\\d{3}$')
+  })
+})
+
+describe('Config validations - Password Strength', () => {
+  test('should validate required classes A, 0 and $', async () => {
+    const sut = Config.validations.passwordstrength.handle
+    const message = Config.validations.passwordstrength.message
+    expect(sut({ value: 'Abc123!', params: ['A', '0', '$'] })).toBe(true)
+    expect(sut({ value: 'abc123!', params: ['A', '0', '$'] })).toBe(false)
+    expect(sut({ value: 'Abcdef!', params: ['A', '0', '$'] })).toBe(false)
+    expect(sut({ value: 'Abc1234', params: ['A', '0', '$'] })).toBe(false)
+    expect(message(['A', '0', '$'])).toBe('This field does not meet password strength requirements: A,0,$')
+  })
+})
+
+describe('Config validations - Slug', () => {
+  test('should validate slug chars only', async () => {
+    const sut = Config.validations.slug.handle
+    const message = Config.validations.slug.message
+    expect(sut({ value: 'hello-world_2026.v1' })).toBe(true)
+    expect(sut({ value: 'ação.v1' })).toBe(true)
+    expect(sut({ value: 'hello world' })).toBe(false)
+    expect(sut({ value: 'hello@world' })).toBe(false)
+    expect(message([])).toBe('This field must be a valid slug')
+  })
+})
+
+describe('Config validations - Contains', () => {
+  test('should ensure all required chars are present', async () => {
+    const sut = Config.validations.contains.handle
+    const message = Config.validations.contains.message
+    expect(sut({ value: 'abc123', params: ['a3'] })).toBe(true)
+    expect(sut({ value: 'abc123', params: ['a$'] })).toBe(false)
+    expect(message(['a3'])).toBe('This field must contain required characters: a3')
+  })
+})
+
 // describe('registerValidation test', () => {
 //   it('should register new validation', () => {
 //     const name = 'test'

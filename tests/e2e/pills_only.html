@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script type="module" src="/src/index.js"></script>
+</head>
+<body>
+  <form is="form-control">
+    <form-input
+      name="tags"
+      type="pills"
+      label="Tags"
+      help="Type and press Enter">
+    </form-input>
+    <button type="submit">Submit</button>
+  </form>
+  <script>
+    document.querySelector('form').addEventListener('submited', (e) => {
+      console.log('Submited data parsed', e.detail);
+    });
+  </script>
+</body>
+</html>

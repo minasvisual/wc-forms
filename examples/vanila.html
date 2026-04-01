@@ -218,15 +218,17 @@
             <option value="3">Opção 3</option>
             <option value="4">Opção 4</option>
           </form-input>
-          <button class="border-2 border-black bg-gray-300 p-2">
-            Enter
-          </button>
+          <div class="flex items-center gap-3">
+            <form-input name="go" type="button" label="Fill form"></form-input>
+            <button type="reset" class="border-2 border-gray-300 bg-white p-2 rounded-md">Reset</button>
+            <form-input name="send" type="submit" label="Enviar"></form-input>
+          </div>
         </form>
       </div>
     </main>
   </div>
   <!-- <script src="../src/mask.js"></script> -->
-  <script src="./scripts.js"></script>
+  <script type="module" src="./scripts.js"></script>
 </body>
 
 </html>

@@ -235,9 +235,30 @@
               </div>
             )}
 
-            <button type="submit" className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg cursor-pointer transition-colors shadow-sm">
-              Submit Native Form
-            </button>
+            <div className="mt-4 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  const form = document.querySelector('form[is="form-control"]');
+                  if (!form) return;
+                  form.setAttribute('values', JSON.stringify({
+                    username: 'react-user',
+                    email: 'react@example.com',
+                    frameworks: ['react', 'vue'],
+                    priority: 'medium'
+                  }));
+                }}
+                className="px-4 py-2 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg cursor-pointer transition-colors shadow-sm"
+              >
+                Fill form
+              </button>
+              <button type="reset" className="px-4 py-2 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg cursor-pointer transition-colors shadow-sm">
+                Reset
+              </button>
+              <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg cursor-pointer transition-colors shadow-sm">
+                Submit
+              </button>
+            </div>
           </FormControl>
 
               {data && (

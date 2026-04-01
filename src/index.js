@@ -80,6 +80,7 @@ class FormComponent extends BaseHTMLElement {
       this.formitem.value = this.getAttribute('value')
     }
     this.formitem.setAttribute('data-type', InputSource.output)
+    this.setAttribute('data-type', InputSource.output)
 
     // Seed internals so the initial value attribute is reflected in FormData on submit
     const skipInitialFormValue = ['checkbox', 'button', 'submit', 'file', 'currency', 'group'].includes(this.itype)
@@ -152,7 +153,7 @@ class FormComponent extends BaseHTMLElement {
         this.emitEvent(emitType, valueRaw)
         this.validate()
       }
-      if (this.itype === 'range') {
+      if (this.itype === 'range' || this.itype === 'pills') {
         this.formitem.addEventListener('input', (e) => handleFormItemValueUpdate(e, 'input'))
       }
       this.formitem.addEventListener('change', (e) => handleFormItemValueUpdate(e, 'change'))
@@ -282,17 +283,56 @@ class FormComponent extends BaseHTMLElement {
 const BaseHTMLFormElement = typeof HTMLFormElement !== 'undefined' ? HTMLFormElement : class {};
 
 class FormWrapper extends BaseHTMLFormElement {
+  static get observedAttributes() {
+    return ['values']
+  }
+
   constructor() {
     super()  
   }
+
+  get values() {
+    const raw = this.getAttribute('values')
+    if (!raw) return {}
+    try {
+      const parsed = JSON.parse(raw)
+      return parsed && typeof parsed === 'object' ? parsed : {}
+    } catch (error) {
+      return {}
+    }
+  }
+
+  set values(nextValues) {
+    if (nextValues == null) {
+      this.removeAttribute('values')
+      return
+    }
+    if (typeof nextValues !== 'object') return
+    try {
+      this.setAttribute('values', JSON.stringify(nextValues))
+    } catch (error) {
+    }
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name !== 'values' || oldValue === newValue) return
+    this.applyValuesFromAttribute()
+  }
+
   connectedCallback() {
+    this.addEventListener('reset', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      this.reset()
+    })
+
     this.addEventListener("submit", (e) => {
       e.preventDefault()
       e.stopPropagation()
       const form = e.target
       syncFormInputValidations(form)
 
-      this.values = getFormValuesNested(form)
+      this.submitedValues = getFormValuesNested(form)
       this.isValid = true 
       this.errors = {} 
 
@@ -311,10 +351,195 @@ class FormWrapper extends BaseHTMLFormElement {
  
       this.emitEvent()
     })
+
+    this.applyValuesFromAttribute()
   }
 
   emitEvent(values) {
-    dispatchNativeEvent(this, 'submited', this.values, { valid: this.isValid, errors: this.errors })
+    dispatchNativeEvent(this, 'submited', this.submitedValues, { valid: this.isValid, errors: this.errors })
+  }
+
+  reset() {
+    this.removeAttribute('values')
+    this.resetValues()
+  }
+
+  applyValuesFromAttribute({ retry = true } = {}) {
+    const valuesAttr = this.getAttribute('values')
+    if (!valuesAttr) return
+    let parsed
+    try {
+      parsed = JSON.parse(valuesAttr)
+    } catch (error) {
+      return
+    }
+    if (!parsed || typeof parsed !== 'object') return
+    this.setValues(parsed)
+    if (retry) this.hydrateValuesWhenReady(parsed)
+  }
+
+  hydrateValuesWhenReady(valuesObj, retries = 8) {
+    const formInputs = Array.from(this.querySelectorAll('form-input'))
+    const allReady = formInputs.every((el) => {
+      const type = el.getAttribute('type')
+      if (type === 'group') return true
+      return !!el.formitem
+    })
+    if (allReady || retries <= 0) {
+      this.setValues(valuesObj)
+      return
+    }
+    setTimeout(() => this.hydrateValuesWhenReady(valuesObj, retries - 1), 0)
+  }
+
+  setValues(valuesObj = {}) {
+    if (!valuesObj || typeof valuesObj !== 'object') return
+
+    const getByPath = (obj, pathKey) => {
+      if (!pathKey) return undefined
+      const parts = String(pathKey).split('.')
+      let current = obj
+      for (const part of parts) {
+        if (current == null || typeof current !== 'object' || !(part in current)) return undefined
+        current = current[part]
+      }
+      return current
+    }
+
+    const toArray = (value) => {
+      if (Array.isArray(value)) return value.map(String)
+      if (value == null || value === '') return []
+      return String(value).split(',').map((item) => item.trim()).filter(Boolean)
+    }
+
+    const controls = collectFormControls(this)
+    for (const el of controls) {
+      if (el?.localName !== 'form-input') continue
+      const type = el.getAttribute('type')
+      const outputType = el.getAttribute('data-type') || type
+      if (['button', 'submit', 'group', 'file'].includes(type)) continue
+
+      const name = el.getAttribute('name')
+      if (!name) continue
+      const pathKey = getFormInputPathKey(el, this) || name
+      const nextValue = getByPath(valuesObj, pathKey)
+      if (nextValue === undefined) continue
+
+      if (type === 'checkbox') {
+        const checkbox = el.shadowRoot?.querySelector('input[type="checkbox"]')
+        if (!checkbox) continue
+        checkbox.checked = !!nextValue
+        checkbox.dispatchEvent(new Event('change', { bubbles: true }))
+        continue
+      }
+
+      if (type === 'radioboxes') {
+        const radios = el.shadowRoot?.querySelectorAll('input[type="radio"]') || []
+        radios.forEach((radio) => {
+          radio.checked = String(radio.value) === String(nextValue)
+        })
+        const trigger = Array.from(radios).find((radio) => radio.checked) || radios[0]
+        if (trigger) trigger.dispatchEvent(new Event('change', { bubbles: true }))
+        continue
+      }
+
+      if (type === 'checkboxes') {
+        const checks = el.shadowRoot?.querySelectorAll('input[type="checkbox"]') || []
+        const values = toArray(nextValue)
+        checks.forEach((check) => {
+          check.checked = values.includes(String(check.value))
+        })
+        const trigger = checks[checks.length - 1] || checks[0]
+        if (trigger) trigger.dispatchEvent(new Event('change', { bubbles: true }))
+        continue
+      }
+
+      if (type === 'autocomplete' || type === 'pills') {
+        if (!el.formitem) continue
+        el.formitem.value = nextValue
+        if (type === 'pills') {
+          el.formitem.dispatchEvent(new Event('input', { bubbles: true }))
+        }
+        el.formitem.dispatchEvent(new Event('change', { bubbles: true }))
+        continue
+      }
+
+      if (!el.formitem) continue
+      const valueToWrite = nextValue == null ? '' : String(nextValue)
+      el.formitem.value = valueToWrite
+
+      if (type === 'range') {
+        el.formitem.dispatchEvent(new Event('input', { bubbles: true }))
+      } else if (type === 'currency') {
+        el.formitem.dispatchEvent(new Event('input', { bubbles: true }))
+        el.formitem.dispatchEvent(new Event('blur', { bubbles: true }))
+        continue
+      }
+      el.formitem.dispatchEvent(new Event('change', { bubbles: true }))
+    }
+  }
+
+  resetValues() {
+    const controls = collectFormControls(this)
+    for (const el of controls) {
+      if (el?.localName !== 'form-input') continue
+      const type = el.getAttribute('type')
+      if (['button', 'submit', 'group'].includes(type)) continue
+
+      if (type === 'checkbox') {
+        const checkbox = el.shadowRoot?.querySelector('input[type="checkbox"]')
+        if (!checkbox) continue
+        checkbox.checked = false
+        checkbox.dispatchEvent(new Event('change', { bubbles: true }))
+        continue
+      }
+
+      if (type === 'checkboxes') {
+        const checks = el.shadowRoot?.querySelectorAll('input[type="checkbox"]') || []
+        checks.forEach((check) => { check.checked = false })
+        const trigger = checks[checks.length - 1] || checks[0]
+        if (trigger) trigger.dispatchEvent(new Event('change', { bubbles: true }))
+        continue
+      }
+
+      if (type === 'radioboxes') {
+        const radios = el.shadowRoot?.querySelectorAll('input[type="radio"]') || []
+        radios.forEach((radio) => { radio.checked = false })
+        if (el.formitem) el.formitem.dispatchEvent(new Event('change', { bubbles: true }))
+        continue
+      }
+
+      if (type === 'pills') {
+        if (!el.formitem) continue
+        el.formitem.value = []
+        el.formitem.dispatchEvent(new Event('input', { bubbles: true }))
+        el.formitem.dispatchEvent(new Event('change', { bubbles: true }))
+        continue
+      }
+
+      if (type === 'autocomplete') {
+        if (!el.formitem) continue
+        el.formitem.value = ''
+        el.formitem.dispatchEvent(new Event('change', { bubbles: true }))
+        continue
+      }
+
+      if (!el.formitem) continue
+      el.formitem.value = ''
+      if (type === 'file') {
+        el.formitem.dispatchEvent(new Event('change', { bubbles: true }))
+        continue
+      }
+      if (type === 'currency') {
+        el.formitem.dispatchEvent(new Event('input', { bubbles: true }))
+        el.formitem.dispatchEvent(new Event('blur', { bubbles: true }))
+        continue
+      }
+      if (type === 'range') {
+        el.formitem.dispatchEvent(new Event('input', { bubbles: true }))
+      }
+      el.formitem.dispatchEvent(new Event('change', { bubbles: true }))
+    }
   }
 }
 

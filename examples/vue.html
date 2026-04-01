@@ -91,6 +91,17 @@
           }
         };
 
+        const fillForm = () => {
+          const form = document.querySelector('form[is="form-control"]');
+          if (!form) return;
+          form.setAttribute('values', JSON.stringify({
+            username: 'vue-user',
+            email: 'vue@example.com',
+            frameworks: ['vue', 'react'],
+            priority: 'medium'
+          }));
+        };
+
         onMounted(() => {
           fetch('https://jsonplaceholder.typicode.com/users')
             .then(res => res.json())
@@ -129,7 +140,8 @@
           apiPosts,
           optionsData,
           handleSubmit,
-          handleChange
+          handleChange,
+          fillForm
         };
       }
     });
@@ -236,10 +248,23 @@
               :label="'Choose Post from User ' + selectedUser" :options="apiPosts" validations="required"></form-input>
           </div>
 
-          <button type="submit"
-            class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg cursor-pointer transition-colors shadow-sm">
-            Submit Native Form
-          </button>
+          <div class="mt-4 flex items-center gap-3">
+            <button
+              type="button"
+              @click="fillForm"
+              class="px-4 py-2 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg cursor-pointer transition-colors shadow-sm"
+            >
+              Fill form
+            </button>
+            <button type="reset"
+              class="px-4 py-2 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg cursor-pointer transition-colors shadow-sm">
+              Reset
+            </button>
+            <button type="submit"
+              class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg cursor-pointer transition-colors shadow-sm">
+              Submit
+            </button>
+          </div>
         </form>
 
         <div v-if="data" class="mt-6 p-5 bg-gray-50 rounded-xl border border-gray-200 shadow-inner">

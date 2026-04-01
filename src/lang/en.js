@@ -15,5 +15,11 @@ export default {
     notin: 'This field must not contains {0}',
     max: 'This field must be less than {0}',
     min: 'This field must be greater than {0}',
+    alphanumeric: 'This field must contain only latin letters and numbers',
+    alpha: 'This field must contain only latin letters',
+    regex: 'This field does not match required pattern: {0}',
+    passwordstrength: 'This field does not meet password strength requirements: {0}',
+    slug: 'This field must be a valid slug',
+    contains: 'This field must contain required characters: {0}',
 
 }

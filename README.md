@@ -65,6 +65,40 @@ import 'wc-forms-kit'
 </form>
 ```
 
+You can hydrate initial form state with a `values` JSON object on the form:
+
+```html
+<form
+  is="form-control"
+  values='{"user":"Ulisses","skills":["js","wc"],"address":{"street":"Main St","number":333}}'
+>
+  <form-input name="user" type="text" label="User"></form-input>
+  <form-input name="skills" type="pills" label="Skills"></form-input>
+  <form-input type="group" name="address">
+    <form-input name="street" type="text" label="Street"></form-input>
+    <form-input name="number" type="number" label="Number"></form-input>
+  </form-input>
+</form>
+```
+
+Or use the JS property API (auto stringify/parse):
+
+```js
+const form = document.querySelector('form[is="form-control"]')
+form.values = {
+  user: 'Ulisses',
+  skills: ['js', 'wc'],
+  address: { street: 'Main St', number: 333 }
+}
+```
+
+You can also clear all custom fields using native-like reset on the wrapper:
+
+```js
+const form = document.querySelector('form[is="form-control"]')
+form.reset() // clears current values and removes `values` attribute
+```
+
 ### Without npm (CDN)
 
 ```html
@@ -146,6 +180,7 @@ Available input types:
 - checkbox
 - textarea
 - autocomplete
+- pills
 
 Notes:
 
@@ -153,6 +188,7 @@ Notes:
 - For text-like controls (`text`, `email`, `url`, `search`, `number`, `password`, `textarea`, `autocomplete`, `currency`):
   - if `placeholder` is not provided, the `label` value is used as placeholder.
   - if both are missing, placeholder is empty.
+- `pills` builds an array of tags. Type text and press `,`, `Enter`, or `Tab` to create tags; paste comma/newline text to add multiple tags; click the close button to remove a tag.
 
 Nested group example:
 
@@ -171,6 +207,17 @@ Submit payload (`submited` event detail):
 
 ```js
 { address: { street: 'Main St', number: 333 } }
+```
+
+Pills example:
+
+```html
+<form-input
+  name="skills"
+  type="pills"
+  label="Skills"
+  help="Type a tag and press comma">
+</form-input>
 ```
 
 ---
@@ -194,6 +241,12 @@ Built-in validation rules:
 - notin:`<comma-separated-values>`
 - startwith:`<text>`
 - endswith:`<text>`
+- alphanumeric (latin letters + numbers)
+- alpha (latin letters only)
+- regex:`<pattern>`
+- passwordstrength:`<rules>` (`A` uppercase, `0` digit, `$` special char)
+- slug (allows only latin letters, numbers, `_`, `-`, `.`)
+- contains:`<required-characters>`
 
 Validation string format:
 
@@ -247,6 +300,36 @@ Mask tokens:
 - `S`: any character
 - `A`: any letter (`A-Za-z`)
 - `9`: any digit (`0-9`)
+
+---
+
+## Helpers API
+
+You can import user helpers from `wc-forms-kit/helpers`:
+
+```js
+import { onMounted, onDestroy, field } from 'wc-forms-kit/helpers'
+
+onMounted((doc) => {
+  const input = doc.querySelector('input[name="username"]')
+  field(input, {
+    value: 'john',
+    classes: ['rounded', 'border'],
+    input: (e) => console.log(e.target.value),
+  })
+})
+
+onDestroy((doc) => {
+  console.log('Document is being unloaded')
+})
+```
+
+`field(el, config)` behavior:
+
+- `classes: string[]` adds classes.
+- event keys (`input`, `change`, `click`, etc.) register listeners.
+- other keys set properties/attributes when possible.
+- listeners are auto-removed on `unload`; manual cleanup is also available via `destroy()`/`dispose()`.
 
 ---
 

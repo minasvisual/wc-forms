@@ -282,6 +282,47 @@ describe('input / change e.detail matches submited payload', () => {
     // Host `input` while filtering is free text; only `change` after selection matches submit.
   })
 
+  test('pills: tag list input/change matches array submit', () => {
+    const form = mountInForm(`
+      <form-input name="skills" type="pills" label="Skills"></form-input>
+    `)
+    const el = form.querySelector('form-input')
+    const getLast = wireEvents(el)
+    const input = el.shadowRoot.querySelector('.wc-form-pill-input')
+
+    input.value = 'js'
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+    input.value = 'css,html'
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+
+    const detail = submitForm(form)
+    const { lastInput, lastChange } = getLast()
+    expect(detail.skills).toEqual(['js', 'css', 'html'])
+    expectInputAndChangeMatchSubmit(el, 'skills', lastInput, lastChange, detail)
+  })
+
+  test('pills: change detail matches array submit payload and remove updates value', () => {
+    const form = mountInForm(`
+      <form-input name="tags" type="pills" label="Tags"></form-input>
+    `)
+    const el = form.querySelector('form-input')
+    const getLast = wireEvents(el)
+    const input = el.shadowRoot.querySelector('.wc-form-pill-input')
+
+    input.value = 'alpha'
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: ',', bubbles: true }))
+    input.value = 'beta'
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+
+    const removeButton = el.shadowRoot.querySelector('button[data-index="0"]')
+    removeButton.click()
+
+    const detail = submitForm(form)
+    const { lastChange } = getLast()
+    expect(detail.tags).toEqual(['beta'])
+    expectChangeMatchesSubmit(el, 'tags', lastChange, detail)
+  })
+
   test('group: leaf change details match nested submit', () => {
     const form = mountInForm(`
       <form-input name="address" type="group" label="Addr">

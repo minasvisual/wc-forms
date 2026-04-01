@@ -146,6 +146,14 @@ describe('form-input default types (component smoke)', () => {
     expect(el.shadowRoot.querySelector('.wc-form-autocomplete-container input')).toBeTruthy()
   })
 
+  test('pills renders tag input container', () => {
+    const el = mountFormInput(
+      `<form-input name="tags" type="pills" label="Tags"></form-input>`
+    )
+    expect(el.shadowRoot.querySelector('.wc-form-pills')).toBeTruthy()
+    expect(el.shadowRoot.querySelector('.wc-form-pill-input')).toBeTruthy()
+  })
+
   test('button exposes native button and forwards click to host', () => {
     const el = mountFormInput(
       `<form-input name="btn" type="button" label="Hit"></form-input>`
@@ -261,6 +269,30 @@ describe('form-input default types (component smoke)', () => {
     expect(detail.address).toBeTruthy()
     expect(detail.address.street).toBe('Main St')
     expect(detail.address.number).toBe(333)
+  })
+
+  test('pills type submits an array value', () => {
+    const form = createFormControl()
+    form.innerHTML = `
+      <form-input name="tags" type="pills" label="Tags"></form-input>
+    `
+    document.body.appendChild(form)
+
+    const el = form.querySelector('form-input')
+    const input = el.shadowRoot.querySelector('.wc-form-pill-input')
+    input.value = 'web components'
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: ',', bubbles: true }))
+    input.value = 'forms'
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+
+    let detail
+    form.addEventListener('submited', (e) => {
+      detail = e.detail
+    })
+
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+
+    expect(detail.tags).toEqual(['web components', 'forms'])
   })
 })
 

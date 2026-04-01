@@ -193,22 +193,28 @@
 
       <form-input type="group" name="address" class="p-4 bg-gray-100 rounded-lg">
         <p>Address: Nested object output</p>
-        <form-input type="text" name="street" label="Street" validations="required|minlen:5"></form-input>
-        <form-input type="number" name="number" label="Number" validations="required|min:1"></form-input> 
-        <form-input type="select" name="city" label="City" validations="required">
-          <option value="sao-paulo">São Paulo</option>
-          <option value="belo-horizonte">Belo Horizonte</option>
-          <option value="">Rio de Janeiro</option>
-        </form-input>
+        <div class="flex gap-4">
+          <form-input type="text" name="street" label="Street" validations="required|minlen:5"></form-input>
+          <form-input type="number" name="number" label="Number" validations="required|min:1"></form-input> 
+          <form-input type="select" name="city" label="City" validations="required">
+            <option value="sao-paulo">São Paulo</option>
+            <option value="belo-horizonte">Belo Horizonte</option>
+            <option value="">Rio de Janeiro</option>
+          </form-input>
+        </div>
       </form-input>
+      <form-input type="pills" name="tags" label="Tags"></form-input>
       
-      <form-input name="go" type="button" label="Fill form (standalone button)"></form-input> 
-      <form-input name="send" type="submit" label="Enviar"></form-input>
+      <div class="flex items-center gap-3">
+        <form-input name="go" type="button" label="Fill form"></form-input>
+        <button type="reset" class="px-4 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50">Reset</button>
+        <form-input name="send" type="submit" label="Enviar"></form-input>
+      </div>
     </form>
 
   </main>
   <!-- <script src="../src/mask.js"></script> -->
-  <script src="./examples/scripts.js"></script>
+  <script type="module" src="./examples/scripts.js"></script>
 </body>
 
 </html>

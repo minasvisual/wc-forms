@@ -215,3 +215,75 @@ export function getFormValuesNested(formElement) {
 
   return nested
 }
+
+export function onMounted(callback) {
+  if (typeof callback !== 'function') return () => {}
+  if (typeof document === 'undefined') return () => {}
+
+  const run = () => callback(document)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', run, { once: true })
+    return () => document.removeEventListener('DOMContentLoaded', run)
+  }
+
+  run()
+  return () => {}
+}
+
+export function onDestroy(callback) {
+  if (typeof callback !== 'function') return () => {}
+  if (typeof window === 'undefined' || typeof document === 'undefined') return () => {}
+
+  const run = () => callback(document)
+  const destroyEvent = 'pagehide'
+  window.addEventListener(destroyEvent, run)
+  return () => window.removeEventListener(destroyEvent, run)
+}
+
+export function field(el, config = {}) {
+  if (!el || typeof config !== 'object') {
+    return { destroy: () => {}, dispose: () => {} }
+  }
+
+  const listeners = []
+  const isEventKey = (key, value) => typeof value === 'function' && (`on${key}` in el)
+  const destroyEvent = 'pagehide'
+
+  const destroy = () => {
+    for (const [key, fn] of listeners) {
+      el.removeEventListener(key, fn)
+    }
+    if (typeof window !== 'undefined') {
+      window.removeEventListener(destroyEvent, destroy)
+    }
+  }
+
+  for (const [key, value] of Object.entries(config)) {
+    if (key === 'classes') {
+      if (Array.isArray(value)) {
+        const classes = value.map(String).filter(Boolean)
+        if (classes.length) el.classList.add(...classes)
+      }
+      continue
+    }
+
+    if (isEventKey(key, value)) {
+      el.addEventListener(key, value)
+      listeners.push([key, value])
+      continue
+    }
+
+    if (key in el) {
+      try { el[key] = value } catch (error) {}
+    }
+
+    if (value !== undefined && value !== null && typeof value !== 'function') {
+      try { el.setAttribute(key, String(value)) } catch (error) {}
+    }
+  }
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener(destroyEvent, destroy)
+  }
+  return { el, destroy, dispose: destroy }
+}
