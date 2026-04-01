@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Native submit compat (no app scripts)</title>
+  <script type="module" src="/src/index.js"></script>
+</head>
+<body>
+  <!-- Values only from markup; submit via the button (Playwright). No listeners here. -->
+  <form is="form-control">
+    <form-input name="title" type="text" value="Hello" label="Title"></form-input>
+    <form-input name="count" type="number" value="42" label="Count"></form-input>
+    <button type="submit">Submit</button>
+  </form>
+</body>
+</html>

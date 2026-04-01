@@ -182,6 +182,22 @@ Available input types:
 - autocomplete
 - pills
 
+### Native HTML form submit (without `form-control`)
+
+> **Alert — backend formatting:** If the form is submitted by the **browser’s default** mechanism (classic GET/POST navigation or a raw `FormData` built from the form), the encoded payload does **not** go through the same pipeline as `<form is="form-control">`’s `submited` event (`getFormValues` / `formatTypeValue`, nested `group` objects, etc.). **Normalize and parse on the server** (or keep `form-control` and use `e.detail`, or submit JSON from your own script).
+
+Types and patterns that usually need **manual handling** on the backend in that mode:
+
+- **`number`**, **`range`**, **`currency`** — values arrive as **strings** in `application/x-www-form-urlencoded`; parse to numbers explicitly where needed.
+- **`checkbox`** — value is the control’s **string** `value` (or the field may be **absent** when unchecked), not a typed boolean.
+- **`checkboxes`**, **`pills`** — often **multiple entries** sharing the same `name`; merge into an array (or handle a single string if your stack collapses duplicates).
+- **`group`** — the request body does **not** contain a nested object keyed by the group’s `name`; children submit under their **leaf `name`** only (possible collisions if names repeat across groups). Use explicit names such as `contact[street]` if your server expects nesting, or remap in middleware.
+- **`text` (and similar) with `mask`** — without the **`unmask`** attribute, the submitted value is usually the **masked display string**; strip or normalize on the server, or use **`unmask`** so the form-associated value follows the library’s digit-stripping rule for that field.
+- **`color`**, **`date`**, **`datetime-local`** — strings in the browser’s wire format; validate or parse if you need stricter types.
+- **`file`** — requires **`multipart/form-data`**; bodies are not the same as urlencoded fields.
+
+Types that are mostly “what you see is what you get” as a single string field (still always strings in urlencoded) include **`text`**, **`email`**, **`url`**, **`search`**, **`password`**, **`textarea`**, **`hidden`**, **`select`**, **`radioboxes`**, and **`autocomplete`** — but encoding, empty vs missing keys, and validation remain your server’s responsibility.
+
 Notes:
 
 - `label` is optional. If omitted, no default `<label>` tag is rendered.
