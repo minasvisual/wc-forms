@@ -21,5 +21,6 @@ export default {
     passwordstrength: 'This field does not meet password strength requirements: {0}',
     slug: 'This field must be a valid slug',
     contains: 'This field must contain required characters: {0}',
+    accept: 'Each file must match one of: {0}',
 
 }

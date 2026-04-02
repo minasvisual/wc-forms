@@ -53,6 +53,29 @@ export const dateRegex = /^[1-2]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])(T([0
 
 export const emailRegex = /^([a-z]){1,}([a-z0-9._-]){1,}([@]){1}([a-z]){2,}([.]){1}([a-z]){2,}([.]?){1}([a-z]?){2,}$/i;
 
+/** One token from HTML `accept`: MIME, `maintype/*`, or leading-dot extension. */
+export function fileMatchesAcceptToken(file, token) {
+  if (!file || typeof token !== 'string') return false
+  const t = token.trim().toLowerCase()
+  if (!t) return false
+  if (t.startsWith('.')) {
+    const name = String(file.name || '').toLowerCase()
+    return name.endsWith(t)
+  }
+  const mt = String(file.type || '').toLowerCase()
+  if (t.endsWith('/*')) {
+    const main = t.slice(0, -2)
+    return mt.startsWith(`${main}/`)
+  }
+  return mt === t
+}
+
+/** OR semantics: file matches if it matches any token. */
+export function fileMatchesAnyAcceptToken(file, tokens) {
+  if (!tokens || !tokens.length) return false
+  return tokens.some((tok) => fileMatchesAcceptToken(file, tok))
+}
+
 export function formatTypeValue(type, value) {
   if (type === 'checkboxes' || type === 'array') {
     if (['', null, undefined, NaN].includes(value)) return [];

@@ -11,7 +11,7 @@ import { FormCurrency } from './inputs/formcurrency.js'
 import { FormHidden } from './inputs/formhidden.js'
 import { FormGroup } from './inputs/formgroup.js'
 import { FormPills } from './inputs/formpills.js'
-import { splitValues, get, dateRegex, emailRegex, isValidNumber } from './helpers.js'
+import { splitValues, get, dateRegex, emailRegex, isValidNumber, fileMatchesAnyAcceptToken } from './helpers.js'
 import english from './lang/en.js'
 
 /**
@@ -260,6 +260,23 @@ export const validations = {
       if (!value || typeof value !== 'string') return false
       const requiredChars = String(params[0]).split('').filter(Boolean)
       return requiredChars.every((ch) => value.includes(ch))
+    }
+  },
+  /**
+   * File filter using the same tokens as the native `accept` attribute (comma-separated after `:`).
+   * Vacuous pass when no file is selected; pair with `required` to require a file.
+   */
+  accept: {
+    message: (params = []) => t('accept', [params.join(',')], 'Each file must match an allowed type'),
+    handle: ({ value, params = [] }) => {
+      if (!params.length) throw new Error('Parameters is required')
+      if (value === undefined || value === null || value === '') return true
+      const files = Array.isArray(value) ? value : [value]
+      const fileList = typeof File !== 'undefined'
+        ? files.filter((f) => f instanceof File)
+        : []
+      if (fileList.length === 0) return true
+      return fileList.every((f) => fileMatchesAnyAcceptToken(f, params))
     }
   }
 }

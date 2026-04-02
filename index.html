@@ -145,7 +145,7 @@
         options="['check1','check2','check3']">
       </form-input>
       <form-input name="textareaField" type="textarea" rows="5" validations="required|maxlen:255|minlen:5"
-        label="Textarea field">
+        label="Textarea field" value="Teste">
       </form-input>
       <form-input name="urlField" type="url" label="Url field" validations="required|url"
         placeholder="ex. https://domain.com">
@@ -174,7 +174,7 @@
       <form-input name="customMaskField" type="text" label="Custom mask" mask mask:format="document"
         validations="required">
       </form-input>
-      <form-input name="doc" type="file" label="Documento"></form-input>
+      <form-input name="doc" type="file" label="Documento" validations="accept:image/png,.jpg,.jpeg"></form-input>
       <form-input name="vol" type="range" min="0" max="100" value="50" label="Volume"></form-input>
       <form-input name="price" type="currency" label="Preço"></form-input>
 

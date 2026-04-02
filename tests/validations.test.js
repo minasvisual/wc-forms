@@ -279,6 +279,35 @@ describe('Config validations - Contains', () => {
   })
 })
 
+describe('Config validations - accept (file)', () => {
+  test('vacuous pass without files; MIME, wildcard, extension', () => {
+    const sut = Config.validations.accept.handle
+    const message = Config.validations.accept.message
+    const png = new File(['x'], 'x.png', { type: 'image/png' })
+    const txt = new File(['x'], 'x.txt', { type: 'text/plain' })
+
+    expect(() => sut({ value: png, params: [] })).toThrow('Parameters is required')
+    expect(sut({ value: undefined, params: ['image/png'] })).toBe(true)
+    expect(sut({ value: '', params: ['image/png'] })).toBe(true)
+    expect(sut({ value: png, params: ['image/png'] })).toBe(true)
+    expect(sut({ value: png, params: ['image/jpeg', 'image/png'] })).toBe(true)
+    expect(sut({ value: png, params: ['image/*'] })).toBe(true)
+    expect(sut({ value: txt, params: ['image/png'] })).toBe(false)
+    expect(sut({ value: new File(['x'], 'doc.PDF', { type: 'application/pdf' }), params: ['.pdf'] })).toBe(true)
+    expect(sut({ value: new File(['x'], 'doc.txt', { type: 'text/plain' }), params: ['.pdf'] })).toBe(false)
+    expect(message(['image/png', '.pdf'])).toBe('Each file must match one of: image/png,.pdf')
+  })
+
+  test('multiple files must each match', () => {
+    const sut = Config.validations.accept.handle
+    const a = new File(['a'], 'a.png', { type: 'image/png' })
+    const b = new File(['b'], 'b.png', { type: 'image/png' })
+    expect(sut({ value: [a, b], params: ['image/png'] })).toBe(true)
+    const bad = new File(['b'], 'b.txt', { type: 'text/plain' })
+    expect(sut({ value: [a, bad], params: ['image/png'] })).toBe(false)
+  })
+})
+
 // describe('registerValidation test', () => {
 //   it('should register new validation', () => {
 //     const name = 'test'

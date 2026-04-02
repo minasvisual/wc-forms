@@ -188,6 +188,19 @@ describe('form-input default types (component smoke)', () => {
     expect(el.shadowRoot.querySelector('input[type="file"]')).toBeTruthy()
   })
 
+  test('file forwards native attributes and syncs accept after change', () => {
+    const el = mountFormInput(
+      `<form-input name="f" type="file" label="F" accept="image/png" multiple></form-input>`
+    )
+    const inner = el.shadowRoot.querySelector('input[type="file"]')
+    expect(inner.getAttribute('accept')).toBe('image/png')
+    expect(inner.hasAttribute('multiple')).toBe(true)
+    el.setAttribute('accept', '.pdf,.png')
+    expect(inner.getAttribute('accept')).toBe('.pdf,.png')
+    el.removeAttribute('multiple')
+    expect(inner.hasAttribute('multiple')).toBe(false)
+  })
+
   test('hidden', () => {
     const el = mountFormInput(
       `<form-input name="h" type="hidden" value="csrf-token"></form-input>`

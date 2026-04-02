@@ -24,8 +24,40 @@ class FormComponent extends BaseHTMLElement {
   static formAssociated = true;
   
   static get observedAttributes() {
-    return ["value", "checked"];
+    return [
+      'value',
+      'checked',
+      'accept',
+      'multiple',
+      'capture',
+      'required',
+      'disabled',
+      'name',
+      'autocomplete',
+      'tabindex',
+      'webkitdirectory'
+    ]
   }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue) return
+    const fileNative = new Set([
+      'accept',
+      'multiple',
+      'capture',
+      'required',
+      'disabled',
+      'name',
+      'autocomplete',
+      'tabindex',
+      'webkitdirectory'
+    ])
+    if (!fileNative.has(name)) return
+    if (this.getAttribute('type') !== 'file' || !this.formitem) return
+    if (newValue === null) this.formitem.removeAttribute(name)
+    else this.formitem.setAttribute(name, newValue)
+  }
+
   checkValidity() {
     return this.internals.checkValidity();
   }

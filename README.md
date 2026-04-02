@@ -28,86 +28,35 @@ npm install wc-forms-kit
 Or use it directly from a CDN:
 
 ```html
-<script type="module" src="https://unpkg.com/wc-forms-kit"></script>
+<link rel="stylesheet" href="https://unpkg.com/wc-forms-kit@latest/style.css">
+<script type="module" src="https://unpkg.com/wc-forms-kit@latest"></script>
 ```
 
 ---
 
 ## Basic Vanilla Implementation (with and without npm)
 
-### With npm
+### With npm (as module)
 
-```js
-import { Config } from 'wc-forms-kit/config'
-
-// Optional: configure before registering custom elements
-Config.basePath = '/your/public/assets'
-
+```js 
 import 'wc-forms-kit'
+import 'wc-forms-kit/style.css' // optional
 ```
 
-```html
-<form is="form-control">
-  <form-input
-    name="fullname"
-    type="text"
-    label="Name"
-    help="Should be your fullname"
-    validations="required|minlen:5|maxlen:128">
-  </form-input>
-
-  <form-input name="country" type="autocomplete" label="Country">
-    <option value="br">Brazil</option>
-    <option value="us">USA</option>
-  </form-input>
-
-  <form-input type="submit" label="Send"></form-input>
-</form>
+```html 
+<script type="module">
+  import { onMounted } from 'wc-forms-kit/helpers'
+</script>
 ```
-
-You can hydrate initial form state with a `values` JSON object on the form:
-
-```html
-<form
-  is="form-control"
-  values='{"user":"Ulisses","skills":["js","wc"],"address":{"street":"Main St","number":333}}'
->
-  <form-input name="user" type="text" label="User"></form-input>
-  <form-input name="skills" type="pills" label="Skills"></form-input>
-  <form-input type="group" name="address">
-    <form-input name="street" type="text" label="Street"></form-input>
-    <form-input name="number" type="number" label="Number"></form-input>
-  </form-input>
-</form>
-```
-
-Or use the JS property API (auto stringify/parse):
-
-```js
-const form = document.querySelector('form[is="form-control"]')
-form.values = {
-  user: 'Ulisses',
-  skills: ['js', 'wc'],
-  address: { street: 'Main St', number: 333 }
-}
-```
-
-You can also clear all custom fields using native-like reset on the wrapper:
-
-```js
-const form = document.querySelector('form[is="form-control"]')
-form.reset() // clears current values and removes `values` attribute
-```
-
 ### Without npm (CDN)
 
 ```html
+<script type="module" src="https://unpkg.com/wc-forms-kit@latest"></script>
 <script type="module">
-  import { Config } from 'https://unpkg.com/wc-forms-kit/config'
-  Config.basePath = '/src' // optional
+  import { onMounted } from 'https://unpkg.com/wc-forms-kit@latest/helpers' 
 </script>
-<script type="module" src="https://unpkg.com/wc-forms-kit"></script>
 ```
+
 
 ---
 
@@ -130,6 +79,7 @@ export function ReactForm() {
         type="text"
         label="Name"
         validations="required"
+        onInput={e => console.log(e.detail)}
       />
 
       <FormInput
@@ -154,33 +104,45 @@ The adapter wires native listeners on the host: `onChange`, `onInput`, `onClick`
 
 ---
 
-## Inputs
+## Form Control
 
-Available input types:
+To use complete form parsing types you need to use `<form is="form-control" ...>`. 
 
-- text
-- email
-- url
-- search
-- number
-- color
-- password
-- date
-- datetime-local
-- range
-- hidden
-- group (container; nests child fields under its `name` in submit payload)
-- file
-- currency
-- button (emits `click`, does not submit)
-- submit (submits parent form)
-- select
-- radioboxes
-- checkboxes
-- checkbox
-- textarea
-- autocomplete
-- pills
+```html
+<form is="form-control" >
+  <form-input name="user" type="text" label="User"></form-input>
+  <form-input name="skills" type="pills" label="Skills"></form-input>
+  <form-input type="group" name="address">
+    <form-input name="street" type="text" label="Street"></form-input>
+    <form-input name="number" type="number" label="Number"></form-input>
+  </form-input>
+</form>
+```
+You can hydrate initial form state with a `values` JSON object on the form:
+
+```html
+<form is="form-control" values='{"user":"Ulisses","skills":["js","wc"],"address":{"street":"Main St","number":333}}'>
+  ...
+</form>
+```
+
+Or use the JS property API (auto stringify/parse):
+
+```js
+const form = document.querySelector('form[is="form-control"]')
+form.values = {
+  user: 'Ulisses',
+  skills: ['js', 'wc'],
+  address: { street: 'Main St', number: 333 }
+}
+```
+
+You can also clear all custom fields using native-like reset on the wrapper:
+
+```js
+const form = document.querySelector('form[is="form-control"]')
+form.reset() // clears current values and removes `values` attribute
+```
 
 ### Native HTML form submit (without `form-control`)
 
@@ -188,13 +150,15 @@ Available input types:
 
 Types and patterns that usually need **manual handling** on the backend in that mode:
 
-- **`number`**, **`range`**, **`currency`** — values arrive as **strings** in `application/x-www-form-urlencoded`; parse to numbers explicitly where needed.
-- **`checkbox`** — value is the control’s **string** `value` (or the field may be **absent** when unchecked), not a typed boolean.
-- **`checkboxes`**, **`pills`** — often **multiple entries** sharing the same `name`; merge into an array (or handle a single string if your stack collapses duplicates).
-- **`group`** — the request body does **not** contain a nested object keyed by the group’s `name`; children submit under their **leaf `name`** only (possible collisions if names repeat across groups). Use explicit names such as `contact[street]` if your server expects nesting, or remap in middleware.
-- **`text` (and similar) with `mask`** — without the **`unmask`** attribute, the submitted value is usually the **masked display string**; strip or normalize on the server, or use **`unmask`** so the form-associated value follows the library’s digit-stripping rule for that field.
-- **`color`**, **`date`**, **`datetime-local`** — strings in the browser’s wire format; validate or parse if you need stricter types.
-- **`file`** — requires **`multipart/form-data`**; bodies are not the same as urlencoded fields.
+| Types / pattern | What you get on the wire | What to do on the server |
+|-----------------|--------------------------|---------------------------|
+| **`number`**, **`range`**, **`currency`** | Values are **strings** in `application/x-www-form-urlencoded` | Parse to numbers explicitly where needed |
+| **`checkbox`** | The control’s string **`value`**, or the field **absent** when unchecked | Treat as string/absence, not a native boolean |
+| **`checkboxes`**, **`pills`** | Often **multiple entries** with the same `name` | Merge into an array (or a single string if your stack collapses duplicates) |
+| **`group`** | **No** nested object under the group’s `name`; children use **leaf `name`** only (possible collisions across groups) | Use names like `contact[street]` if you need nesting, or remap in middleware |
+| **`text`** (and similar) **with `mask`** | Usually the **masked display string** unless **`unmask`** is set | Strip/normalize, or use **`unmask`** so the form value follows the library’s digit-stripping rule |
+| **`color`**, **`date`**, **`datetime-local`** | Strings in the browser’s **wire format** | Validate or parse if you need stricter types |
+| **`file`** | Requires **`multipart/form-data`** | Do not expect a urlencoded body for file fields |
 
 Types that are mostly “what you see is what you get” as a single string field (still always strings in urlencoded) include **`text`**, **`email`**, **`url`**, **`search`**, **`password`**, **`textarea`**, **`hidden`**, **`select`**, **`radioboxes`**, and **`autocomplete`** — but encoding, empty vs missing keys, and validation remain your server’s responsibility.
 
@@ -206,35 +170,106 @@ Notes:
   - if both are missing, placeholder is empty.
 - `pills` builds an array of tags. Type text and press `,`, `Enter`, or `Tab` to create tags; paste comma/newline text to add multiple tags; click the close button to remove a tag.
 
-Nested group example:
+## Native Inputs
 
-```html
-<form is="form-control">
-  <form-input type="group" name="address">
-    <form-input type="text" name="street" label="Street"></form-input>
-    <form-input type="number" name="number" label="Number"></form-input>
-  </form-input>
+Available input types:
 
-  <form-input type="submit" label="Send"></form-input>
-</form>
-```
+- text
+  ```html 
+    <form-input type="text" name="street" label="Street" placeholder="Street name" value="value default" help="optional help text"></form-input> 
+  ```
+- Same to:
+  - hidden 
+  - email 
+  - url 
+  - search 
+  - number 
+  - color 
+  - password 
+  - date 
+  - datetime-local 
+  - currency
 
-Submit payload (`submited` event detail):
+- select
+  ```html 
+    <form-input name="selectField" type="select" label="Select field" options="[
+        {'value': '', 'label': 'Select an option'},
+        {'value': 1, 'label': 'Option 1'},
+        {'value': 2, 'label': 'Option 2'}
+      ]">
+    // or as html
+    <form-input name="selectFieldHtml" type="select" label="Select field (HTML Options)">
+      <option value="">Select an option</option>
+      <option value="1">Option 1</option>
+      <option value="2">Option 2</option> 
+    </form-input>
+  ``` 
+- Same to:
+  - autocomplete
+  - radioboxes
+  - checkboxes
 
-```js
-{ address: { street: 'Main St', number: 333 } }
-```
+- checkbox
+  ```html 
+    <form-input name="checkboxValueField" type="checkbox" value="optin" checked></form-input>
+  ``` 
 
-Pills example:
+- textarea
+  ```html 
+    <form-input name="textareaField" type="textarea" rows="5" label="Textarea field" value="default value"></form-input>
+  ``` 
 
-```html
-<form-input
-  name="skills"
-  type="pills"
-  label="Skills"
-  help="Type a tag and press comma">
-</form-input>
-```
+- range
+  ```html 
+    <form-input type="range" name="vol"  min="0" max="100" value="50" label="Volume"></form-input>
+  ``` 
+
+- group (container; nests child fields under its `name` in submit payload)
+  - Nested group example:
+    ```html 
+      <form-input type="group" name="address">
+        <form-input type="text" name="street" label="Street"></form-input>
+        <form-input type="number" name="number" label="Number"></form-input>
+      </form-input>
+
+      <form-input type="submit" label="Send"></form-input>
+    </form>
+    ```
+  - Submit payload (`submited` event detail):
+
+    ```js
+    { address: { street: 'Main St', number: 333 } }
+    ```
+- file
+  ```html 
+    <form-input name="image" type="file" label="Thumb" accept="image/*" multiple validations="required|accept:image/png,.jpg,.jpeg"></form-input>
+  ``` 
+  - Native `<input type="file">` attributes set on the host (for example `accept`, `multiple`, `capture`, `required`, `disabled`, `webkitdirectory`, `autocomplete`, `tabindex`, `name`) are copied to the inner control at build time and kept in sync when those attributes change.
+  - Built-in `accept:` validation enforces allowed MIME / extension tokens (same rules as the HTML `accept` attribute); use `required` when the field must have a file.
+  - Submit payload (`submited` event detail):
+
+    ```js
+    { image: [File instance] }
+    ```
+    
+- pills
+  ```html 
+    <form-input type="pills" name="tags" label="Tags" value="['1']"></form-input>
+  ``` 
+  - Submit payload (`submited` event detail):
+
+    ```js
+    { tags: ["1","2", ...] }
+    ```
+
+- button (emits `click`, does not submit)
+  ```html 
+    <form-input name="go" type="button" label="Fill form"></form-input>
+  ```  
+- submit (submits parent form) 
+  ```html 
+    <form-input name="send" type="submit" label="Send form"></form-input>
+  ```  
 
 ---
 
@@ -263,6 +298,7 @@ Built-in validation rules:
 - passwordstrength:`<rules>` (`A` uppercase, `0` digit, `$` special char)
 - slug (allows only latin letters, numbers, `_`, `-`, `.`)
 - contains:`<required-characters>`
+- accept:`<comma-separated-tokens>` (files only: MIME types, `image/*` style wildcards, or leading-dot extensions such as `.pdf`; passes when no file is selected—combine with `required` if needed)
 
 Validation string format:
 
@@ -270,7 +306,7 @@ Validation string format:
 <form-input validations="required|minlen:5|maxlen:128"></form-input>
 ```
 
-### Emitted Events
+## Emitted Events
 
 Events are standard DOM `Event` instances (`bubbles`, `composed`). When a payload is documented below, it is attached as `e.detail` (not `CustomEvent`).
 
@@ -291,12 +327,21 @@ The submit handler builds field values with the same parsing rules as `formatTyp
 - **`type="autocomplete"`**: while filtering, host `input` events carry the raw filter text; only **`change`** after choosing a suggestion matches the submitted value.
 
 Automated checks live in `tests/form-input-events-submit.test.js` (covers registered input types except `button` / `submit`, which are not part of the data payload).
+ 
+Example
+
+```js
+const emailFld = document.querySelector('form-input[name="email"]')
+
+emailFld.addEventListener('input', (e) => console.log(e.detail) ) // log every key inputed
+emailFld.addEventListener('change', (e) => console.log(e.detail) ) // log data after blur or change (for selectables)
+``` 
 
 ---
 
 ## Masks
 
-Native mask formats (via VanillaMasker):
+Native mask formats (via [Vanila Masker](https://github.com/vanilla-masker/vanilla-masker)):
 
 - pattern (default)
 - currency (`mask:format="currency"`)
@@ -309,6 +354,7 @@ Examples:
 <form-input name="phone" type="text" mask="(99) 99999-9999" validations="required"></form-input>
 <form-input name="money" type="text" mask mask:format="currency"></form-input>
 <form-input name="phoneRaw" type="text" mask="(99) 9999-9999" unmask></form-input>
+
 ```
 
 Mask tokens:
@@ -321,10 +367,10 @@ Mask tokens:
 
 ## Helpers API
 
-You can import user helpers from `wc-forms-kit/helpers`:
+You can import user helpers from `wc-forms-kit/helpers`
 
 ```js
-import { onMounted, onDestroy, field } from 'wc-forms-kit/helpers'
+import { onMounted, onDestroy, field, getFormValues, jsonToString } from 'wc-forms-kit/helpers' // or unpkg 'https://unpkg.com/wc-forms-kit@latest/helpers'
 
 onMounted((doc) => {
   const input = doc.querySelector('input[name="username"]')
@@ -341,12 +387,40 @@ onDestroy((doc) => {
 ```
 
 `field(el, config)` behavior:
-
 - `classes: string[]` adds classes.
 - event keys (`input`, `change`, `click`, etc.) register listeners.
 - other keys set properties/attributes when possible.
 - listeners are auto-removed on `unload`; manual cleanup is also available via `destroy()`/`dispose()`.
+```js  
+  field( element, {
+    value: 'defalt value',
+    classes: ['rounded', 'border'],
+    /// ... other attributes
+    input: (e) => console.log(e.target.value),
+  }) 
+```
+`onMounted(callback)` behavior: 
+- listeners start state by `DOMContentLoaded`; .
 
+`onDestroy(callback)` behavior: 
+- listeners are auto-removed on `unload`; manual cleanup is also available via `destroy()`/`dispose()`.
+
+`getFormValues(formElementSubmitEvent)` behavior:
+- `formElementSubmitEvent`: e.target. 
+- return native form element parsed as complex object .
+```js  
+  const handleSubmit = (e) => { 
+    console.log('Manual form parsing', getFormValues(e.target))
+  }
+  
+  <FormControl onSubmited={handleSubmit}></FormControl>
+```
+
+`jsonToString(Object)` behavior: 
+- return json as simple quotes {'any':'data'}.
+```js   
+  <form is="form-input" values={jsonToString({name:'jonh'})}>
+```
 ---
 
 ## Customization and Custom Inputs/Mask/Validation

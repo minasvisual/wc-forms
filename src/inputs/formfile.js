@@ -1,6 +1,6 @@
 import { renderAttributes, resolveLabel } from '../helpers.js'
 
-const exclude = ['class', 'type', 'options', 'validations', 'label', 'help', 'mask', 'unmask', 'value']
+const exclude = ['class', 'type', 'options', 'validations', 'label', 'help', 'mask', 'unmask', 'value', 'data-type']
 
 export class FormFile {
   constructor({ el, shadow }) {
