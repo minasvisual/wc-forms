@@ -1,6 +1,6 @@
 {
   "name": "wc-forms-kit",
-  "version": "1.0.16",
+  "version": "1.0.18",
   "author": "Ulisses Mantovani",
   "description": "Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https://formkit.com/getting-started/what-is-formkit) library.",
   "repository": {
@@ -9,6 +9,8 @@
   },
   "license": "ISC",
   "main": "src/index.js",
+  "module": "src/index.js",
+  "customElements": "custom-elements.json",
   "type": "module",
   "exports": {
     ".": "./src/index.js",
@@ -19,12 +21,14 @@
     "./react-core": "./src/react.js"
   },
   "files": [
-    "src"
+    "src",
+    "custom-elements.json"
   ],
   "scripts": {
     "test": "vitest --exclude tests/e2e/**",
     "dev": "http-server -c-1 -o /examples/vanila.html",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "cem": "cem analyze --globs \"src/**/*.js\" --outdir ."
   },
   "keywords": [
     "form generation",
@@ -38,6 +42,7 @@
     "alpine forms"
   ],
   "devDependencies": {
+    "@custom-elements-manifest/analyzer": "^0.11.0",
     "@playwright/test": "^1.58.2",
     "jsdom": "^29.0.1",
     "vitest": "^2.1.3"

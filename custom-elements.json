@@ -1,0 +1,2788 @@
+{
+  "schemaVersion": "1.0.0",
+  "readme": "",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "src/config.js",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "languages",
+          "type": {
+            "text": "object"
+          },
+          "default": "{ en: english }",
+          "description": "Validations object"
+        },
+        {
+          "kind": "function",
+          "name": "t",
+          "parameters": [
+            {
+              "name": "key"
+            },
+            {
+              "name": "params",
+              "default": "[]"
+            },
+            {
+              "name": "fallback",
+              "default": "''"
+            }
+          ]
+        },
+        {
+          "kind": "variable",
+          "name": "validations",
+          "type": {
+            "text": "object"
+          },
+          "default": "{ required: { message: () => t('required'), /** * @function handle * @description Check if the value is not empty (not null, undefined, NaN, or empty string) * @param {Object} - object with the value to check and the parameters of the validation * @param {any} value - the value to check * @param {string[]} params - the parameters of the validation * @returns {boolean} - true if the value is not empty, false otherwise */ handle: ({ value }) => { return ![null, undefined, NaN, ''].includes(value) } }, email: { message: () => t('email'), handle: ({ value }) => { return value && typeof value === 'string' && emailRegex.test(value) } }, url: { message: () => t('url'), handle: ({ value }) => { if (!value || typeof value !== 'string') return false try { // Accept full absolute URLs only, matching the placeholder/documentation intent. let parsed = new URL(value) return ['http:', 'https:'].includes(parsed.protocol) } catch (error) { return false } } }, minlen: { message: (params) => t('minlen', [get(params, '[0]', 1)]), handle: ({ value, params }) => { if (!get(params, '[0]')) throw new Error('Parameter 1 not found') return value && (value.length >= parseInt(params[0] || 1)) } }, maxlen: { message: (params, value, values) => t('maxlen', [get(params, '[0]', 255)]), handle: ({ value, params }) => { return value && (value.length <= parseInt(get(params, '[0]', '255'))) } }, confirm: { message: (params) => t('confirm', [get(params, '[0]')]), handle: ({ value, params = [], values }) => { if (!get(params, '[0]')) throw new Error('Parameter to match not found') return value && get(params, '[0]') && (value === values[get(params, '[0]')]) } }, isdate: { message: () => t('isdate'), handle: ({ value }) => { return value && typeof value === 'string' && dateRegex.test(value) } }, isafter: { message: (params = [], value, values) => t('isafter', [get(params, '[0]')]), handle: ({ value, params = [], values }) => { if (!get(params, '[0]')) throw new Error('Parameter 1 not found') return value && typeof value === 'string' && dateRegex.test(value) && new Date(value) > new Date(params[0]) } }, isbefore: { message: (params = [], value, values) => t('isbefore', [get(params, '[0]')]), handle: ({ value, params = [], values }) => { if (!get(params, '[0]')) throw new Error('Parameter 1 not found') return value && typeof value === 'string' && dateRegex.test(value) && new Date(value) < new Date(params[0]) } }, isnumber: { message: () => t('isnumber'), handle: ({ value, params }) => { return value && typeof Number(value) === 'number' && !Number.isNaN(Number(value)) } }, startwith: { message: (params, value) => t('startwith', [value]), handle: ({ value, params }) => { if (!get(params, '[0]')) throw new Error('Parameter 1 not found') return value && value.toLowerCase().startsWith(params[0].toLowerCase()) } }, endswith: { message: (params = [], value) => t('endswith', [value]), handle: ({ value, params }) => { return value && value.toLowerCase().endsWith(params[0].toLowerCase()) } }, in: { message: (params = [], value) => t('in', [params?.join(',')]), handle: ({ value, params }) => { let isarr = Array.isArray(value); params = params.map(String) if (isarr) return value.some(v => params.includes(String(v))) if (value && String(value).includes(',')) { return splitValues(String(value)).some(v => params.includes(v)); } else { return value && params.includes(String(value)); } } }, notin: { message: (params = [], value) => t('notin', [params?.join(',')]), handle: ({ value, params }) => { if (params.length === 0) throw new Error('Parameters is required') if (value && value.includes(',')) return !splitValues(value).some(v => splitValues(params).includes(v)) else return value && !splitValues(params).includes(value) } }, max: { message: (params = [], value) => t('max', [get(params, '[0]')]), handle: ({ value, params }) => { if (!get(params, '[0]') || !isValidNumber(value)) throw new Error('Parameter 1 not found') if (!isValidNumber(value)) throw new Error('Value must be a number') return value && Number(value) <= Number(params[0]) } }, min: { message: (params = [], value) => t('min', [get(params, '[0]')]), handle: ({ value, params }) => { if (!get(params, '[0]') || !isValidNumber(value)) throw new Error('Parameter 1 not found') if (!isValidNumber(value)) throw new Error('Value must be a number') return value && Number(value) >= Number(params[0]) } }, istrue: { message: () => t('istrue', [], 'This field must be true'), handle: ({ value }) => { return value && (value === 'true' || value === true) } }, isfalse: { message: () => t('isfalse', [], 'This field must be false'), handle: ({ value }) => { return value && (value === 'false' || value === false) } }, alphanumeric: { message: () => t('alphanumeric', [], 'This field must contain only latin letters and numbers'), handle: ({ value }) => { if (!value || typeof value !== 'string') return false return /^[\\p{Script=Latin}\\p{Mark}\\d]+$/u.test(value) } }, alpha: { message: () => t('alpha', [], 'This field must contain only latin letters'), handle: ({ value }) => { if (!value || typeof value !== 'string') return false return /^[\\p{Script=Latin}\\p{Mark}]+$/u.test(value) } }, regex: { message: (params = []) => t('regex', [get(params, '[0]', '')], 'This field does not match required pattern'), handle: ({ value, params = [] }) => { if (!get(params, '[0]')) throw new Error('Parameter 1 not found') if (!value || typeof value !== 'string') return false try { const rx = new RegExp(params[0]) return rx.test(value) } catch (error) { return false } } }, passwordstrength: { message: (params = []) => t('passwordstrength', [params.join(',')], 'This field does not meet password strength requirements'), handle: ({ value, params = [] }) => { if (!value || typeof value !== 'string') return false if (!params.length) throw new Error('Parameters is required') const required = params.map(String) for (const rule of required) { if (rule === 'A' && !/[A-Z]/.test(value)) return false if (rule === '0' && !/\\d/.test(value)) return false if (rule === '$' && !/[^\\p{Script=Latin}\\p{Mark}\\d]/u.test(value)) return false } return true } }, slug: { message: () => t('slug', [], 'This field must be a valid slug'), handle: ({ value }) => { if (!value || typeof value !== 'string') return false return /^[\\p{Script=Latin}\\p{Mark}\\d_.-]+$/u.test(value) } }, contains: { message: (params = []) => t('contains', [get(params, '[0]', '')], 'This field must contain required characters'), handle: ({ value, params = [] }) => { if (!get(params, '[0]')) throw new Error('Parameter 1 not found') if (!value || typeof value !== 'string') return false const requiredChars = String(params[0]).split('').filter(Boolean) return requiredChars.every((ch) => value.includes(ch)) } }, /** * File filter using the same tokens as the native `accept` attribute (comma-separated after `:`). * Vacuous pass when no file is selected; pair with `required` to require a file. */ accept: { message: (params = []) => t('accept', [params.join(',')], 'Each file must match an allowed type'), handle: ({ value, params = [] }) => { if (!params.length) throw new Error('Parameters is required') if (value === undefined || value === null || value === '') return true const files = Array.isArray(value) ? value : [value] const fileList = typeof File !== 'undefined' ? files.filter((f) => f instanceof File) : [] if (fileList.length === 0) return true return fileList.every((f) => fileMatchesAnyAcceptToken(f, params)) } } }"
+        },
+        {
+          "kind": "variable",
+          "name": "inputs",
+          "type": {
+            "text": "object"
+          },
+          "default": "{ text: { output: 'text', source: FormText, }, number: { output: 'number', source: FormText, }, email: { output: 'text', source: FormText, }, url: { output: 'text', source: FormText, }, color: { output: 'text', source: FormText, }, date: { output: 'text', source: FormText, }, 'datetime-local': { source: FormText, }, password: { output: 'text', source: FormText, }, search: { output: 'text', source: FormText, }, select: { output: 'text', source: FormSelect, }, checkbox: { output: 'text', source: FormCheckBox, }, radioboxes: { output: 'text', source: FormChecksRadio, }, checkboxes: { output: 'array', source: FormChecksBoxes, }, pills: { output: 'array', source: FormPills, }, textarea: { output: 'text', source: FormTextarea, }, autocomplete: { output: 'text', source: FormAutocomplete, }, button: { output: 'button', source: FormButton, }, submit: { output: 'submit', source: FormSubmit, }, file: { output: 'file', source: FormFile, }, range: { output: 'number', source: FormRange, }, currency: { output: 'currency', source: FormCurrency, }, hidden: { output: 'hidden', source: FormHidden, }, group: { output: 'group', source: FormGroup, }, }"
+        },
+        {
+          "kind": "variable",
+          "name": "masks",
+          "type": {
+            "text": "object"
+          },
+          "default": "{ 'pattern': 'maskPattern', 'currency': 'maskMoney', 'number': 'maskNumber', 'alpha': 'maskAlphaNum', }"
+        },
+        {
+          "kind": "variable",
+          "name": "Config",
+          "type": {
+            "text": "object"
+          },
+          "default": "{ lang: 'en', basePath: '/src', stylesURL: '', stylesText: '', validations, inputs, masks, languages, setLanguage(name) { if (!name) throw new Error('Language name is required') this.lang = name }, registerMask(name, rule) { if (!name) throw new Error('Name is required') if (!rule || typeof rule !== 'function') throw new Error('Rule is required as object') this.masks[name] = rule }, registerValidation(name, rule) { if (!name) throw new Error('Name is required') if (!rule || typeof rule !== 'object') throw new Error('Rule is required as object') if (!rule.message || typeof rule.message !== 'function') throw new Error('Rule message must be a function') if (!rule.handle || typeof rule.handle !== 'function') throw new Error('Rule handle must be a function') this.validations[name] = rule }, registerInput(name, classObj, options = {}) { if (!name) throw new Error('Name is required') if (!classObj || typeof classObj !== 'function') throw new Error('Rule is required as object') this.inputs[name] = { output: options?.output || 'text', source: classObj } }, registerLanguage(name, messages) { if (!name) throw new Error('Language name is required') if (!messages || typeof messages !== 'object') throw new Error('Messages is required as object') this.languages[name] = messages } }"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "languages",
+          "declaration": {
+            "name": "languages",
+            "module": "src/config.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "t",
+          "declaration": {
+            "name": "t",
+            "module": "src/config.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "validations",
+          "declaration": {
+            "name": "validations",
+            "module": "src/config.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "inputs",
+          "declaration": {
+            "name": "inputs",
+            "module": "src/config.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "masks",
+          "declaration": {
+            "name": "masks",
+            "module": "src/config.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "Config",
+          "declaration": {
+            "name": "Config",
+            "module": "src/config.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/helpers.js",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "renderAttributes",
+          "parameters": [
+            {
+              "name": "el"
+            },
+            {
+              "name": "exclude",
+              "default": "[]"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "extractValidations",
+          "parameters": [
+            {
+              "name": "validString"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "templateString",
+          "parameters": [
+            {
+              "name": "str"
+            },
+            {
+              "name": "obj"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "jsonToString",
+          "parameters": [
+            {
+              "name": "data"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "normalizeJson",
+          "parameters": [
+            {
+              "name": "data"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "splitValues",
+          "parameters": [
+            {
+              "name": "value"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "get",
+          "parameters": [
+            {
+              "name": "obj"
+            },
+            {
+              "name": "path"
+            },
+            {
+              "name": "defaultValue",
+              "default": "undefined"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "isValidNumber",
+          "parameters": [
+            {
+              "name": "value"
+            }
+          ]
+        },
+        {
+          "kind": "variable",
+          "name": "dateRegex",
+          "default": "/^[1-2]\\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])(T([01]\\d|2[0-3]):[0-5]\\d(:[01]\\d)?)?$/"
+        },
+        {
+          "kind": "variable",
+          "name": "emailRegex",
+          "default": "/^([a-z]){1,}([a-z0-9._-]){1,}([@]){1}([a-z]){2,}([.]){1}([a-z]){2,}([.]?){1}([a-z]?){2,}$/i"
+        },
+        {
+          "kind": "function",
+          "name": "fileMatchesAcceptToken",
+          "parameters": [
+            {
+              "name": "file"
+            },
+            {
+              "name": "token"
+            }
+          ],
+          "description": "One token from HTML `accept`: MIME, `maintype/*`, or leading-dot extension."
+        },
+        {
+          "kind": "function",
+          "name": "fileMatchesAnyAcceptToken",
+          "parameters": [
+            {
+              "name": "file"
+            },
+            {
+              "name": "tokens"
+            }
+          ],
+          "description": "OR semantics: file matches if it matches any token."
+        },
+        {
+          "kind": "function",
+          "name": "formatTypeValue",
+          "parameters": [
+            {
+              "name": "type"
+            },
+            {
+              "name": "value"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "resolveLabel",
+          "parameters": [
+            {
+              "name": "el"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "resolvePlaceholder",
+          "parameters": [
+            {
+              "name": "el"
+            },
+            {
+              "name": "fallbackLabel",
+              "default": "''"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "collectFormControls",
+          "parameters": [
+            {
+              "name": "formElement"
+            }
+          ],
+          "description": "Listed controls plus <form-input> hosts (not always present in form.elements)."
+        },
+        {
+          "kind": "function",
+          "name": "syncFormInputValidations",
+          "parameters": [
+            {
+              "name": "formElement"
+            }
+          ],
+          "description": "Applies Config-driven rules to ElementInternals so checkValidity/reportValidity work."
+        },
+        {
+          "kind": "function",
+          "name": "getFormValues",
+          "parameters": [
+            {
+              "name": "formElement"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "getFormInputGroupPath",
+          "parameters": [
+            {
+              "name": "el"
+            },
+            {
+              "name": "formElement"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "getFormInputPathKey",
+          "parameters": [
+            {
+              "name": "el"
+            },
+            {
+              "name": "formElement"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "getFormValuesNested",
+          "parameters": [
+            {
+              "name": "formElement"
+            }
+          ],
+          "description": "Builds a nested values object for submit payloads when `type=\"group\"` is used.\r\nNotes:\r\n- This keeps validation logic flat (leaf values) and only nests the final submit `detail`.\r\n- Collisions between leaf fields with the same name across different groups are not fully\r\n  disambiguated (existing behavior is already name-based)."
+        },
+        {
+          "kind": "function",
+          "name": "onMounted",
+          "parameters": [
+            {
+              "name": "callback"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "onDestroy",
+          "parameters": [
+            {
+              "name": "callback"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "field",
+          "parameters": [
+            {
+              "name": "el"
+            },
+            {
+              "name": "config",
+              "default": "{}"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "renderAttributes",
+          "declaration": {
+            "name": "renderAttributes",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "extractValidations",
+          "declaration": {
+            "name": "extractValidations",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "templateString",
+          "declaration": {
+            "name": "templateString",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "jsonToString",
+          "declaration": {
+            "name": "jsonToString",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "normalizeJson",
+          "declaration": {
+            "name": "normalizeJson",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "splitValues",
+          "declaration": {
+            "name": "splitValues",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "get",
+          "declaration": {
+            "name": "get",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "isValidNumber",
+          "declaration": {
+            "name": "isValidNumber",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "dateRegex",
+          "declaration": {
+            "name": "dateRegex",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "emailRegex",
+          "declaration": {
+            "name": "emailRegex",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "fileMatchesAcceptToken",
+          "declaration": {
+            "name": "fileMatchesAcceptToken",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "fileMatchesAnyAcceptToken",
+          "declaration": {
+            "name": "fileMatchesAnyAcceptToken",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "formatTypeValue",
+          "declaration": {
+            "name": "formatTypeValue",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "resolveLabel",
+          "declaration": {
+            "name": "resolveLabel",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "resolvePlaceholder",
+          "declaration": {
+            "name": "resolvePlaceholder",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "collectFormControls",
+          "declaration": {
+            "name": "collectFormControls",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "syncFormInputValidations",
+          "declaration": {
+            "name": "syncFormInputValidations",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getFormValues",
+          "declaration": {
+            "name": "getFormValues",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getFormInputGroupPath",
+          "declaration": {
+            "name": "getFormInputGroupPath",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getFormInputPathKey",
+          "declaration": {
+            "name": "getFormInputPathKey",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getFormValuesNested",
+          "declaration": {
+            "name": "getFormValuesNested",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "onMounted",
+          "declaration": {
+            "name": "onMounted",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "onDestroy",
+          "declaration": {
+            "name": "onDestroy",
+            "module": "src/helpers.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "field",
+          "declaration": {
+            "name": "field",
+            "module": "src/helpers.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/index.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FormComponent",
+          "members": [
+            {
+              "kind": "field",
+              "name": "formAssociated",
+              "type": {
+                "text": "boolean"
+              },
+              "static": true,
+              "default": "true"
+            },
+            {
+              "kind": "method",
+              "name": "checkValidity"
+            },
+            {
+              "kind": "method",
+              "name": "reportValidity"
+            },
+            {
+              "kind": "field",
+              "name": "validity",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "validationMessage",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "checked"
+            },
+            {
+              "kind": "method",
+              "name": "addStyles"
+            },
+            {
+              "kind": "method",
+              "name": "syncInternalsFromFormItem",
+              "description": "Keeps ElementInternals in sync with the inner control so `form-input.value` and `event.target.value`\r\nmatch the current UI state (not only after `change`). Required for `input` events fired while typing."
+            },
+            {
+              "kind": "method",
+              "name": "emitEvent",
+              "parameters": [
+                {
+                  "name": "type"
+                },
+                {
+                  "name": "detail"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "getFormValues"
+            },
+            {
+              "kind": "method",
+              "name": "handleSubmit"
+            },
+            {
+              "kind": "method",
+              "name": "validate"
+            },
+            {
+              "kind": "method",
+              "name": "maskIt",
+              "parameters": [
+                {
+                  "name": "InputSource"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "unmaskIt",
+              "parameters": [
+                {
+                  "name": "value"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "internals"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "value"
+            },
+            {
+              "name": "checked"
+            },
+            {
+              "name": "accept"
+            },
+            {
+              "name": "multiple"
+            },
+            {
+              "name": "capture"
+            },
+            {
+              "name": "required"
+            },
+            {
+              "name": "disabled"
+            },
+            {
+              "name": "name"
+            },
+            {
+              "name": "autocomplete"
+            },
+            {
+              "name": "tabindex"
+            },
+            {
+              "name": "webkitdirectory"
+            }
+          ],
+          "superclass": {
+            "name": "BaseHTMLElement",
+            "module": "src/index.js"
+          },
+          "tagName": "form-input",
+          "customElement": true
+        },
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FormWrapper",
+          "members": [
+            {
+              "kind": "field",
+              "name": "values"
+            },
+            {
+              "kind": "method",
+              "name": "emitEvent",
+              "parameters": [
+                {
+                  "name": "values"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "reset"
+            },
+            {
+              "kind": "method",
+              "name": "applyValuesFromAttribute",
+              "parameters": [
+                {
+                  "name": "{ retry = true }",
+                  "default": "{}"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "hydrateValuesWhenReady",
+              "parameters": [
+                {
+                  "name": "valuesObj"
+                },
+                {
+                  "name": "retries",
+                  "default": "8"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "setValues",
+              "parameters": [
+                {
+                  "name": "valuesObj",
+                  "default": "{}"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "resetValues"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "values"
+            }
+          ],
+          "superclass": {
+            "name": "BaseHTMLFormElement",
+            "module": "src/index.js"
+          },
+          "tagName": "form-control",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "custom-element-definition",
+          "name": "form-input",
+          "declaration": {
+            "name": "FormComponent",
+            "module": "src/index.js"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "form-control",
+          "declaration": {
+            "name": "FormWrapper",
+            "module": "src/index.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/mask.js",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "VMasker",
+          "default": "function(el) { if (!el) { throw new Error(\"VanillaMasker: There is no element to bind.\"); } var elements = (\"length\" in el) ? (el.length ? el : []) : [el]; return new VanillaMasker(elements); }"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "default",
+          "declaration": {
+            "name": "VMasker",
+            "module": "src/mask.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/react-bind.js",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "WcFormsReact"
+        },
+        {
+          "kind": "variable",
+          "name": "FormInput"
+        },
+        {
+          "kind": "variable",
+          "name": "FormControl"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "WcFormsReact",
+          "declaration": {
+            "name": "WcFormsReact",
+            "module": "src/react-bind.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FormInput",
+          "declaration": {
+            "name": "FormInput",
+            "module": "src/react-bind.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FormControl",
+          "declaration": {
+            "name": "FormControl",
+            "module": "src/react-bind.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/react.js",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "createWcFormsReact",
+          "parameters": [
+            {
+              "name": "ReactInstance",
+              "description": "The React module (e.g. imported via `import React from 'react'` or `window.React`)",
+              "type": {
+                "text": "Object"
+              }
+            }
+          ],
+          "description": "React Adapter for wc-forms-kit\nCreates React Wrappers for the web components without requiring bundlers or import maps.",
+          "return": {
+            "type": {
+              "text": "Object"
+            }
+          }
+        },
+        {
+          "kind": "variable",
+          "name": "FormInput"
+        },
+        {
+          "kind": "variable",
+          "name": "FormControl"
+        },
+        {
+          "kind": "variable",
+          "name": "WcFormsReact"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "createWcFormsReact",
+          "declaration": {
+            "name": "createWcFormsReact",
+            "module": "src/react.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "WcFormsReact",
+          "declaration": {
+            "name": "WcFormsReact",
+            "module": "src/react.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FormInput",
+          "declaration": {
+            "name": "FormInput",
+            "module": "src/react.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FormControl",
+          "declaration": {
+            "name": "FormControl",
+            "module": "src/react.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/style-content.js",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "defaultStyles",
+          "default": "`.wc-form-outer { display: flex; flex-direction: column; gap: var(--wcf-outer-gap, 0); .wc-form-label { padding: var(--wcf-label-padding, 5px 3px 3px 0px); font-weight: var(--wcf-label-weight, 500); } .wc-form-wrapper { display: flex; flex-direction: column; .wc-form-input-wrapper { width: 100%; display: flex; align-items: center; gap: var(--wcf-input-wrapper-gap, 5px); } .wc-form-group { display: contents; } .wc-form-input, .wc-form-textarea, .wc-form-select { padding: var(--wcf-input-padding, 5px 8px); width: 100%; } .wc-form-range-wrap { align-items: center; gap: var(--wcf-range-wrap-gap, 10px); } .wc-form-range-bound { font-size: var(--wcf-range-bound-font-size, 0.875rem); font-variant-numeric: tabular-nums; color: var(--wcf-range-bound-color, inherit); opacity: var(--wcf-range-bound-opacity, 0.9); flex-shrink: 0; line-height: 1; display: inline-flex; align-items: center; justify-content: center; min-width: var(--wcf-range-bound-min-width, 2ch); } .wc-form-range-bound-min { justify-content: flex-end; padding-right: var(--wcf-range-bound-pad-inline, 6px); text-align: right; } .wc-form-range-bound-max { justify-content: flex-start; padding-left: var(--wcf-range-bound-pad-inline, 6px); text-align: left; } .wc-form-range-control { flex: 1; min-width: 0; display: flex; align-items: center; } .wc-form-range-track-shell { position: relative; width: 100%; display: flex; align-items: center; box-sizing: border-box; padding-block: var(--wcf-range-track-pad-block, 0.35em); } .wc-form-range-input { width: 100%; margin: 0; padding: 0; vertical-align: middle; box-sizing: border-box; } .wc-form-outer .wc-form-wrapper .wc-form-range-input.wc-form-input { padding: 0; } .wc-form-hidden { display: none; } .wc-form-range-popup { position: absolute; left: 0%; bottom: calc(100% - 1px); transform: translateX(-50%) translateY(-2px); padding: var(--wcf-range-popup-padding, 3px 8px); font-size: var(--wcf-range-popup-font-size, 0.8125rem); font-variant-numeric: tabular-nums; line-height: 1.15; border-radius: var(--wcf-range-popup-radius, 5px); background: var(--wcf-range-popup-bg, #1e293b); color: var(--wcf-range-popup-color, #fff); pointer-events: none; white-space: nowrap; box-shadow: var(--wcf-range-popup-shadow, 0 1px 3px rgba(0, 0, 0, 0.22)); } .wc-form-help { padding: var(--wcf-help-padding, 0px 5px 5px 0px); color: var(--wcf-help-color, inherit); font-size: var(--wcf-help-font-size, inherit); } .wc-errors { display: flex; flex-direction: column; color: var(--wcf-error-color, red); } .wc-form-checks { display: flex; flex-direction: column; .wc-form-check { display: flex; align-items: center; justify-content: start; padding: var(--wcf-check-padding, 5px 0px); gap: var(--wcf-check-gap, 5px); label { text-transform: capitalize; } input { accent-color: var(--wcf-check-accent, auto); } } } } }`"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "defaultStyles",
+          "declaration": {
+            "name": "defaultStyles",
+            "module": "src/style-content.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/validation.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "Validate",
+          "members": [
+            {
+              "kind": "method",
+              "name": "parseRule",
+              "parameters": [
+                {
+                  "name": "ruleString"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "parseParams",
+              "parameters": [
+                {
+                  "name": "ruleString"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "getSourceRule"
+            },
+            {
+              "kind": "method",
+              "name": "validate",
+              "parameters": [
+                {
+                  "name": "value"
+                },
+                {
+                  "name": "el"
+                },
+                {
+                  "name": "values"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "rule",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "params",
+              "type": {
+                "text": "array"
+              },
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "errors",
+              "type": {
+                "text": "array"
+              },
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "sourceRule"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "Validate",
+          "declaration": {
+            "name": "Validate",
+            "module": "src/validation.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/inputs/custominput.js",
+      "declarations": [],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FormCurrency",
+          "declaration": {
+            "name": "FormCurrency",
+            "module": "./formcurrency.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/inputs/formautocomplete.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FormAutocomplete",
+          "members": [
+            {
+              "kind": "method",
+              "name": "onInputClick",
+              "parameters": [
+                {
+                  "name": "e"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "parseOptions",
+              "parameters": [
+                {
+                  "name": "el"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onInput",
+              "parameters": [
+                {
+                  "name": "e"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "renderSuggestions"
+            },
+            {
+              "kind": "method",
+              "name": "hideSuggestions"
+            },
+            {
+              "kind": "method",
+              "name": "onListClick",
+              "parameters": [
+                {
+                  "name": "e"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "onKeyDown",
+              "parameters": [
+                {
+                  "name": "e"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "selectValue",
+              "parameters": [
+                {
+                  "name": "val"
+                },
+                {
+                  "name": "label"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "updateDisplay",
+              "parameters": [
+                {
+                  "name": "label"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "resolveLabel",
+              "parameters": [
+                {
+                  "name": "val"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "setError",
+              "parameters": [
+                {
+                  "name": "error"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "el",
+              "default": "el"
+            },
+            {
+              "kind": "field",
+              "name": "internals",
+              "default": "internals"
+            },
+            {
+              "kind": "field",
+              "name": "name"
+            },
+            {
+              "kind": "field",
+              "name": "itype"
+            },
+            {
+              "kind": "field",
+              "name": "help"
+            },
+            {
+              "kind": "field",
+              "name": "label"
+            },
+            {
+              "kind": "field",
+              "name": "_options"
+            },
+            {
+              "kind": "field",
+              "name": "inputvalue"
+            },
+            {
+              "kind": "field",
+              "name": "error",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "filteredOptions",
+              "type": {
+                "text": "array"
+              },
+              "default": "[]"
+            },
+            {
+              "kind": "field",
+              "name": "highlighted",
+              "type": {
+                "text": "number"
+              },
+              "default": "-1"
+            },
+            {
+              "kind": "field",
+              "name": "_isSelecting",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "_isTyping",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "innerHTML",
+              "default": "` <div class=\"wc-form-outer\" part=\"outer\"> <slot name=\"before\"></slot> <slot name=\"label\">${this.label ? `<label class=\"wc-form-label\" part=\"label\">${this.label}</label>` : ''}</slot> <div class=\"wc-form-wrapper\" part=\"wrapper\"> <div class=\"wc-form-input-wrapper\" part=\"input-wrapper\"> <slot name=\"prefix\"></slot> <slot name=\"input\"> <div class=\"wc-form-autocomplete-container\" style=\"position:relative; width:100%;\"> <input class=\"wc-form-input\" part=\"input\" autocomplete=\"off\" placeholder=\"${resolvePlaceholder(el, this.label)}\" ${renderAttributes(el, ['class', 'name', 'type','placeholder'])} /> <div class=\"wc-form-autocomplete-display\" part=\"display-label\" style=\"position:absolute; left:0; top:0; bottom:0; pointer-events:none; display:flex; align-items:center; padding-left:8px; color:#1e293b;\"></div> </div> <ul class=\"wc-form-autocomplete-list\" part=\"autocomplete-list\" style=\"display:none;\"></ul> </slot> <slot name=\"suffix\"></slot> </div> <slot name=\"help\">${this.help ? `<small part=\"help\">${this.help}</small>` : ''}</slot> <slot name=\"errors\"><small class=\"wc-errors hidden\" part=\"errors\"></small></slot> </div> <slot name=\"after\"></slot> </div> `"
+            },
+            {
+              "kind": "field",
+              "name": "textContent",
+              "default": "` .wc-form-input-wrapper { position: relative; } .wc-form-autocomplete-list { position: absolute; left: 0; right: 0; top: 100%; margin-top: 2px; z-index: 99; background: #fff; border: 1px solid #cbd5e1; border-radius: 0 0 6px 6px; box-shadow: 0 2px 8px 0 #a0aec040; list-style: none; padding: 0; max-height: 184px; overflow-y: auto; } .wc-form-autocomplete-item { padding: 8px 14px; cursor: pointer; } .wc-form-autocomplete-item.highlighted, .wc-form-autocomplete-item:hover { background: #3b82f620; color: #2563eb; } `"
+            },
+            {
+              "kind": "field",
+              "name": "erroritem"
+            },
+            {
+              "kind": "field",
+              "name": "formitem"
+            },
+            {
+              "kind": "field",
+              "name": "inputItem"
+            },
+            {
+              "kind": "field",
+              "name": "displayItem"
+            },
+            {
+              "kind": "field",
+              "name": "_list"
+            },
+            {
+              "kind": "field",
+              "name": "value"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FormAutocomplete",
+          "declaration": {
+            "name": "FormAutocomplete",
+            "module": "src/inputs/formautocomplete.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/inputs/formbutton.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FormButton",
+          "members": [
+            {
+              "kind": "method",
+              "name": "setError",
+              "parameters": [
+                {
+                  "name": "error"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "el",
+              "default": "el"
+            },
+            {
+              "kind": "field",
+              "name": "label"
+            },
+            {
+              "kind": "field",
+              "name": "name"
+            },
+            {
+              "kind": "field",
+              "name": "innerHTML",
+              "default": "` <div class=\"wc-form-outer\" part=\"outer\"> <slot name=\"before\"></slot> <div class=\"wc-form-wrapper\" part=\"wrapper\"> <div class=\"wc-form-input-wrapper\" part=\"input-wrapper\"> <slot name=\"prefix\"></slot> <slot name=\"input\"> <button type=\"button\" class=\"wc-form-input wc-form-button\" part=\"input\" ${renderAttributes(el, exclude)}>${this.label}</button> </slot> <slot name=\"suffix\"></slot> </div> <slot name=\"errors\"><small class=\"wc-errors hidden\" part=\"errors\"></small></slot> </div> <slot name=\"after\"></slot> </div> `"
+            },
+            {
+              "kind": "field",
+              "name": "erroritem"
+            },
+            {
+              "kind": "field",
+              "name": "formitem"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FormButton",
+          "declaration": {
+            "name": "FormButton",
+            "module": "src/inputs/formbutton.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/inputs/formchecks.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FormChecks",
+          "members": [
+            {
+              "kind": "method",
+              "name": "onMounted"
+            },
+            {
+              "kind": "method",
+              "name": "onDestroy"
+            },
+            {
+              "kind": "method",
+              "name": "isJson",
+              "parameters": [
+                {
+                  "name": "data"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "getChecks"
+            },
+            {
+              "kind": "method",
+              "name": "isChecked",
+              "parameters": [
+                {
+                  "name": "item"
+                },
+                {
+                  "name": "index"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "emitValue",
+              "parameters": [
+                {
+                  "name": "e"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "setError",
+              "parameters": [
+                {
+                  "name": "error"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "itype"
+            },
+            {
+              "kind": "field",
+              "name": "name"
+            },
+            {
+              "kind": "field",
+              "name": "help"
+            },
+            {
+              "kind": "field",
+              "name": "label"
+            },
+            {
+              "kind": "field",
+              "name": "options"
+            },
+            {
+              "kind": "field",
+              "name": "inputvalue"
+            },
+            {
+              "kind": "field",
+              "name": "error",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "internals",
+              "default": "internals"
+            },
+            {
+              "kind": "field",
+              "name": "innerHTML",
+              "default": "` <div class=\"wc-form-outer\" part=\"outer\"> <slot name=\"before\"></slot> <slot name=\"label\">${this.label ? `<label class=\"wc-form-label\" part=\"label\">${this.label}</label>` : ''}</slot> <div class=\"wc-form-wrapper\" part=\"wrapper\"> <div class=\"wc-form-checks\" part=\"checks-wrapper\" tabindex=\"0\"> <slot name=\"prefix\"></slot> <slot name=\"input\">${this.getChecks()}</slot> <slot name=\"suffix\"></slot> </div> <slot name=\"help\">${this.help ? `<small part=\"help\">${this.help}</small>` : ''}</slot> <slot name=\"errors\"><small class=\"wc-errors hidden\" part=\"errors\"></small></slot> </div> <slot name=\"after\"></slot> </div> `"
+            },
+            {
+              "kind": "field",
+              "name": "erroritem"
+            },
+            {
+              "kind": "field",
+              "name": "formitem"
+            },
+            {
+              "kind": "field",
+              "name": "inputs"
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FormChecksRadio",
+          "members": [
+            {
+              "kind": "method",
+              "name": "emitValue",
+              "parameters": [
+                {
+                  "name": "e"
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "onMounted",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "onDestroy",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "isJson",
+              "parameters": [
+                {
+                  "name": "data"
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "getChecks",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "isChecked",
+              "parameters": [
+                {
+                  "name": "item"
+                },
+                {
+                  "name": "index"
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setError",
+              "parameters": [
+                {
+                  "name": "error"
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "itype",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "name",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "help",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "label",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "options",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "inputvalue",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "error",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "internals",
+              "default": "internals",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "innerHTML",
+              "default": "` <div class=\"wc-form-outer\" part=\"outer\"> <slot name=\"before\"></slot> <slot name=\"label\">${this.label ? `<label class=\"wc-form-label\" part=\"label\">${this.label}</label>` : ''}</slot> <div class=\"wc-form-wrapper\" part=\"wrapper\"> <div class=\"wc-form-checks\" part=\"checks-wrapper\" tabindex=\"0\"> <slot name=\"prefix\"></slot> <slot name=\"input\">${this.getChecks()}</slot> <slot name=\"suffix\"></slot> </div> <slot name=\"help\">${this.help ? `<small part=\"help\">${this.help}</small>` : ''}</slot> <slot name=\"errors\"><small class=\"wc-errors hidden\" part=\"errors\"></small></slot> </div> <slot name=\"after\"></slot> </div> `",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "erroritem",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "formitem",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "inputs",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            }
+          ],
+          "superclass": {
+            "name": "FormChecks",
+            "module": "src/inputs/formchecks.js"
+          }
+        },
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FormChecksBoxes",
+          "members": [
+            {
+              "kind": "method",
+              "name": "emitValue",
+              "parameters": [
+                {
+                  "name": "e"
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "onMounted",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "onDestroy",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "isJson",
+              "parameters": [
+                {
+                  "name": "data"
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "getChecks",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "isChecked",
+              "parameters": [
+                {
+                  "name": "item"
+                },
+                {
+                  "name": "index"
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setError",
+              "parameters": [
+                {
+                  "name": "error"
+                }
+              ],
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "itype",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "name",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "help",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "label",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "options",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "inputvalue",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "error",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "internals",
+              "default": "internals",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "innerHTML",
+              "default": "` <div class=\"wc-form-outer\" part=\"outer\"> <slot name=\"before\"></slot> <slot name=\"label\">${this.label ? `<label class=\"wc-form-label\" part=\"label\">${this.label}</label>` : ''}</slot> <div class=\"wc-form-wrapper\" part=\"wrapper\"> <div class=\"wc-form-checks\" part=\"checks-wrapper\" tabindex=\"0\"> <slot name=\"prefix\"></slot> <slot name=\"input\">${this.getChecks()}</slot> <slot name=\"suffix\"></slot> </div> <slot name=\"help\">${this.help ? `<small part=\"help\">${this.help}</small>` : ''}</slot> <slot name=\"errors\"><small class=\"wc-errors hidden\" part=\"errors\"></small></slot> </div> <slot name=\"after\"></slot> </div> `",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "erroritem",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "formitem",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "inputs",
+              "inheritedFrom": {
+                "name": "FormChecks",
+                "module": "src/inputs/formchecks.js"
+              }
+            }
+          ],
+          "superclass": {
+            "name": "FormChecks",
+            "module": "src/inputs/formchecks.js"
+          }
+        },
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FormCheckBox",
+          "members": [
+            {
+              "kind": "method",
+              "name": "onMounted"
+            },
+            {
+              "kind": "method",
+              "name": "isChecked"
+            },
+            {
+              "kind": "method",
+              "name": "emitValue",
+              "parameters": [
+                {
+                  "name": "e"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "setError",
+              "parameters": [
+                {
+                  "name": "error"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "itype"
+            },
+            {
+              "kind": "field",
+              "name": "name"
+            },
+            {
+              "kind": "field",
+              "name": "help"
+            },
+            {
+              "kind": "field",
+              "name": "label"
+            },
+            {
+              "kind": "field",
+              "name": "checked"
+            },
+            {
+              "kind": "field",
+              "name": "defaultValue"
+            },
+            {
+              "kind": "field",
+              "name": "isBoolean",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "!this.defaultValue"
+            },
+            {
+              "kind": "field",
+              "name": "error",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "internals",
+              "default": "internals"
+            },
+            {
+              "kind": "field",
+              "name": "innerHTML",
+              "default": "` <div class=\"wc-form-outer\" part=\"outer\"> <slot name=\"before\"></slot> <div class=\"wc-form-wrapper\" part=\"wrapper\"> <div class=\"wc-form-checks\" part=\"checks-wrapper\"> <slot name=\"prefix\"></slot> <label class=\"wc-form-check\" part=\"check-label\" for=\"${this.name}\"> <input type=\"checkbox\" id=\"${this.name}\" part=\"input\" name=\"${this.name}\" value=\"${this.defaultValue || 0}\" ${this.isChecked()} /> <span part=\"check-text\"><slot name=\"label\">${this.label || ''}</slot></span> </label> <slot name=\"suffix\"></slot> </div> <slot name=\"help\">${this.help ? `<small part=\"help\">${this.help}</small>` : ''}</slot> <slot name=\"errors\"><small class=\"wc-errors hidden\" part=\"errors\"></small></slot> </div> <slot name=\"after\"></slot> </div> `"
+            },
+            {
+              "kind": "field",
+              "name": "erroritem"
+            },
+            {
+              "kind": "field",
+              "name": "formitem"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FormChecks",
+          "declaration": {
+            "name": "FormChecks",
+            "module": "src/inputs/formchecks.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FormChecksRadio",
+          "declaration": {
+            "name": "FormChecksRadio",
+            "module": "src/inputs/formchecks.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FormChecksBoxes",
+          "declaration": {
+            "name": "FormChecksBoxes",
+            "module": "src/inputs/formchecks.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "FormCheckBox",
+          "declaration": {
+            "name": "FormCheckBox",
+            "module": "src/inputs/formchecks.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/inputs/formcurrency.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FormCurrency",
+          "members": [
+            {
+              "kind": "method",
+              "name": "maskCurrency",
+              "parameters": [
+                {
+                  "name": "value"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "parseNumber",
+              "parameters": [
+                {
+                  "name": "masked"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "syncFromInput"
+            },
+            {
+              "kind": "method",
+              "name": "onMounted"
+            },
+            {
+              "kind": "method",
+              "name": "setError",
+              "parameters": [
+                {
+                  "name": "error"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "el",
+              "default": "el"
+            },
+            {
+              "kind": "field",
+              "name": "internals",
+              "default": "internals"
+            },
+            {
+              "kind": "field",
+              "name": "name"
+            },
+            {
+              "kind": "field",
+              "name": "help"
+            },
+            {
+              "kind": "field",
+              "name": "label"
+            },
+            {
+              "kind": "field",
+              "name": "error",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "innerHTML",
+              "default": "` <div class=\"wc-form-outer\" part=\"outer\"> <slot name=\"before\"></slot> <slot name=\"label\">${this.label ? `<label class=\"wc-form-label\" part=\"label\">${this.label}</label>` : ''}</slot> <div class=\"wc-form-wrapper\" part=\"wrapper\"> <div class=\"wc-form-input-wrapper\" part=\"input-wrapper\"> <slot name=\"prefix\"><span class=\"wc-form-currency-prefix\" part=\"prefix\" aria-hidden=\"true\">R$&nbsp;</span></slot> <slot name=\"input\"> <input class=\"wc-form-input\" part=\"input\" type=\"text\" inputmode=\"decimal\" autocomplete=\"off\" placeholder=\"${resolvePlaceholder(el, this.label || '0.00')}\" ${renderAttributes(el, exclude.concat(['placeholder']))} /> </slot> <slot name=\"suffix\"></slot> </div> <slot name=\"help\">${this.help ? `<small part=\"help\">${this.help}</small>` : ''}</slot> <slot name=\"errors\"><small class=\"wc-errors hidden\" part=\"errors\"></small></slot> </div> <slot name=\"after\"></slot> </div> `"
+            },
+            {
+              "kind": "field",
+              "name": "erroritem"
+            },
+            {
+              "kind": "field",
+              "name": "formitem"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FormCurrency",
+          "declaration": {
+            "name": "FormCurrency",
+            "module": "src/inputs/formcurrency.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/inputs/formfile.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FormFile",
+          "members": [
+            {
+              "kind": "method",
+              "name": "setError",
+              "parameters": [
+                {
+                  "name": "error"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "help"
+            },
+            {
+              "kind": "field",
+              "name": "label"
+            },
+            {
+              "kind": "field",
+              "name": "innerHTML",
+              "default": "` <div class=\"wc-form-outer\" part=\"outer\"> <slot name=\"before\"></slot> <slot name=\"label\">${this.label ? `<label class=\"wc-form-label\" part=\"label\">${this.label}</label>` : ''}</slot> <div class=\"wc-form-wrapper\" part=\"wrapper\"> <div class=\"wc-form-input-wrapper\" part=\"input-wrapper\"> <slot name=\"prefix\"></slot> <slot name=\"input\"> <input type=\"file\" class=\"wc-form-input\" part=\"input\" ${renderAttributes(el, exclude)} /> </slot> <slot name=\"suffix\"></slot> </div> <slot name=\"help\">${this.help ? `<small part=\"help\">${this.help}</small>` : ''}</slot> <slot name=\"errors\"><small class=\"wc-errors hidden\" part=\"errors\"></small></slot> </div> <slot name=\"after\"></slot> </div> `"
+            },
+            {
+              "kind": "field",
+              "name": "erroritem"
+            },
+            {
+              "kind": "field",
+              "name": "formitem"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FormFile",
+          "declaration": {
+            "name": "FormFile",
+            "module": "src/inputs/formfile.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/inputs/formgroup.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FormGroup",
+          "members": [
+            {
+              "kind": "method",
+              "name": "setError",
+              "parameters": [
+                {
+                  "name": "error"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "el",
+              "default": "el"
+            },
+            {
+              "kind": "field",
+              "name": "innerHTML",
+              "default": "` <div class=\"wc-form-group\" part=\"outer\"> <slot name=\"before\"></slot> <slot></slot> <slot name=\"after\"></slot> <small class=\"wc-errors hidden\" part=\"errors\"></small> </div> `"
+            },
+            {
+              "kind": "field",
+              "name": "erroritem"
+            },
+            {
+              "kind": "field",
+              "name": "formitem"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FormGroup",
+          "declaration": {
+            "name": "FormGroup",
+            "module": "src/inputs/formgroup.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/inputs/formhidden.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FormHidden",
+          "members": [
+            {
+              "kind": "method",
+              "name": "setError",
+              "parameters": [
+                {
+                  "name": "error"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "innerHTML",
+              "default": "` <div class=\"wc-form-outer wc-form-hidden\" part=\"outer\"> <input type=\"hidden\" class=\"wc-form-input\" part=\"input\" ${renderAttributes(el, exclude)} /> <small class=\"wc-errors hidden\" part=\"errors\" aria-hidden=\"true\"></small> </div> `"
+            },
+            {
+              "kind": "field",
+              "name": "erroritem"
+            },
+            {
+              "kind": "field",
+              "name": "formitem"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FormHidden",
+          "declaration": {
+            "name": "FormHidden",
+            "module": "src/inputs/formhidden.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/inputs/forminput.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FormText",
+          "members": [
+            {
+              "kind": "method",
+              "name": "setError",
+              "parameters": [
+                {
+                  "name": "error"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "name"
+            },
+            {
+              "kind": "field",
+              "name": "itype"
+            },
+            {
+              "kind": "field",
+              "name": "help"
+            },
+            {
+              "kind": "field",
+              "name": "label"
+            },
+            {
+              "kind": "field",
+              "name": "inputvalue"
+            },
+            {
+              "kind": "field",
+              "name": "error",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "innerHTML",
+              "default": "` <div class=\"wc-form-outer\" part=\"outer\"> <slot name=\"before\"></slot> <slot name=\"label\">${this.label ? `<label class=\"wc-form-label\" part=\"label\">${this.label}</label>` : ''}</slot> <div class=\"wc-form-wrapper\" part=\"wrapper\"> <div class=\"wc-form-input-wrapper\" part=\"input-wrapper\"> <slot name=\"prefix\"></slot> <slot name=\"input\"><input class=\"wc-form-input\" part=\"input\" placeholder=\"${resolvePlaceholder(el, this.label)}\" ${renderAttributes(el, ['class','placeholder'])} /></slot> <slot name=\"suffix\"></slot> </div> <slot name=\"help\">${this.help ? `<small part=\"help\">${this.help}</small>` : ''}</slot> <slot name=\"errors\"><small class=\"wc-errors hidden\" part=\"errors\"></small></slot> </div> <slot name=\"after\"></slot> </div> `"
+            },
+            {
+              "kind": "field",
+              "name": "erroritem"
+            },
+            {
+              "kind": "field",
+              "name": "formitem"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FormText",
+          "declaration": {
+            "name": "FormText",
+            "module": "src/inputs/forminput.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/inputs/formpills.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FormPills",
+          "members": [
+            {
+              "kind": "method",
+              "name": "handleKeyDown",
+              "parameters": [
+                {
+                  "name": "event"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "handleClick",
+              "parameters": [
+                {
+                  "name": "event"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "handlePaste",
+              "parameters": [
+                {
+                  "name": "event"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "addTokensFromText",
+              "parameters": [
+                {
+                  "name": "text"
+                },
+                {
+                  "name": "{ emit = false }",
+                  "default": "{}"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "commitInput"
+            },
+            {
+              "kind": "method",
+              "name": "removePill",
+              "parameters": [
+                {
+                  "name": "index"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "emitCurrentValue",
+              "parameters": [
+                {
+                  "name": "type"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "render"
+            },
+            {
+              "kind": "method",
+              "name": "setError",
+              "parameters": [
+                {
+                  "name": "error"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "el",
+              "default": "el"
+            },
+            {
+              "kind": "field",
+              "name": "internals",
+              "default": "internals"
+            },
+            {
+              "kind": "field",
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "help"
+            },
+            {
+              "kind": "field",
+              "name": "label"
+            },
+            {
+              "kind": "field",
+              "name": "error",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "values"
+            },
+            {
+              "kind": "field",
+              "name": "innerHTML",
+              "default": "` <style> .wc-form-pills { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; width: 100%; } .wc-form-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(15, 23, 42, 0.08); color: inherit; line-height: 1.2; } .wc-form-pill button { border: 0; background: transparent; cursor: pointer; padding: 0; line-height: 1; font-size: 16px; color: inherit; } .wc-form-pill-input { min-width: 140px; flex: 1 1 140px; border: 0; outline: none; background: transparent; font: inherit; color: inherit; } </style> <div class=\"wc-form-outer\" part=\"outer\"> <slot name=\"before\"></slot> <slot name=\"label\">${this.label ? `<label class=\"wc-form-label\" part=\"label\">${this.label}</label>` : ''}</slot> <div class=\"wc-form-wrapper\" part=\"wrapper\"> <div class=\"wc-form-input-wrapper\" part=\"input-wrapper\"> <slot name=\"prefix\"></slot> <slot name=\"input\"> <div class=\"wc-form-input wc-form-pills\" part=\"input\"></div> </slot> <slot name=\"suffix\"></slot> </div> <slot name=\"help\">${this.help ? `<small part=\"help\">${this.help}</small>` : ''}</slot> <slot name=\"errors\"><small class=\"wc-errors hidden\" part=\"errors\"></small></slot> </div> <slot name=\"after\"></slot> </div> `"
+            },
+            {
+              "kind": "field",
+              "name": "erroritem"
+            },
+            {
+              "kind": "field",
+              "name": "formitem"
+            },
+            {
+              "kind": "field",
+              "name": "inputItem"
+            },
+            {
+              "kind": "field",
+              "name": "className",
+              "type": {
+                "text": "string"
+              },
+              "default": "'wc-form-pill-input'"
+            },
+            {
+              "kind": "field",
+              "name": "type",
+              "type": {
+                "text": "string"
+              },
+              "default": "'text'"
+            },
+            {
+              "kind": "field",
+              "name": "placeholder"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FormPills",
+          "declaration": {
+            "name": "FormPills",
+            "module": "src/inputs/formpills.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/inputs/formrange.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FormRange",
+          "members": [
+            {
+              "kind": "method",
+              "name": "updatePopup"
+            },
+            {
+              "kind": "method",
+              "name": "onMounted"
+            },
+            {
+              "kind": "method",
+              "name": "setError",
+              "parameters": [
+                {
+                  "name": "error"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "el",
+              "default": "el"
+            },
+            {
+              "kind": "field",
+              "name": "help"
+            },
+            {
+              "kind": "field",
+              "name": "label"
+            },
+            {
+              "kind": "field",
+              "name": "minLabel"
+            },
+            {
+              "kind": "field",
+              "name": "maxLabel"
+            },
+            {
+              "kind": "field",
+              "name": "innerHTML",
+              "default": "` <div class=\"wc-form-outer\" part=\"outer\"> <slot name=\"before\"></slot> <slot name=\"label\">${this.label ? `<label class=\"wc-form-label\" part=\"label\">${this.label}</label>` : ''}</slot> <div class=\"wc-form-wrapper\" part=\"wrapper\"> <div class=\"wc-form-input-wrapper wc-form-range-wrap\" part=\"input-wrapper\"> <slot name=\"prefix\"><span class=\"wc-form-range-bound wc-form-range-bound-min\" part=\"range-min\">${this.minLabel}</span></slot> <div class=\"wc-form-range-control\" part=\"range-control\"> <div class=\"wc-form-range-track-shell\" part=\"range-track\"> <span class=\"wc-form-range-popup\" part=\"range-value-popup\" role=\"status\" aria-live=\"polite\"></span> <slot name=\"input\"> <input type=\"range\" class=\"wc-form-input wc-form-range-input\" part=\"input\" ${renderAttributes(el, exclude)} /> </slot> </div> </div> <slot name=\"suffix\"><span class=\"wc-form-range-bound wc-form-range-bound-max\" part=\"range-max\">${this.maxLabel}</span></slot> </div> <slot name=\"help\">${this.help ? `<small part=\"help\">${this.help}</small>` : ''}</slot> <slot name=\"errors\"><small class=\"wc-errors hidden\" part=\"errors\"></small></slot> </div> <slot name=\"after\"></slot> </div> `"
+            },
+            {
+              "kind": "field",
+              "name": "erroritem"
+            },
+            {
+              "kind": "field",
+              "name": "formitem"
+            },
+            {
+              "kind": "field",
+              "name": "popup"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FormRange",
+          "declaration": {
+            "name": "FormRange",
+            "module": "src/inputs/formrange.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/inputs/formselect.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FormSelect",
+          "members": [
+            {
+              "kind": "method",
+              "name": "isJson",
+              "parameters": [
+                {
+                  "name": "data"
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "paramChanged"
+            },
+            {
+              "kind": "method",
+              "name": "setError",
+              "parameters": [
+                {
+                  "name": "error"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "name"
+            },
+            {
+              "kind": "field",
+              "name": "help"
+            },
+            {
+              "kind": "field",
+              "name": "label"
+            },
+            {
+              "kind": "field",
+              "name": "options"
+            },
+            {
+              "kind": "field",
+              "name": "error",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "innerHTML",
+              "default": "` <div class=\"wc-form-outer\" part=\"outer\"> <slot name=\"before\"></slot> <slot name=\"label\">${this.label ? `<label class=\"wc-form-label\" part=\"label\">${this.label}</label>` : ''}</slot> <div class=\"wc-form-wrapper\" part=\"wrapper\"> <div class=\"wc-form-input-wrapper\" part=\"input-wrapper\"> <slot name=\"prefix\"></slot> <slot name=\"input\"> <select class=\"wc-form-select\" part=\"input\" ${renderAttributes(el, ['class','options','type'])}> <slot/> </select> </slot> <slot name=\"suffix\"></slot> </div> <slot name=\"help\">${this.help ? `<small part=\"help\">${this.help}</small>` : ''}</slot> <slot name=\"errors\"><small class=\"wc-errors hidden\" part=\"errors\"></small></slot> </div> <slot name=\"after\"></slot> </div> `"
+            },
+            {
+              "kind": "field",
+              "name": "erroritem"
+            },
+            {
+              "kind": "field",
+              "name": "formitem"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FormSelect",
+          "declaration": {
+            "name": "FormSelect",
+            "module": "src/inputs/formselect.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/inputs/formsubmit.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FormSubmit",
+          "members": [
+            {
+              "kind": "method",
+              "name": "onMounted"
+            },
+            {
+              "kind": "method",
+              "name": "setError",
+              "parameters": [
+                {
+                  "name": "error"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "el",
+              "default": "el"
+            },
+            {
+              "kind": "field",
+              "name": "internals",
+              "default": "internals"
+            },
+            {
+              "kind": "field",
+              "name": "label"
+            },
+            {
+              "kind": "field",
+              "name": "innerHTML",
+              "default": "` <div class=\"wc-form-outer\" part=\"outer\"> <slot name=\"before\"></slot> <div class=\"wc-form-wrapper\" part=\"wrapper\"> <div class=\"wc-form-input-wrapper\" part=\"input-wrapper\"> <slot name=\"prefix\"></slot> <slot name=\"input\"> <button type=\"submit\" class=\"wc-form-input wc-form-button\" part=\"input\" ${renderAttributes(el, exclude)}>${this.label}</button> </slot> <slot name=\"suffix\"></slot> </div> <slot name=\"errors\"><small class=\"wc-errors hidden\" part=\"errors\"></small></slot> </div> <slot name=\"after\"></slot> </div> `"
+            },
+            {
+              "kind": "field",
+              "name": "erroritem"
+            },
+            {
+              "kind": "field",
+              "name": "formitem"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FormSubmit",
+          "declaration": {
+            "name": "FormSubmit",
+            "module": "src/inputs/formsubmit.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/inputs/formtext.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "FormTextarea",
+          "members": [
+            {
+              "kind": "method",
+              "name": "setError",
+              "parameters": [
+                {
+                  "name": "error"
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "name"
+            },
+            {
+              "kind": "field",
+              "name": "itype"
+            },
+            {
+              "kind": "field",
+              "name": "help"
+            },
+            {
+              "kind": "field",
+              "name": "label"
+            },
+            {
+              "kind": "field",
+              "name": "error",
+              "type": {
+                "text": "string"
+              },
+              "default": "''"
+            },
+            {
+              "kind": "field",
+              "name": "innerHTML",
+              "default": "` <div class=\"wc-form-outer\" part=\"outer\"> <slot name=\"before\"></slot> <slot name=\"label\">${this.label ? `<label class=\"wc-form-label\" part=\"label\">${this.label}</label>` : ''}</slot> <div class=\"wc-form-wrapper\" part=\"wrapper\"> <div class=\"wc-form-input-wrapper\" part=\"input-wrapper\"> <slot name=\"prefix\"></slot> <slot name=\"input\"> <textarea class=\"wc-form-textarea\" part=\"input\" placeholder=\"${resolvePlaceholder(el, this.label)}\" ${renderAttributes(el, ['class', 'type','placeholder'])} ></textarea> </slot> <slot name=\"suffix\"></slot> </div> <slot name=\"help\">${this.help ? `<small part=\"help\">${this.help}</small>` : ''}</slot> <slot name=\"errors\"><small class=\"wc-errors hidden\" part=\"errors\"></small></slot> </div> <slot name=\"after\"></slot> </div> `"
+            },
+            {
+              "kind": "field",
+              "name": "erroritem"
+            },
+            {
+              "kind": "field",
+              "name": "formitem"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FormTextarea",
+          "declaration": {
+            "name": "FormTextarea",
+            "module": "src/inputs/formtext.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/lang/en.js",
+      "declarations": [],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "default",
+          "declaration": {
+            "module": "src/lang/en.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/lang/pt.js",
+      "declarations": [],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "default",
+          "declaration": {
+            "module": "src/lang/pt.js"
+          }
+        }
+      ]
+    }
+  ]
+}

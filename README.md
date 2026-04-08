@@ -579,6 +579,20 @@ Config.registerLanguage('pt', {
 
 ---
 
+## Publish Metadata (webcomponents.org)
+
+This repository is now prepared with:
+
+- `custom-elements.json` generated from source.
+- `package.json` with `"customElements": "custom-elements.json"`.
+- `custom-elements.json` included in npm package files.
+
+To refresh metadata before a release:
+
+```bash
+npm run cem
+```
+
 ## Changelog
 
 [![GitHub last commit](https://img.shields.io/github/last-commit/minasvisual/wc-forms?style=flat-square&color=blue)](https://github.com/minasvisual/wc-forms/commits/main)
