@@ -22,7 +22,8 @@
   },
   "files": [
     "src",
-    "custom-elements.json"
+    "custom-elements.json",
+    "demo"
   ],
   "scripts": {
     "test": "vitest --exclude tests/e2e/**",

@@ -15,6 +15,22 @@
 - [React Standalone](https://minasvisual.github.io/wc-forms/examples/index.html)
 - [Vue Standalone](https://minasvisual.github.io/wc-forms/examples/vue.html)
 
+### Inline demo (webcomponents.org)
+
+<!--
+<custom-element-demo>
+  <template>
+    <script type="module" src="https://unpkg.com/wc-forms-kit@latest"></script>
+    <form is="form-control">
+      <form-input name="name" type="text" label="Name" validations="required|minlen:3"></form-input>
+      <form-input name="email" type="email" label="Email" validations="required|email"></form-input>
+      <form-input name="avatar" type="file" label="Avatar" accept="image/*" validations="accept:image/*"></form-input>
+      <button type="submit">Send</button>
+    </form>
+  </template>
+</custom-element-demo>
+-->
+
 ---
 
 ## Installation

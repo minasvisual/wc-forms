@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>wc-forms-kit demo</title>
+  <script type="module" src="../src/index.js"></script>
+</head>
+<body>
+  <form is="form-control">
+    <form-input name="name" type="text" label="Name" validations="required|minlen:3"></form-input>
+    <form-input name="email" type="email" label="Email" validations="required|email"></form-input>
+    <form-input name="avatar" type="file" label="Avatar" accept="image/*" validations="accept:image/*"></form-input>
+    <button type="submit">Send</button>
+  </form>
+</body>
+</html>
