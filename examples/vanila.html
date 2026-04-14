@@ -39,36 +39,12 @@
   <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
   <script type="module" src="../src/index.js" defer async></script>
 
-  <style>
-    /* Exemplo de customização de estilo para os componentes */
-    :root {
-      --wcf-input-radius: 8px;
-    }
-
-    /* Customização através de Shadow Parts */
-    form-input::part(input) {
-      border: 1px solid #cbd5e1;
-      border-radius: var(--wcf-input-radius);
-      transition: all 0.2s ease;
-    }
-
-    form-input::part(input):focus {
-      border-color: #3b82f6;
-      outline: none;
-      box-shadow: 0 0 0 1px #3b82f6;
-    }
-
-    form-input::part(help) {
-      font-style: italic;
-      color: #64748b;
-    }
-  </style>
 </head>
 
-<body class="bg-gray-50 flex h-screen overflow-hidden font-sans">
+<body class="bg-gray-900 flex h-screen overflow-hidden font-sans">
   <div class="flex w-full">
     <!-- Menu Lateral -->
-    <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col flex-shrink-0">
+    <aside class="w-64 bg-white border-r border-gray-900 hidden md:flex flex-col flex-shrink-0">
       <div class="p-6 border-b border-gray-100">
         <h2 class="text-xl font-bold text-gray-800">WC Forms</h2>
         <p class="text-sm text-gray-500 mt-1">Component Examples</p>
@@ -108,9 +84,10 @@
     </aside>
 
     <!-- Conteudo Principal -->
-    <main class="flex-1 overflow-y-auto p-6 md:p-10">
+    <main class="flex-1 overflow-y-auto p-6 md:p-10 text-white">
       <div class="max-w-2xl m-auto">
-        <form is="form-control" class="flex flex-col gap-4 p-6 bg-white shadow-xl rounded-2xl border border-gray-100">
+        <form is="form-control"
+          class="flex flex-col gap-4 p-6 bg-gray-800 shadow-xl rounded-2xl border border-gray-700">
           <h4>Form with custom error messages (PT)</h4>
           <form-input name="textField" type="text" label="Text field" validations="required|minlen:5">
             <span slot="label">
@@ -186,11 +163,7 @@
           <form-input name="customMaskField" type="text" label="Custom mask" mask mask:format="document"
             validations="required">
           </form-input>
-          <form-input 
-            name="autocompleteField" 
-            type="autocomplete" 
-            label="Autocomplete field" 
-            options="[ 
+          <form-input name="autocompleteField" type="autocomplete" label="Autocomplete field" options="[ 
             {'value': 1, 'label': 'Option 1'},
             {'value': 2, 'label': 'Option 2'},
             {'value': 3, 'label': 'Option 3'},
@@ -201,18 +174,10 @@
             {'value': 8, 'label': 'Option 8'},
             {'value': 9, 'label': 'Option 9'},
             {'value': 10, 'label': 'Option 10'}
-            ]"
-            help="Digite para ver sugestões" 
-            validations="required"
-          >
+            ]" help="Digite para ver sugestões" validations="required">
           </form-input>
-          <form-input 
-            name="autocompleteHtmlField" 
-            type="autocomplete" 
-            label="Autocomplete field (HTML Options)" 
-            help="Digite 'Opção' para ver sugestões" 
-            validations="required"
-          >
+          <form-input name="autocompleteHtmlField" type="autocomplete" label="Autocomplete field (HTML Options)"
+            help="Digite 'Opção' para ver sugestões" validations="required">
             <option value="1">Opção 1</option>
             <option value="2">Opção 2</option>
             <option value="3">Opção 3</option>
@@ -220,7 +185,8 @@
           </form-input>
           <div class="flex items-center gap-3">
             <form-input name="go" type="button" label="Fill form"></form-input>
-            <button type="reset" class="border-2 border-gray-300 bg-white p-2 rounded-md">Reset</button>
+            <button type="reset"
+              class="border-2 border-gray-300 bg-white p-2 rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-white">Reset</button>
             <form-input name="send" type="submit" label="Enviar"></form-input>
           </div>
         </form>
