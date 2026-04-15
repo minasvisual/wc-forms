@@ -52,31 +52,45 @@ Or use it directly from a CDN:
 
 ## Basic Vanilla Implementation (with and without npm)
 
-### With npm (as module)
-
-```js 
-import 'wc-forms-kit'
-import 'wc-forms-kit/style.css' // optional
-```
-
+### With npm (Vite)
 ```html 
+<form is="form-control" > 
+  <form-input name="username" type="text" label="Username" validations="required|minlen:6" >
+  </form-input>
+  <form-input name="email" type="email" label="Email" validations="required|email" >
+  </form-input>
+
+  <button>Send</button>
+</form>
 <script type="module">
-  import { onMounted } from 'wc-forms-kit/helpers'
+  import 'wc-forms-kit'
+  import { onMounted } from 'wc-forms-kit/helpers' // optional
 </script>
 ```
-### Without npm (CDN)
-
+### Without npm (Vanilla)
 ```html
-<script type="module" src="https://unpkg.com/wc-forms-kit@latest"></script>
-<script type="module">
-  import { onMounted } from 'https://unpkg.com/wc-forms-kit@latest/helpers' 
-</script>
+<head>
+  <script type="module" src="https://unpkg.com/wc-forms-kit@latest"></script>
+  <script type="module">
+    import { onMounted } from 'https://unpkg.com/wc-forms-kit@latest/helpers' // optional
+  </script>
+</head>
+<body>
+  <form is="form-control" > 
+    <form-input name="username" type="text" label="Username" validations="required|minlen:6" >
+    </form-input>
+    <form-input name="email" type="email" label="Email" validations="required|email" >
+    </form-input>
+
+    <button>Send</button>
+  </form>
+  ...
 ```
 
 
 ---
 
-## Basic React Implementation (with npm)
+### React Implementation (with npm)
 
 React / Next.js SSR is supported through the adapter package export.
 
@@ -117,6 +131,35 @@ export function ReactForm() {
 ```
 
 The adapter wires native listeners on the host: `onChange`, `onInput`, `onClick`, `onKeyDown`, `onKeyUp`, `onFocus`, and `onBlur` (focus uses `focusin` / `focusout` so events from the inner field reach the host in the shadow tree). The legacy `onTyping` prop listens to `input` (same as `onInput`). Use `onInput` for the field value in `e.detail`; `onKeyUp` receives a native `KeyboardEvent` (no `e.detail` for the value—use `e.currentTarget.value` or `onInput`).
+
+### Vue & Nuxt
+- For nuxt, set compile to ignore web component start with 'form-' on `nuxt.config.js`
+```js
+export default defineNuxtConfig({ 
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => tag.startsWith('form-')
+    }
+  }
+})
+```
+- Create custom plugin for client only use on plugins folder. example: `wc-forms-kit.client.ts`
+```js 
+import 'wc-forms-kit' 
+
+export default defineNuxtPlugin(() => { })
+```
+- And enjoy the simplicity
+```html 
+<form is="form-control" @submited="handleSubmit" :values="data"> 
+  <form-input name="username" type="text" label="Username" validations="required|minlen:6" @input="validateUser">
+  </form-input>
+  <form-input name="email" type="email" label="Email" validations="required|email" >
+  </form-input>
+
+  <button>Send</button>
+</form> 
+```
 
 ---
 
@@ -188,7 +231,55 @@ Notes:
 
 ## Native Inputs
 
-Available input types:
+### Customization attributes (by type)
+
+These are **host** attributes on `<form-input …>` unless noted. Library-wide: **`validations`**, **`mask`**, **`mask:format`**, **`unmask`**, **`label`**, **`help`**, **`name`**, **`type`**, **`value`** (and the `value` property) are honored by `form-input` / `form-control` where that type participates in validation, masking, or submit parsing — see [Validations](#validations), [Masks](#masks), and [Emitted Events](#emitted-events). Most field UIs also expose **slots** (`before`, `label`, `prefix`, `input`, `suffix`, `help`, `errors`, `after`) and **shadow `::part(...)`** hooks; see [Theming (Shadow Parts)](#theming-shadow-parts).
+
+**Passthrough:** several implementations copy almost every other HTML attribute from the host onto the inner native control (`<input>`, `<textarea>`, `<select>`, `<button>`, …), except the exclusions below. Use that for `disabled`, `required`, `readonly`, `autocomplete`, `min`, `max`, `step`, `pattern`, `rows`, `cols`, `tabindex`, `id`, `inputmode`, `list`, `size`, `multiple` (where valid), `aria-*`, `data-*`, etc.
+
+| `type` | Passthrough: attributes **not** copied to the inner control (handled separately or unsafe to duplicate) |
+|--------|----------------------------------------------------------------------------------------------------------|
+| `text`, `email`, `url`, `search`, `number`, `color`, `password`, `date`, `datetime-local` | `class`, `placeholder` — `placeholder` is taken from the `placeholder` attribute, or from `label` if `placeholder` is omitted |
+| `textarea` | `class`, `type`, `placeholder` (same placeholder rule as text-like fields) |
+| `select` | `class`, `options`, `type` — options come from the `options` JSON attribute and/or child `<option>` / `<optgroup>` in light DOM |
+| `range` | `class`, `type`, `options`, `validations`, `label`, `help`, `mask`, `unmask` |
+| `currency` | `class`, `type`, `options`, `validations`, `label`, `help`, `mask`, `unmask`, `value`, `placeholder` |
+| `file` | `class`, `type`, `options`, `validations`, `label`, `help`, `mask`, `unmask`, `value`, `data-type` — syncs `accept`, `multiple`, `capture`, `required`, `disabled`, `webkitdirectory`, `autocomplete`, `tabindex`, `name` via `attributeChangedCallback` as well |
+| `hidden` | `class`, `type`, `options`, `validations`, `label`, `help`, `mask`, `unmask`, `value` |
+| `button`, `submit` | `class`, `type`, `options`, `validations`, `label`, `help`, `mask`, `unmask`, `value` — visible label text comes from **`label`** on the host (button body) |
+| `autocomplete` | Inner `<input>` omits **`name`**, **`type`**, **`placeholder`** from passthrough (placeholder rule as text-like); options from **`options`** (JSON or CSV), child **`<option>`** elements, and/or the **`.options`** property array |
+
+Per-type specifics:
+
+- **`text`, `email`, `url`, `search`, `number`, `color`, `password`, `date`, `datetime-local`** — Same behavior as the first table row; inner `type` matches the host `type`. **`currency`** is a separate `type` with its own widget (masked decimal, `R$` prefix in the default template).
+
+- **`textarea`** — Same as table; use native `rows`, `cols`, etc. via passthrough.
+
+- **`select`** — **`options`**: JSON string of `{ value, label }` entries (see examples below). Alternatively, omit `options` and use **child `<option>` / `<optgroup>`** in the host markup (moved into the shadow `<select>` at build time).
+
+- **`checkbox` (single)** — **`value`**: submitted string when checked (default `0` if omitted). **`checked`**: presence marks initial checked state. **`label`**: default slot content next to the box. No full attribute passthrough on the inner checkbox.
+
+- **`radioboxes`**, **`checkboxes`** — **`options`**: required JSON array (`[{ "label", "value" }]` or primitives). **`value`**: initial selection (string for radio; array or JSON array string for checkboxes). **`label`**, **`help`**. Native appearance: CSS variables **`--wcf-checks-color-scheme`** (default light) and **`--wcf-check-accent`** on the host or an ancestor (see [Theming (Shadow Parts)](#theming-shadow-parts)).
+
+- **`autocomplete`** — **`options`** / light DOM **`<option>`** / **`.options`** as above. **`value`** for initial stored value. Inner field uses the same placeholder rule as text.
+
+- **`pills`** — **`value`**: initial tags (JSON array string, comma-separated string, or array). The small inner text field mirrors host attributes except **`class`**, **`name`**, **`type`**, **`placeholder`**, **`value`** (placeholder still follows `placeholder` / `label` rule).
+
+- **`range`** — **`min`**, **`max`**, **`step`**, **`value`** via passthrough; bound labels beside the slider default to `min` / `max` strings (`0` / `100` if unset). Shadow **parts**: `range-min`, `range-max`, `range-value-popup`, `range-control`, `range-track`, plus common `outer`, `label`, `wrapper`, …
+
+- **`file`** — All common **file input** host attributes that are listed in `form-input`’s `observedAttributes` stay in sync on the inner control. Use **`validations`** with **`accept:`** for allowed MIME/extension tokens.
+
+- **`button`**, **`submit`** — **`label`**: button caption. **`name`** on `button` is read for the control identity. **`submit`** runs validation then `requestSubmit()` on the form.
+
+- **`group`** — **`name`**: object key wrapping nested **`form-input`** children in the submit payload. Template: slots **`before`**, default slot (children), **`after`**; **`part="errors"`** for group-level errors. No `label`/`help` wrapper in the default group template.
+
+- **`repeater`** — **`name`**, **`label`**, **`value`** (JSON array). Row UI: **`add-label`**, **`empty-label`**, **`move-up-label`**, **`remove-row-label`**, **`move-down-label`** (accessible names for icon buttons). Layout hooks: **`items-class`**, **`label-class`**, **`empty-class`**, **`item-class`**, **`controls-class`**, **`add-class`**. **Child nodes** of `<form-input type="repeater">` define the row template (each **`form-input name="…"`** becomes a property on each row object). Shadow **parts**: `outer`, `errors`.
+
+- **`hidden`** — Passthrough as per table; no visible `label`/`help` in the default hidden template.
+
+---
+
+### Available input types
 
 - text
   ```html 
@@ -255,6 +346,20 @@ Available input types:
 
     ```js
     { address: { street: 'Main St', number: 333 } }
+    ```
+- repeater (dynamic list of nested fields; outputs an array of objects). Row actions are SVG icon buttons; all repeater-specific attributes are listed under **Customization attributes** above.
+  ```html 
+    <form-input type="repeater" name="users" label="Users" add-label="+ Add User" empty-label="No users added">
+      <div class="flex gap-4">
+        <form-input type="text" name="name" label="Name" validations="required"></form-input>
+        <form-input type="email" name="email" label="Email" validations="required"></form-input>
+      </div>
+    </form-input>
+  ```
+  - Submit payload (`submited` event detail):
+
+    ```js
+    { users: [ { name: 'John', email: 'john@exe.com' } ] }
     ```
 - file
   ```html 
@@ -448,6 +553,8 @@ Exposed parts:
 - `outer`, `label`, `wrapper`, `input-wrapper`, `input`, `help`, `errors`
 - `checks-wrapper`, `check-label`, `check-text`
 - range-only: `range-min`, `range-max`, `range-value-popup`, `range-control`, `range-track`
+
+Native **checkbox**, **checkboxes**, and **radioboxes** paint inside `.wc-form-checks`. The default is `color-scheme: light` and `accent-color` aligned with the focus blue (`#3b82f6`), so light pages do not show dark OS-themed controls when `prefers-color-scheme` is dark. For a dark surface, set `--wcf-checks-color-scheme: dark` (and optionally `--wcf-check-accent`) on `form-input` or an ancestor.
 
 ```css
 form-input::part(input) {

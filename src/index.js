@@ -174,9 +174,14 @@ class FormComponent extends BaseHTMLElement {
         // Composite inputs (like checkboxes) call setFormValue themselves via emitValue.
         if (valueRaw !== undefined) {
           if (Array.isArray(valueRaw)) {
-            let fd = new FormData();
-            valueRaw.forEach(v => fd.append(this.getAttribute('name'), v));
-            this.internals.setFormValue(valueRaw.length ? fd : null);
+            const outputType = this.getAttribute('data-type');
+            if (outputType === 'json' || outputType === 'object') {
+              this.internals.setFormValue(JSON.stringify(valueRaw));
+            } else {
+              let fd = new FormData();
+              valueRaw.forEach(v => fd.append(this.getAttribute('name'), v));
+              this.internals.setFormValue(valueRaw.length ? fd : null);
+            }
           } else {
             this.internals.setFormValue(valueRaw);
           }
@@ -188,7 +193,7 @@ class FormComponent extends BaseHTMLElement {
       if (this.itype === 'range' || this.itype === 'pills') {
         this.formitem.addEventListener('input', (e) => handleFormItemValueUpdate(e, 'input'))
       }
-      this.formitem.addEventListener('change', (e) => handleFormItemValueUpdate(e, 'change'))
+      console.log('ATTACHING LISTENER TO', this.formitem.tagName, this.formitem.className); this.formitem.addEventListener('change', (e) => handleFormItemValueUpdate(e, 'change'))
     }
 
     if (this.instance?.onMounted)
@@ -235,9 +240,14 @@ class FormComponent extends BaseHTMLElement {
     }
     if (valueRaw !== undefined) {
       if (Array.isArray(valueRaw)) {
-        const fd = new FormData()
-        valueRaw.forEach(v => fd.append(this.getAttribute('name'), v))
-        this.internals.setFormValue(valueRaw.length ? fd : null)
+        const outputType = this.getAttribute('data-type');
+        if (outputType === 'json' || outputType === 'object') {
+          this.internals.setFormValue(JSON.stringify(valueRaw));
+        } else {
+          const fd = new FormData()
+          valueRaw.forEach(v => fd.append(this.getAttribute('name'), v))
+          this.internals.setFormValue(valueRaw.length ? fd : null)
+        }
       } else {
         this.internals.setFormValue(valueRaw)
       }
@@ -486,10 +496,10 @@ class FormWrapper extends BaseHTMLFormElement {
         continue
       }
 
-      if (type === 'autocomplete' || type === 'pills') {
+      if (type === 'autocomplete' || type === 'pills' || type === 'repeater') {
         if (!el.formitem) continue
         el.formitem.value = nextValue
-        if (type === 'pills') {
+        if (type === 'pills' || type === 'repeater') {
           el.formitem.dispatchEvent(new Event('input', { bubbles: true }))
         }
         el.formitem.dispatchEvent(new Event('change', { bubbles: true }))
@@ -541,7 +551,7 @@ class FormWrapper extends BaseHTMLFormElement {
         continue
       }
 
-      if (type === 'pills') {
+      if (type === 'pills' || type === 'repeater') {
         if (!el.formitem) continue
         el.formitem.value = []
         el.formitem.dispatchEvent(new Event('input', { bubbles: true }))

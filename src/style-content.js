@@ -199,6 +199,9 @@ export const defaultStyles = `.wc-form-outer {
       flex-direction: column;
       gap: var(--wcf-checks-group-gap, 0.5rem);
       padding: var(--wcf-checks-group-padding, 0.25rem 0);
+      /* Native checkbox/radio paint follows color-scheme; default light avoids
+         dark widgets on light pages when OS prefers dark (see --wcf-checks-color-scheme). */
+      color-scheme: var(--wcf-checks-color-scheme, light);
 
       .wc-form-check {
         display: flex;
@@ -218,7 +221,8 @@ export const defaultStyles = `.wc-form-outer {
         }
 
         input {
-          accent-color: var(--wcf-check-accent, currentColor);
+          /* currentColor as accent fills the whole control in some UAs; match focus ring blue */
+          accent-color: var(--wcf-check-accent, #3b82f6);
           width: var(--wcf-check-size, 1.25rem);
           height: var(--wcf-check-size, 1.25rem);
           cursor: pointer;

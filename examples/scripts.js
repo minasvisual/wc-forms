@@ -46,7 +46,11 @@ function fillCompleteForm(form) {
       street: 'Paulista Avenue',
       number: 1000,
       city: 'sao-paulo'
-    }
+    },
+    users: [
+      { name: 'Mike tyson', email: 'mikethetyson@email.com' },
+      { name: 'Evander Holifield', email: 'theholifield@email.com' },
+    ]
   }
 }
 

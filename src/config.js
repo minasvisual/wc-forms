@@ -11,6 +11,7 @@ import { FormCurrency } from './inputs/formcurrency.js'
 import { FormHidden } from './inputs/formhidden.js'
 import { FormGroup } from './inputs/formgroup.js'
 import { FormPills } from './inputs/formpills.js'
+import { FormRepeater } from './inputs/formrepeater.js'
 import { splitValues, get, dateRegex, emailRegex, isValidNumber, fileMatchesAnyAcceptToken } from './helpers.js'
 import english from './lang/en.js'
 
@@ -372,6 +373,10 @@ export const inputs = {
   group: {
     output: 'group',
     source: FormGroup,
+  },
+  repeater: {
+    output: 'json',
+    source: FormRepeater,
   },
 }
 

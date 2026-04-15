@@ -179,7 +179,17 @@
           </form-input>
         </div>
       </form-input>
+
+      <form-input type="repeater" name="users" label="Users List" add-label="+ Add User" empty-label="No users added"
+        class="p-4 bg-gray-50 border border-gray-200 rounded-lg" >
+        <div>
+          <form-input type="text" name="name" label="Name" validations="required" class="flex-1"></form-input>
+          <form-input type="email" name="email" label="Email" validations="required|email" class="flex-1"></form-input>
+        </div>  
+      </form-input>
+
       <form-input type="pills" name="tags" label="Tags"></form-input>
+
 
       <div class="flex items-center gap-3">
         <form-input name="go" type="button" label="Fill form"></form-input>

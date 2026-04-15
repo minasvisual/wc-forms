@@ -114,6 +114,15 @@ export function formatTypeValue(type, value) {
   if (value === 'null') return null;
   if (type === 'number') return Number(value);
   if (type === 'currency') return Number(value);
+
+  if (type === 'json' || type === 'object') {
+    try {
+      return typeof value === 'string' ? JSON.parse(value) : value;
+    } catch {
+      return value;
+    }
+  }
+
   return value;
 }
 

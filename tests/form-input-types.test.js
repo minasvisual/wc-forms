@@ -284,6 +284,18 @@ describe('form-input default types (component smoke)', () => {
     expect(detail.address.number).toBe(333)
   })
 
+  test('repeater type inserts template and has repeater container', () => {
+    const el = mountFormInput(`
+      <form-input name="users" type="repeater" label="Users">
+        <form-input name="name" type="text" label="Name"></form-input>
+      </form-input>
+    `)
+    const container = el.shadowRoot.querySelector('.wc-form-repeater')
+    expect(container).toBeTruthy()
+    // Empty state lives in slotted light DOM (repeater-ui), not under shadow .wc-form-repeater
+    expect(el.querySelector('.wc-form-repeater-empty')).toBeTruthy()
+  })
+
   test('pills type submits an array value', () => {
     const form = createFormControl()
     form.innerHTML = `

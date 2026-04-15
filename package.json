@@ -1,6 +1,6 @@
 {
   "name": "wc-forms-kit",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "author": "Ulisses Mantovani",
   "description": "Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https://formkit.com/getting-started/what-is-formkit) library.",
   "repository": {

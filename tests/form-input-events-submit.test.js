@@ -323,6 +323,33 @@ describe('input / change e.detail matches submited payload', () => {
     expectChangeMatchesSubmit(el, 'tags', lastChange, detail)
   })
 
+  test('repeater: input and change detail matches array of objects submit payload', () => {
+    const form = mountInForm(`
+      <form-input name="users" type="repeater" label="Users">
+        <form-input name="name" type="text" label="Name"></form-input>
+      </form-input>
+    `)
+    const el = form.querySelector('form-input[type="repeater"]')
+    const getLast = wireEvents(el)
+    
+    // Add an item
+    const addButton = Array.from(el.querySelectorAll('button')).pop() // Light DOM!
+    addButton.click()
+
+    // Type in the new field
+    const nameInput = el.querySelector('form-input[data-repeater-field="name"]')
+    const inner = nameInput.shadowRoot.querySelector('input')
+    inner.value = 'John'
+    inner.dispatchEvent(new Event('input', { bubbles: true }))
+    inner.dispatchEvent(new Event('change', { bubbles: true }))
+
+    const detail = submitForm(form)
+    const { lastInput, lastChange } = getLast()
+    
+    expect(detail.users).toEqual([{ name: 'John' }])
+    expectInputAndChangeMatchSubmit(el, 'users', lastInput, lastChange, detail)
+  })
+
   test('group: leaf change details match nested submit', () => {
     const form = mountInForm(`
       <form-input name="address" type="group" label="Addr">
