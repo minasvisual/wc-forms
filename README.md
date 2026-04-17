@@ -88,7 +88,6 @@ Or use it directly from a CDN:
   ...
 ```
 
-
 ---
 
 ### React Implementation (with npm)
@@ -133,6 +132,8 @@ export function ReactForm() {
 
 The adapter wires native listeners on the host: `onChange`, `onInput`, `onClick`, `onKeyDown`, `onKeyUp`, `onFocus`, and `onBlur` (focus uses `focusin` / `focusout` so events from the inner field reach the host in the shadow tree). The legacy `onTyping` prop listens to `input` (same as `onInput`). Use `onInput` for the field value in `e.detail`; `onKeyUp` receives a native `KeyboardEvent` (no `e.detail` for the value—use `e.currentTarget.value` or `onInput`).
 
+---
+
 ### Vue & Nuxt
 - For nuxt, set compile to ignore web component start with 'form-' on `nuxt.config.js`
 ```js
@@ -161,6 +162,7 @@ export default defineNuxtPlugin(() => { })
   <button>Send</button>
 </form> 
 ```
+---
 
 ### Angular (simple usage)
 
@@ -178,6 +180,17 @@ const cleanup = bindWcFormsAngularSubmit(form, {
   sent: (payload) => this.onSubmit(payload),
   sentMeta: (meta) => this.onSubmitMeta(meta),
 })
+```
+
+```html
+
+<form id="formkit" novalidate > 
+  <form-input name="slug" type="text" label="ID"></form-input>
+  <form-input name="title" type="text" label="Title"></form-input>
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+  </div> 
+</form>
 ```
 
 `form-input` keeps native `input` / `change` events and exposes field value in `e.detail`.
@@ -205,6 +218,41 @@ If you still opt into adapter directives, outputs are:
 
 - `form-input[wcForm]`: `(wcfInput)`, `(wcfChange)`, `(wcfInputEvent)`, `(wcfChangeEvent)`
 - `form[wcForm]`: `(sent)`, `(sentDetail)`, `(sentMeta)`, `(reseted)`, `(wcfSubmited)`, `(wcfSubmitedDetail)`
+
+```ts
+import { createWcFormsAngularDirectives } from 'wc-forms-kit/angular';
+
+const { WcFormInputEventsDirective, WcFormControlEventsDirective } = createWcFormsAngularDirectives(
+  ngCore,
+);
+
+@Component({
+  selector: "ngx-any",
+  standalone: true,
+  imports: [
+    CommonModule, 
+    WcFormInputEventsDirective,
+    WcFormControlEventsDirective,
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  ....
+})
+```
+```html
+<form
+  id="formkit"
+  is="form-control"
+  wcForm
+  novalidate
+  (sent)="onSubmit($event)" 
+> 
+  <form-input name="slug" type="text" label="ID" (wcfInput)="onInput($event)"></form-input>
+  <form-input name="title" type="text" label="Title" (wcfInput)="onInput($event)"></form-input>
+  <div class="mt-2">
+    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+  </div> 
+</form>
+```
 
 There is also a no-build browser demo at `examples/angular.html` using Angular from CDN + this adapter.
 
