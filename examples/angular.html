@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WC Forms - Angular Integration Standalone</title>
+  <script type="module" src="https://cdn.skypack.dev/twind/shim"></script>
+  <script type="module">
+    import 'https://esm.sh/zone.js@0.15.1?target=es2022'
+    import 'https://esm.sh/@angular/compiler@20.2.4?target=es2022'
+    import {
+      ChangeDetectorRef,
+      Component,
+      CUSTOM_ELEMENTS_SCHEMA,
+      Directive,
+      ElementRef,
+      EventEmitter,
+      Output,
+      inject,
+      signal,
+    } from 'https://esm.sh/@angular/core@20.2.4?target=es2022'
+    import { bootstrapApplication } from 'https://esm.sh/@angular/platform-browser@20.2.4?target=es2022'
+    import { JsonPipe, NgIf } from 'https://esm.sh/@angular/common@20.2.4?target=es2022'
+
+    import '../src/index.js'
+    import { createWcFormsAngularDirectives, setFormValues } from '../src/angular.js'
+
+    const { WcFormInputEventsDirective, WcFormControlEventsDirective } = createWcFormsAngularDirectives({
+      Directive,
+      Output,
+      EventEmitter,
+      ElementRef,
+      inject,
+      ChangeDetectorRef,
+    })
+
+    class AppComponent {
+      submitted = signal(null)
+      sentMeta = signal(null)
+      lastInput = signal('')
+      lastChange = signal('')
+
+      onSent(detail) {
+        this.submitted.set(detail || null)
+      }
+
+      onSentMeta(meta) {
+        this.sentMeta.set(meta || null)
+      }
+
+      onInput(detail) {
+        this.lastInput.set(detail === undefined ? 'undefined' : String(detail))
+      }
+
+      onChange(detail) {
+        this.lastChange.set(detail === undefined ? 'undefined' : String(detail))
+      }
+
+      fillForm() {
+        const form = document.querySelector('form#angular-demo-form')
+        if (!form) return 
+        setFormValues(form, {
+          username: 'angular-user',
+          email: 'angular@example.com',
+          frameworks: ['angular'],
+          tags: ['web-components', 'angular']
+        }) 
+      }
+    }
+
+    Component({
+      selector: 'wc-forms-angular-demo',
+      standalone: true,
+      imports: [NgIf, JsonPipe, WcFormInputEventsDirective, WcFormControlEventsDirective],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
+      template: `
+        <div class="flex w-full min-h-screen bg-gray-50">
+          <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col flex-shrink-0">
+            <div class="p-6 border-b border-gray-100">
+              <h2 class="text-xl font-bold text-gray-800">WC Forms</h2>
+              <p class="text-sm text-gray-500 mt-1">Component Examples</p>
+            </div>
+            <nav class="flex-1 p-4">
+              <ul class="space-y-2">
+                <li><a href="../index.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Complete Form</a></li>
+                <li><a href="./index.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">React 18</a></li>
+                <li><a href="./vue.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Vue 3</a></li>
+                <li><a href="./angular.html" class="block px-4 py-2 rounded-lg bg-blue-50 text-blue-700 font-medium">Angular CDN</a></li>
+                <li><a href="./vanila.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Vanilla JS</a></li>
+                <li><a href="./todo.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Alpine To-Do</a></li>
+                <li><a href="./slots.html" class="block px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">Slots</a></li>
+              </ul>
+            </nav>
+          </aside>
+
+          <main class="flex-1 overflow-y-auto p-6 md:p-10">
+            <div class="max-w-3xl m-auto">
+              <h2 class="text-2xl font-bold mb-2">Angular App (CDN) + wc-forms-kit</h2>
+              <p class="text-gray-500 mb-6">
+                No npm modules in this demo page. Angular runs from CDN and the adapter bridges native wc-forms events to Angular outputs.
+              </p>
+
+              <form
+                id="angular-demo-form"
+                is="form-control"
+                wcForm
+                (sent)="onSent($event)"
+                (sentMeta)="onSentMeta($event)"
+                novalidate
+                class="flex flex-col gap-4 p-6 bg-white border border-gray-200 rounded-xl shadow-sm"
+              >
+                <form-input
+                  wcForm
+                  name="username"
+                  type="text"
+                  label="User"
+                  validations="required|minlen:4"
+                  (wcfInput)="onInput($event)"
+                  (wcfChange)="onChange($event)"
+                ></form-input>
+
+                <form-input
+                  wcForm
+                  name="email"
+                  type="email"
+                  label="E-mail"
+                  validations="required|email"
+                  (wcfInput)="onInput($event)"
+                  (wcfChange)="onChange($event)"
+                ></form-input>
+
+                <form-input
+                  wcForm
+                  name="frameworks"
+                  type="checkboxes"
+                  label="Frameworks"
+                  validations="required"
+                  options="[{'label':'Angular','value':'angular'},{'label':'React','value':'react'},{'label':'Vue','value':'vue'}]"
+                  (wcfChange)="onChange($event)"
+                ></form-input>
+
+                <form-input
+                  wcForm
+                  name="tags"
+                  type="pills"
+                  label="Tags"
+                  (wcfChange)="onChange($event)"
+                ></form-input>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-lg bg-gray-50 border border-gray-200 p-3 text-sm">
+                  <div><strong>Last input detail:</strong> {{ lastInput() }}</div>
+                  <div><strong>Last change detail:</strong> {{ lastChange() }}</div>
+                </div>
+
+                <div class="mt-2 flex items-center gap-3">
+                  <button
+                    type="button"
+                    (click)="fillForm()"
+                    class="px-4 py-2 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg cursor-pointer transition-colors shadow-sm"
+                  >
+                    Fill form
+                  </button>
+                  <button type="reset" class="px-4 py-2 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg cursor-pointer transition-colors shadow-sm">
+                    Reset
+                  </button>
+                  <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg cursor-pointer transition-colors shadow-sm">
+                    Submit
+                  </button>
+                </div>
+              </form>
+
+              <div *ngIf="sentMeta()" class="mt-3 p-3 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-900">
+                <strong>sentMeta:</strong>
+                source={{ sentMeta().source }}, valid={{ sentMeta().valid }}
+              </div>
+
+              <div id="angular-result" *ngIf="submitted()" class="mt-6 p-5 bg-gray-50 rounded-xl border border-gray-200 shadow-inner">
+                <h3 class="mt-0 text-gray-800 text-lg font-bold mb-3 border-b pb-2">Processed Payload</h3>
+                <pre class="m-0 text-gray-700 text-sm overflow-auto whitespace-pre-wrap">{{ submitted() | json }}</pre>
+              </div>
+            </div>
+          </main>
+        </div>
+      `,
+    })(AppComponent)
+
+    bootstrapApplication(AppComponent).catch((error) => {
+      const out = document.getElementById('boot-error')
+      if (out) {
+        out.classList.remove('hidden')
+        out.textContent = `Angular bootstrap failed: ${error?.message || error}`
+      }
+      console.error(error)
+    })
+  </script>
+</head>
+
+<body class="bg-gray-50">
+  <wc-forms-angular-demo></wc-forms-angular-demo>
+  <pre id="boot-error" class="hidden m-4 p-3 rounded bg-red-50 text-red-700 border border-red-200"></pre>
+</body>
+
+</html>

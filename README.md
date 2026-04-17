@@ -14,6 +14,7 @@
 - [Alpine To-Do](https://minasvisual.github.io/wc-forms/examples/todo.html)
 - [React Standalone](https://minasvisual.github.io/wc-forms/examples/index.html)
 - [Vue Standalone](https://minasvisual.github.io/wc-forms/examples/vue.html)
+- [Angular Standalone (CDN)](https://minasvisual.github.io/wc-forms/examples/angular.html)
 
 ### Inline demo (webcomponents.org)
 
@@ -160,6 +161,52 @@ export default defineNuxtPlugin(() => { })
   <button>Send</button>
 </form> 
 ```
+
+### Angular (simple usage)
+
+For Angular CLI apps, the recommended path is **component-only adapter binding** (no local directive classes, no directive imports).
+This works even when `<form is="form-control">` is not upgraded as a customized built-in.
+
+Minimal usage in component code:
+
+```js
+import { bindWcFormsAngularSubmit } from 'wc-forms-kit/angular'
+
+// e.g. ngAfterViewInit
+const form = document.querySelector('form#my-form')
+const cleanup = bindWcFormsAngularSubmit(form, {
+  sent: (payload) => this.onSubmit(payload),
+  sentMeta: (meta) => this.onSubmitMeta(meta),
+})
+```
+
+`form-input` keeps native `input` / `change` events and exposes field value in `e.detail`.
+
+The Angular adapter (`wc-forms-kit/angular`) exports:
+
+- `bindWcFormsAngularSubmit(formEl, { sent, sentMeta })`
+  - Intercepts form submit and emits a ready-to-use payload (no manual `getFormValues` needed in user code).
+  - Prefers native `submited` when available; falls back to `submit` parsing.
+- `setFormValues(formEl, valuesObj)`
+  - Hydrates `<form-input>` fields from an object (same type-aware behavior as `form-control` values hydration), useful in Angular where `form.values = { ... }` may not upgrade on customized built-in forms.
+- `resetFormValues(formEl)`
+  - Clears `<form-input>` fields using the same type-aware reset semantics as `form-control`.
+- `bindWcFormsAngularOutputs(el, ...)`
+  - Optional low-level bridge for field `input/change`.
+
+When `form-control` is upgraded, native aliases are also emitted by the core:
+- `sent` with parsed payload in `e.detail`
+- `sentMeta` with `{ source, valid, errors, nativeEvent }` in `e.detail`
+- `reseted` with reset metadata in `e.detail`
+
+`createWcFormsAngularDirectives(...)` is still useful for CDN/runtime-only setups (see `examples/angular.html`), but Angular CLI/AOT apps should prefer the component-only binders above.
+
+If you still opt into adapter directives, outputs are:
+
+- `form-input[wcForm]`: `(wcfInput)`, `(wcfChange)`, `(wcfInputEvent)`, `(wcfChangeEvent)`
+- `form[wcForm]`: `(sent)`, `(sentDetail)`, `(sentMeta)`, `(reseted)`, `(wcfSubmited)`, `(wcfSubmitedDetail)`
+
+There is also a no-build browser demo at `examples/angular.html` using Angular from CDN + this adapter.
 
 ---
 

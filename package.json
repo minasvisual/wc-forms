@@ -1,6 +1,6 @@
 {
   "name": "wc-forms-kit",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "author": "Ulisses Mantovani",
   "description": "Is a modular, 100% vanilla js, form inputs group, based on [Vue FormKit](https://formkit.com/getting-started/what-is-formkit) library.",
   "repository": {
@@ -17,6 +17,7 @@
     "./config": "./src/config.js",
     "./helpers": "./src/helpers.js",
     "./style.css": "./src/style.css",
+    "./angular": "./src/angular.js",
     "./react": "./src/react-bind.js",
     "./react-core": "./src/react.js"
   },
@@ -29,6 +30,7 @@
     "test": "vitest --exclude tests/e2e/**",
     "dev": "http-server -c-1 -o /examples/vanila.html",
     "test:e2e": "playwright test",
+    "test:e2e:audit-angular": "playwright test -c playwright.audit-angular.config.js",
     "cem": "cem analyze --globs \"src/**/*.js\" --outdir ."
   },
   "keywords": [
@@ -40,6 +42,7 @@
     "wc-forms-kit",
     "react forms",
     "vue forms",
+    "angular forms",
     "alpine forms"
   ],
   "devDependencies": {

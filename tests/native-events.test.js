@@ -52,8 +52,16 @@ describe('native host events', () => {
     document.body.appendChild(form)
 
     const seen = []
+    const sent = []
+    const sentMeta = []
     form.addEventListener('submited', (e) => {
       seen.push(e)
+    })
+    form.addEventListener('sent', (e) => {
+      sent.push(e)
+    })
+    form.addEventListener('sentMeta', (e) => {
+      sentMeta.push(e)
     })
 
     form.dispatchEvent(
@@ -65,5 +73,33 @@ describe('native host events', () => {
     expect(seen[0].detail).toEqual({})
     expect(seen[0].valid).toBe(true)
     expect(seen[0].errors).toEqual({})
+    expect(sent.length).toBe(1)
+    expect(sent[0] instanceof CustomEvent).toBe(false)
+    expect(sent[0].detail).toEqual({})
+    expect(sentMeta.length).toBe(1)
+    expect(sentMeta[0] instanceof CustomEvent).toBe(false)
+    expect(sentMeta[0].detail).toMatchObject({
+      source: 'submited',
+      valid: true,
+      errors: {},
+    })
+  })
+
+  test('form-control reset emits reseted native event with detail', () => {
+    const form = document.createElement('form', { is: 'form-control' })
+    document.body.appendChild(form)
+    const seen = []
+
+    form.addEventListener('reseted', (e) => {
+      seen.push(e)
+    })
+
+    form.dispatchEvent(new Event('reset', { bubbles: true, cancelable: true }))
+
+    expect(seen.length).toBe(1)
+    expect(seen[0] instanceof CustomEvent).toBe(false)
+    expect(seen[0].detail).toMatchObject({
+      source: 'form-control.reset',
+    })
   })
 })

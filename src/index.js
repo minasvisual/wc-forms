@@ -193,7 +193,7 @@ class FormComponent extends BaseHTMLElement {
       if (this.itype === 'range' || this.itype === 'pills') {
         this.formitem.addEventListener('input', (e) => handleFormItemValueUpdate(e, 'input'))
       }
-      console.log('ATTACHING LISTENER TO', this.formitem.tagName, this.formitem.className); this.formitem.addEventListener('change', (e) => handleFormItemValueUpdate(e, 'change'))
+      console.debug('ATTACHING LISTENER TO', this.formitem.tagName, this.formitem.className); this.formitem.addEventListener('change', (e) => handleFormItemValueUpdate(e, 'change'))
     }
 
     if (this.instance?.onMounted)
@@ -365,7 +365,7 @@ class FormWrapper extends BaseHTMLFormElement {
     this.addEventListener('reset', (e) => {
       e.preventDefault()
       e.stopPropagation()
-      this.reset()
+      this.reset(e)
     })
 
     this.addEventListener("submit", (e) => {
@@ -391,19 +391,30 @@ class FormWrapper extends BaseHTMLFormElement {
         }
       } 
  
-      this.emitEvent()
+      this.emitEvent(e)
     })
 
     this.applyValuesFromAttribute()
   }
 
-  emitEvent(values) {
+  emitEvent(nativeEvent) {
     dispatchNativeEvent(this, 'submited', this.submitedValues, { valid: this.isValid, errors: this.errors })
+    dispatchNativeEvent(this, 'sent', this.submitedValues)
+    dispatchNativeEvent(this, 'sentMeta', {
+      source: 'submited',
+      valid: this.isValid,
+      errors: this.errors,
+      nativeEvent,
+    })
   }
 
-  reset() {
+  reset(nativeEvent) {
     this.removeAttribute('values')
     this.resetValues()
+    dispatchNativeEvent(this, 'reseted', {
+      source: 'form-control.reset',
+      nativeEvent,
+    })
   }
 
   applyValuesFromAttribute({ retry = true } = {}) {
@@ -658,6 +669,9 @@ addEventProxy(FormComponent.prototype, 'change');
 addEventProxy(FormComponent.prototype, 'input');
 addEventProxy(FormComponent.prototype, 'click');
 addEventProxy(FormWrapper.prototype, 'submited');
+addEventProxy(FormWrapper.prototype, 'sent');
+addEventProxy(FormWrapper.prototype, 'sentMeta');
+addEventProxy(FormWrapper.prototype, 'reseted');
 
 if (typeof customElements !== 'undefined') {
   customElements.define("form-control",FormWrapper,{ extends: 'form' })
