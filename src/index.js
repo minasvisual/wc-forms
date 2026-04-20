@@ -108,7 +108,7 @@ class FormComponent extends BaseHTMLElement {
 
     this.shadowRoot.appendChild(this.addStyles())
     this.formitem = this.instance.formitem
-    if (!['button', 'submit', 'file', 'currency', 'group'].includes(this.itype)) {
+    if (!['button', 'submit', 'file', 'currency', 'group'].includes(this.itype) && this.hasAttribute('value')) {
       this.formitem.value = this.getAttribute('value')
     }
     this.formitem.setAttribute('data-type', InputSource.output)

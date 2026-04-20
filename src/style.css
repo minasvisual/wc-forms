@@ -88,6 +88,18 @@
       box-shadow: var(--wcf-input-focus-shadow, 0 0 0 1px #3b82f6);
     }
 
+    .wc-form-select {
+      /* Keep native popup palette predictable; default to light to avoid OS-dark bleed into light UIs. */
+      color-scheme: var(--wcf-select-color-scheme, light);
+    }
+
+    .wc-form-select option,
+    .wc-form-select optgroup {
+      /* Keep native dropdown readable in dark/light themes */
+      background-color: var(--wcf-select-option-bg, Canvas);
+      color: var(--wcf-select-option-color, CanvasText);
+    }
+
     .wc-form-input:disabled,
     .wc-form-textarea:disabled,
     .wc-form-select:disabled {

@@ -22,6 +22,7 @@ function fillCompleteForm(form) {
     emailField: 'demo@example.com',
     passwordField: textSample,
     selectField: '2',
+    selectFieldHtml: '2',
     dateField: '2026-06-10',
     numberField: 42,
     radioboxesField: 'radio2',
@@ -71,7 +72,7 @@ onMounted((doc) => {
   const form = doc.querySelector('form[is="form-control"]') || doc.querySelector('form')
   if (form) {
     field(form, {
-      submit: () => console.log('submit'),
+      submit: (e) => console.log('submit', e.detail),
       submited: send,
     })
   }

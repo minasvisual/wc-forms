@@ -1,4 +1,4 @@
-import { collectFormControls, getFormInputPathKey, getFormValues } from './helpers.js'
+import { collectFormControls, getFormInputPathKey, getFormValues, syncFormInputValidations } from './helpers.js'
 
 /**
  * Angular adapter for wc-forms-kit.
@@ -58,12 +58,33 @@ function toArray(value) {
   return String(value).split(',').map((item) => item.trim()).filter(Boolean)
 }
 
+function collectValidationErrors(form) {
+  if (!form) return {}
+  const errors = {}
+  const controls = collectFormControls(form)
+  for (const el of controls) {
+    const name = el?.getAttribute?.('name')
+    if (!name) continue
+    const type = el?.getAttribute?.('data-type') || el?.getAttribute?.('type')
+    if (['button', 'submit', 'group'].includes(type)) continue
+    if (typeof el?.checkValidity === 'function' && !el.checkValidity()) {
+      const key = getFormInputPathKey(el, form) || name
+      errors[key] = el.validationMessage
+    }
+  }
+  return errors
+}
+
+function emitSentMeta(outputs, meta) {
+  emitToAngularTarget(outputs.sentMeta, meta)
+}
+
 function emitSent(outputs, form, nativeEvent, source) {
   if (!form) return
   const payload = getFormValues(form)
   emitToAngularTarget(outputs.sent, payload)
   emitToAngularTarget(outputs.sentDetail, payload)
-  emitToAngularTarget(outputs.sentMeta, {
+  emitSentMeta(outputs, {
     source,
     valid: source === 'submited' ? !!nativeEvent?.valid : true,
     errors: source === 'submited' ? (nativeEvent?.errors || {}) : {},
@@ -138,6 +159,15 @@ export function bindWcFormsAngularSubmit(element, outputs = {}) {
   const onSubmited = (nativeEvent) => {
     handledBySubmited = true
     const form = resolveFormFromEvent(nativeEvent, element)
+    if (nativeEvent?.valid === false) {
+      emitSentMeta(outputs, {
+        source: 'submited',
+        valid: false,
+        errors: nativeEvent?.errors || {},
+        nativeEvent,
+      })
+      return
+    }
     emitSent(outputs, form, nativeEvent, 'submited')
   }
 
@@ -149,6 +179,19 @@ export function bindWcFormsAngularSubmit(element, outputs = {}) {
     }
     if (typeof nativeEvent?.preventDefault === 'function') nativeEvent.preventDefault()
     const form = resolveFormFromEvent(nativeEvent, element)
+    if (!form) return
+    syncFormInputValidations(form)
+    const isValid = typeof form.checkValidity === 'function' ? form.checkValidity() : true
+    if (!isValid) {
+      if (typeof form.reportValidity === 'function') form.reportValidity()
+      emitSentMeta(outputs, {
+        source: 'submit-fallback',
+        valid: false,
+        errors: collectValidationErrors(form),
+        nativeEvent,
+      })
+      return
+    }
     emitSent(outputs, form, nativeEvent, 'submit-fallback')
   }
 

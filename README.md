@@ -199,7 +199,9 @@ The Angular adapter (`wc-forms-kit/angular`) exports:
 
 - `bindWcFormsAngularSubmit(formEl, { sent, sentMeta })`
   - Intercepts form submit and emits a ready-to-use payload (no manual `getFormValues` needed in user code).
-  - Prefers native `submited` when available; falls back to `submit` parsing.
+  - Prefers native `submited` when available; falls back to native `submit`.
+  - In `submit-fallback`, the adapter now runs `syncFormInputValidations(form)` and `form.checkValidity()/reportValidity()`.
+  - `sent` is emitted only when valid; invalid submit emits only `sentMeta` with `valid: false` and `errors`.
 - `setFormValues(formEl, valuesObj)`
   - Hydrates `<form-input>` fields from an object (same type-aware behavior as `form-control` values hydration), useful in Angular where `form.values = { ... }` may not upgrade on customized built-in forms.
 - `resetFormValues(formEl)`

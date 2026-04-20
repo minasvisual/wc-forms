@@ -102,6 +102,18 @@ describe('form-input default types (component smoke)', () => {
     expect(el.shadowRoot.querySelector('select')).toBeTruthy()
   })
 
+  test('select defaults to empty option when no value attribute is provided', () => {
+    const el = mountFormInput(`
+      <form-input name="sel" type="select" label="Sel" options="[
+        {'value':'','label':'Select an option'},
+        {'value':'a','label':'A'},
+        {'value':'b','label':'B'}
+      ]"></form-input>
+    `)
+    const select = el.shadowRoot.querySelector('select')
+    expect(select.value).toBe('')
+  })
+
   test('checkbox', () => {
     const el = mountFormInput(
       `<form-input name="cb" type="checkbox" label="Cb"></form-input>`
