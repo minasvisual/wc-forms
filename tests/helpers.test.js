@@ -37,6 +37,29 @@ describe('formatTypeValue', () => {
     expect(formatTypeValue('hidden', '42')).toBe('42')
     expect(formatTypeValue('hidden', '')).toBeUndefined()
   })
+
+  test('text-like types keep digit-only values as strings', () => {
+    expect(formatTypeValue('text', '123456')).toBe('123456')
+    expect(formatTypeValue('password', '123456')).toBe('123456')
+    expect(formatTypeValue('email', '0123')).toBe('0123')
+    expect(formatTypeValue('textarea', '007')).toBe('007')
+    expect(formatTypeValue('select', '10')).toBe('10')
+  })
+
+  test('text-like types preserve leading zeros and phone-like values', () => {
+    expect(formatTypeValue('text', '0011223344')).toBe('0011223344')
+    expect(formatTypeValue('text', '1e3')).toBe('1e3')
+  })
+
+  test('numeric types still coerce to number', () => {
+    expect(formatTypeValue('number', '42')).toBe(42)
+    expect(formatTypeValue('currency', '123.45')).toBe(123.45)
+    expect(formatTypeValue('range', '7')).toBe(7)
+  })
+
+  test('numeric types keep the raw value when it is not a number', () => {
+    expect(formatTypeValue('number', 'abc')).toBe('abc')
+  })
 })
 
 describe('onMounted', () => {

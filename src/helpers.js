@@ -49,6 +49,16 @@ export function isValidNumber(value) {
   return typeof Number(value) === 'number' && !Number.isNaN(Number(value))
 }
 
+/** Control types whose submitted value is parsed as a Number. Every other type keeps its string. */
+export const numericTypes = ['number', 'currency', 'range']
+
+/** Length used by length based validations: items for arrays, characters otherwise. */
+export function valueLength(value) {
+  if (value === null || value === undefined) return 0
+  if (Array.isArray(value)) return value.length
+  return String(value).length
+}
+
 export const dateRegex = /^[1-2]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])(T([01]\d|2[0-3]):[0-5]\d(:[01]\d)?)?$/;
 
 export const emailRegex = /^([a-z]){1,}([a-z0-9._-]){1,}([@]){1}([a-z]){2,}([.]){1}([a-z]){2,}([.]?){1}([a-z]?){2,}$/i;
@@ -109,11 +119,17 @@ export function formatTypeValue(type, value) {
   if (type === 'radioboxes' && value?.includes(',')) return String(value).split(',');
   if (type === 'object' && value?.includes(',')) return String(value).split(',');
 
-  if (isValidNumber(value)) return Number(value);
+  // Only explicitly numeric controls are coerced to Number. Text-like controls
+  // (text, password, email, search, textarea, select, ...) must keep the literal
+  // string the user typed: coercing them turned "0123" into 123 and made
+  // length based rules read `length` from a Number (undefined), which failed
+  // every digit-only value with no way for the user to satisfy the rule.
+  if (numericTypes.includes(type)) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : value;
+  }
   if (value === 'true' || value === 'false') return value === 'true';
   if (value === 'null') return null;
-  if (type === 'number') return Number(value);
-  if (type === 'currency') return Number(value);
 
   if (type === 'json' || type === 'object') {
     try {

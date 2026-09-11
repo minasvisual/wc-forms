@@ -25,6 +25,11 @@
     top: 100%;
     margin-top: 4px;
     z-index: 10;
+    /* Same rule as .wc-form-select: pin the popup palette so an OS dark preference does
+       not bleed into a light page. Canvas and CanvasText must resolve from the SAME
+       color-scheme, otherwise the background follows the OS and the text follows the
+       page, which is how this list ended up black-on-black. */
+    color-scheme: var(--wcf-autocomplete-color-scheme, light);
     background: var(--wcf-autocomplete-bg, Canvas);
     border: var(--wcf-autocomplete-border, 1px solid var(--wcf-border-color, color-mix(in srgb, currentColor 20%, transparent)));
     border-radius: var(--wcf-input-radius, 5px);
@@ -33,7 +38,7 @@
     padding: var(--wcf-autocomplete-padding, 0.5rem 0);
     max-height: var(--wcf-autocomplete-max-height, 200px);
     overflow-y: auto;
-    color: currentColor;
+    color: var(--wcf-autocomplete-color, CanvasText);
   }
 
   .wc-form-autocomplete-item {

@@ -37,24 +37,54 @@ export class FormCurrency {
     this.formitem = shadow.querySelector('input')
   }
 
+  /** Digit stream typed by a person: the last two digits are the cents. */
   maskCurrency(value) {
     let digits = String(value ?? '').replace(/\D/g, '')
     if (!digits) return ''
     return digits.replace(/(\d)(\d{2})$/, '$1.$2')
   }
 
+  /**
+   * Amount set programmatically (the `value` attribute or `form-control[values]`).
+   * It is already an amount, not a digit stream, so `199.9` must stay `199.90`
+   * instead of being read as cents and becoming `19.99`.
+   */
+  formatAmount(value) {
+    if (value === null || value === undefined || value === '') return ''
+    let raw = String(value).trim()
+    // Accept both `1234.56` and `1234,56`; thousand separators are dropped.
+    raw = raw.includes(',') && !raw.includes('.') ? raw.replace(',', '.') : raw.replace(/,/g, '')
+    const n = Number(raw.replace(/[^\d.-]/g, ''))
+    return Number.isFinite(n) ? n.toFixed(2) : ''
+  }
+
   parseNumber(masked) {
-    const n = Number(String(masked).replace(/[^\d.]/g, ''))
+    if (masked === null || masked === undefined || masked === '') return null
+    const cleaned = String(masked).replace(/[^\d.-]/g, '')
+    if (!cleaned || cleaned === '-' || cleaned === '.') return null
+    const n = Number(cleaned)
     return Number.isFinite(n) ? Number(n.toFixed(2)) : null
   }
 
-  syncFromInput() {
-    const masked = this.maskCurrency(this.formitem.value)
-    this.formitem.value = masked
-    const n = this.parseNumber(masked)
+  /** Writes the display value, syncs internals and emits the host `input` event. */
+  commitValue(display) {
+    this.formitem.value = display
+    const n = this.parseNumber(display)
     this.internals.setFormValue(n === null ? null : n)
     this.el.emitEvent('input', n === null ? undefined : n)
     if (typeof this.el.validate === 'function') this.el.validate()
+    return n
+  }
+
+  syncFromInput() {
+    return this.commitValue(this.maskCurrency(this.formitem.value))
+  }
+
+  /** Public entry point for programmatic amounts; emits `change` like a committed edit. */
+  setAmount(value) {
+    const n = this.commitValue(this.formatAmount(value))
+    this.el.emitEvent('change', n === null ? undefined : n)
+    return n
   }
 
   onMounted() {
@@ -71,8 +101,7 @@ export class FormCurrency {
       this.el.emitEvent('change', n === null ? undefined : n)
     })
     if (this.el.getAttribute('value')) {
-      this.formitem.value = this.maskCurrency(this.el.getAttribute('value'))
-      this.syncFromInput()
+      this.commitValue(this.formatAmount(this.el.getAttribute('value')))
     }
   }
 

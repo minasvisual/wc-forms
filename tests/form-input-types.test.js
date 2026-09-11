@@ -361,3 +361,160 @@ describe('form-input file submit payload', () => {
     expect(detail.doc.name).toBe('note.txt')
   })
 })
+
+describe('digit-only values in text-like fields', () => {
+  test('numeric password satisfies minlen and submits without errors', () => {
+    const form = createFormControl()
+    form.innerHTML = `
+      <form-input name="pwd" type="password" label="Password"
+        validations="required|minlen:6|maxlen:32"></form-input>
+    `
+    document.body.appendChild(form)
+
+    const pwd = form.querySelector('form-input[name="pwd"]')
+    const input = pwd.shadowRoot.querySelector('input')
+    input.value = '123456'
+    input.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }))
+
+    expect(pwd.errors).toEqual({})
+
+    let detail
+    let valid
+    let errors
+    form.addEventListener('submited', (e) => {
+      detail = e.detail
+      valid = e.valid
+      errors = e.errors
+    })
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+
+    expect(detail.pwd).toBe('123456')
+    expect(errors).toEqual({})
+    expect(valid).toBe(true)
+  })
+
+  test('text field keeps leading zeros in the submit payload', () => {
+    const form = createFormControl()
+    form.innerHTML = `
+      <form-input name="code" type="text" label="Code"></form-input>
+    `
+    document.body.appendChild(form)
+
+    const input = form
+      .querySelector('form-input[name="code"]')
+      .shadowRoot.querySelector('input')
+    input.value = '0012'
+    input.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }))
+
+    let detail
+    form.addEventListener('submited', (e) => { detail = e.detail })
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+
+    expect(detail.code).toBe('0012')
+  })
+
+  test('short numeric value still fails minlen with a message', () => {
+    const form = createFormControl()
+    form.innerHTML = `
+      <form-input name="pin" type="text" label="Pin" validations="minlen:6"></form-input>
+    `
+    document.body.appendChild(form)
+
+    const pin = form.querySelector('form-input[name="pin"]')
+    const input = pin.shadowRoot.querySelector('input')
+    input.value = '123'
+    input.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }))
+
+    expect(Object.keys(pin.errors)).toContain('minlen:6')
+  })
+})
+
+describe('validity across a rule chain', () => {
+  test('a rule that fails before the last one keeps the field invalid', () => {
+    const form = createFormControl()
+    form.innerHTML = `
+      <form-input name="n" type="number" label="N"
+        validations="required|isnumber|min:5|max:100"></form-input>
+    `
+    document.body.appendChild(form)
+
+    const el = form.querySelector('form-input[name="n"]')
+    const input = el.shadowRoot.querySelector('input')
+    input.value = '3' // breaks min:5; max:100 (the last rule) passes
+    input.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }))
+
+    expect(Object.keys(el.errors)).toContain('min:5')
+    expect(el.checkValidity()).toBe(false)
+    expect(el.validationMessage).toBeTruthy()
+
+    let valid
+    let errors
+    form.addEventListener('submited', (e) => { valid = e.valid; errors = e.errors })
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+
+    expect(valid).toBe(false)
+    expect(Object.keys(errors)).toContain('n')
+  })
+
+  test('the field goes back to valid once every rule passes', () => {
+    const form = createFormControl()
+    form.innerHTML = `
+      <form-input name="n" type="number" label="N"
+        validations="required|isnumber|min:5|max:100"></form-input>
+    `
+    document.body.appendChild(form)
+
+    const el = form.querySelector('form-input[name="n"]')
+    const input = el.shadowRoot.querySelector('input')
+    input.value = '3'
+    input.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }))
+    expect(el.checkValidity()).toBe(false)
+
+    input.value = '42'
+    input.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }))
+
+    expect(el.errors).toEqual({})
+    expect(el.checkValidity()).toBe(true)
+    expect(el.validationMessage).toBe('')
+  })
+})
+
+describe('currency amounts set programmatically', () => {
+  test('form-control values keeps the amount instead of reading it as cents', async () => {
+    const form = createFormControl()
+    form.innerHTML = `
+      <form-input name="price" type="currency" label="Price"></form-input>
+      <form-input name="fee" type="currency" label="Fee"></form-input>
+    `
+    document.body.appendChild(form)
+
+    form.setAttribute('values', JSON.stringify({ price: 250.5, fee: 199 }))
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    let detail
+    form.addEventListener('submited', (e) => { detail = e.detail })
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+
+    expect(detail.price).toBe(250.5)
+    expect(detail.fee).toBe(199)
+    expect(form.querySelector('form-input[name="price"]').formitem.value).toBe('250.50')
+    expect(form.querySelector('form-input[name="fee"]').formitem.value).toBe('199.00')
+  })
+
+  test('the value attribute is read as an amount too', () => {
+    const el = mountFormInput(
+      `<form-input name="c" type="currency" label="C" value="199.90"></form-input>`
+    )
+    expect(el.shadowRoot.querySelector('input').value).toBe('199.90')
+  })
+
+  test('typing still reads the digit stream as cents', () => {
+    const el = mountFormInput(
+      `<form-input name="c" type="currency" label="C"></form-input>`
+    )
+    const input = el.shadowRoot.querySelector('input')
+    input.value = '19990'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    expect(input.value).toBe('199.90')
+  })
+})

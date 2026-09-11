@@ -31,23 +31,30 @@ function patchInternalsObject(internals, hostEl) {
     })
   }
 
-  if (typeof internals.checkValidity !== 'function') {
-    internals.checkValidity = function () { return true }
+  // Minimal but real validity state: a no-op `setValidity` hides regressions where a
+  // field reports an error yet still passes `checkValidity()`.
+  internals._wcValidity = { valid: true, valueMissing: false }
+  internals._wcValidationMessage = ''
+  if (typeof internals.setValidity !== 'function' || !internals.__wcRealValidity) {
+    internals.setValidity = function (flags = {}, message = '', anchor) {
+      const invalid = Object.values(flags || {}).some(Boolean)
+      internals._wcValidity = Object.assign({ valueMissing: false }, flags, { valid: !invalid })
+      internals._wcValidationMessage = invalid ? String(message ?? '') : ''
+    }
+    internals.__wcRealValidity = true
   }
-  if (typeof internals.reportValidity !== 'function') {
-    internals.reportValidity = function () { return true }
-  }
-  if (typeof internals.setValidity !== 'function') {
-    internals.setValidity = function () {}
-  }
+  internals.checkValidity = function () { return internals._wcValidity.valid }
+  internals.reportValidity = function () { return internals._wcValidity.valid }
   if (!Object.getOwnPropertyDescriptor(internals, 'validity')) {
     Object.defineProperty(internals, 'validity', {
-      get() { return { valid: true, valueMissing: false } },
+      get() { return internals._wcValidity },
+      configurable: true,
     })
   }
   if (!Object.getOwnPropertyDescriptor(internals, 'validationMessage')) {
     Object.defineProperty(internals, 'validationMessage', {
-      get() { return '' },
+      get() { return internals._wcValidationMessage },
+      configurable: true,
     })
   }
   if (!Object.getOwnPropertyDescriptor(internals, 'form')) {

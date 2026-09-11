@@ -12,7 +12,7 @@ import { FormHidden } from './inputs/formhidden.js'
 import { FormGroup } from './inputs/formgroup.js'
 import { FormPills } from './inputs/formpills.js'
 import { FormRepeater } from './inputs/formrepeater.js'
-import { splitValues, get, dateRegex, emailRegex, isValidNumber, fileMatchesAnyAcceptToken } from './helpers.js'
+import { splitValues, get, dateRegex, emailRegex, isValidNumber, valueLength, fileMatchesAnyAcceptToken } from './helpers.js'
 import english from './lang/en.js'
 
 /**
@@ -98,15 +98,20 @@ export const validations = {
   },
   minlen: {
     message: (params) => t('minlen', [get(params, '[0]', 1)]),
+    // Length is read through `valueLength`, so a digit-only value parsed as a
+    // Number (or any non string) is measured by its characters, not by an
+    // undefined `length` property.
     handle: ({ value, params }) => {
       if (!get(params, '[0]')) throw new Error('Parameter 1 not found')
-      return value && (value.length >= parseInt(params[0] || 1))
+      if (value === null || value === undefined || value === '') return false
+      return valueLength(value) >= parseInt(params[0] || 1)
     }
   },
   maxlen: {
     message: (params, value, values) => t('maxlen', [get(params, '[0]', 255)]),
     handle: ({ value, params }) => {
-      return value && (value.length <= parseInt(get(params, '[0]', '255')))
+      if (value === null || value === undefined || value === '') return false
+      return valueLength(value) <= parseInt(get(params, '[0]', '255'))
     }
   },
   confirm: {

@@ -193,7 +193,7 @@ class FormComponent extends BaseHTMLElement {
       if (this.itype === 'range' || this.itype === 'pills') {
         this.formitem.addEventListener('input', (e) => handleFormItemValueUpdate(e, 'input'))
       }
-      console.debug('ATTACHING LISTENER TO', this.formitem.tagName, this.formitem.className); this.formitem.addEventListener('change', (e) => handleFormItemValueUpdate(e, 'change'))
+      this.formitem.addEventListener('change', (e) => handleFormItemValueUpdate(e, 'change'))
     }
 
     if (this.instance?.onMounted)
@@ -277,24 +277,43 @@ class FormComponent extends BaseHTMLElement {
     })
   }
 
+  /**
+   * `setValidity` only accepts an anchor that lives inside this element's shadow tree.
+   * Container types (group, repeater) keep their `formitem` outside of it, so the anchor
+   * is passed only when it is valid — otherwise the call throws NotFoundError and takes
+   * the whole validation pass down with it.
+   */
+  applyValidity(flags, message) {
+    const anchor = this.shadowRoot && this.formitem && this.shadowRoot.contains(this.formitem)
+      ? this.formitem
+      : undefined
+    this.internals.setValidity(flags, message, anchor)
+  }
+
   validate() {
     this.instance.setError(false)
     this.errors = {}
     let name = this.getAttribute('name')
     let formValues = this.internals.form ? this.getFormValues() : {}
     let value = formValues[name] !== undefined ? formValues[name] : this.formitem.value
-    let validAttrs = extractValidations(this.getAttribute('validations')) 
-    if (!validAttrs || !validAttrs.length) return; 
-    for (let attr of validAttrs) { 
-      this.internals.setValidity({ valueMissing: false }, [], this.formitem)
+    let validAttrs = extractValidations(this.getAttribute('validations'))
+    // Validity is cleared once before the loop and written once after it. Clearing it
+    // inside the loop let a later passing rule erase the failure of an earlier one, so
+    // a field could display an error and still report `checkValidity() === true`,
+    // submitting invalid data with `e.valid` true and `e.errors` empty.
+    this.applyValidity({}, '')
+    if (!validAttrs || !validAttrs.length) return;
+    for (let attr of validAttrs) {
       let vdt = new Validate(attr)
       if (vdt.validate(value, this.formitem, formValues))
         continue;
       this.errors[attr] = vdt.errors
-      this.internals.setValidity({ valueMissing: true }, vdt.errors, this.formitem)
     }
-    if (Object.keys(this.errors).length > 0)
-      this.instance.setError(Object.values(this.errors).join('<br>'))
+    let messages = Object.values(this.errors).flat().filter(Boolean)
+    if (messages.length > 0) {
+      this.applyValidity({ valueMissing: true }, messages.join(' '))
+      this.instance.setError(messages.join('<br>'))
+    }
   }
 
   maskIt(InputSource) {    
@@ -524,8 +543,14 @@ class FormWrapper extends BaseHTMLFormElement {
       if (type === 'range') {
         el.formitem.dispatchEvent(new Event('input', { bubbles: true }))
       } else if (type === 'currency') {
-        el.formitem.dispatchEvent(new Event('input', { bubbles: true }))
-        el.formitem.dispatchEvent(new Event('blur', { bubbles: true }))
+        // An amount coming from `values` is not a typed digit stream: let the widget
+        // format it as an amount, so 199.9 stays 199.90 instead of being read as cents.
+        if (typeof el.instance?.setAmount === 'function') {
+          el.instance.setAmount(nextValue)
+        } else {
+          el.formitem.dispatchEvent(new Event('input', { bubbles: true }))
+          el.formitem.dispatchEvent(new Event('blur', { bubbles: true }))
+        }
         continue
       }
       el.formitem.dispatchEvent(new Event('change', { bubbles: true }))

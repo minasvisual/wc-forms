@@ -66,6 +66,39 @@ describe('Config validations - Max Length', () => {
   }) 
 })
 
+describe('Config validations - Length with non string values', () => {
+  test('minlen/maxlen measure digit-only and numeric values by characters', async () => {
+    const minlen = Config.validations.minlen.handle
+    const maxlen = Config.validations.maxlen.handle
+    // digit-only string typed in a text/password field
+    expect(minlen({ value: '123456', params: ['6'] })).toBe(true)
+    expect(maxlen({ value: '123456', params: ['8'] })).toBe(true)
+    // same value already parsed as a Number (legacy payloads / number fields)
+    expect(minlen({ value: 123456, params: ['6'] })).toBe(true)
+    expect(minlen({ value: 123456, params: ['7'] })).toBe(false)
+    expect(maxlen({ value: 123456, params: ['8'] })).toBe(true)
+    expect(maxlen({ value: 123456, params: ['4'] })).toBe(false)
+  })
+
+  test('minlen/maxlen count items for array values', async () => {
+    const minlen = Config.validations.minlen.handle
+    const maxlen = Config.validations.maxlen.handle
+    expect(minlen({ value: ['a', 'b'], params: ['2'] })).toBe(true)
+    expect(minlen({ value: ['a', 'b'], params: ['3'] })).toBe(false)
+    expect(maxlen({ value: ['a', 'b'], params: ['2'] })).toBe(true)
+    expect(maxlen({ value: ['a', 'b', 'c'], params: ['2'] })).toBe(false)
+  })
+
+  test('minlen/maxlen reject empty values', async () => {
+    const minlen = Config.validations.minlen.handle
+    const maxlen = Config.validations.maxlen.handle
+    expect(minlen({ value: '', params: ['1'] })).toBe(false)
+    expect(minlen({ value: undefined, params: ['1'] })).toBe(false)
+    expect(maxlen({ value: '', params: ['5'] })).toBe(false)
+    expect(maxlen({ value: null, params: ['5'] })).toBe(false)
+  })
+})
+
 describe('Config validations - Confirm', () => { 
   test('should test confirm validation', async () => {
     const sut = Config.validations.confirm.handle

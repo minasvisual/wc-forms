@@ -497,8 +497,8 @@ Built-in validation rules:
 
 - required
 - email
-- minlen:`<number>`
-- maxlen:`<number>`
+- minlen:`<number>` (characters for text values, items for array values such as `checkboxes` / `pills`)
+- maxlen:`<number>` (characters for text values, items for array values such as `checkboxes` / `pills`)
 - confirm:`<other-field-name>`
 - isdate
 - isafter:`<yyyy-mm-dd>`
@@ -543,6 +543,8 @@ The submit handler builds field values with the same parsing rules as `formatTyp
 
 - **`input` on the host** follows the live value (string, parsed number for `range` / `currency`, etc.). After editing stops, the **last** `input` and the **last** `change` agree with submit for text-like fields, `range`, and `currency` (after blur).
 - **`type="autocomplete"`**: while filtering, host `input` events carry the raw filter text; only **`change`** after choosing a suggestion matches the submitted value.
+- **`type="currency"`**: a value set programmatically (the `value` attribute or `form-control[values]`) is read as an **amount** — `199.9` and `"199.90"` both become `199.90`. Only what a person types into the field is read as a digit stream where the last two digits are the cents (`19990` → `199.90`).
+- **Numeric coercion is limited to `number`, `currency` and `range`.** Every other type (`text`, `password`, `email`, `search`, `textarea`, `select`, ...) keeps the literal string, so digit-only values such as `"0012"` or a numeric password are submitted as strings and length rules (`minlen` / `maxlen`) measure their characters. If a numeric type receives a value that is not a number, the raw value is kept as-is.
 
 Automated checks live in `tests/form-input-events-submit.test.js` (covers registered input types except `button` / `submit`, which are not part of the data payload).
  
@@ -652,6 +654,8 @@ Exposed parts:
 - range-only: `range-min`, `range-max`, `range-value-popup`, `range-control`, `range-track`
 
 Native **checkbox**, **checkboxes**, and **radioboxes** paint inside `.wc-form-checks`. The default is `color-scheme: light` and `accent-color` aligned with the focus blue (`#3b82f6`), so light pages do not show dark OS-themed controls when `prefers-color-scheme` is dark. For a dark surface, set `--wcf-checks-color-scheme: dark` (and optionally `--wcf-check-accent`) on `form-input` or an ancestor.
+
+The **autocomplete** suggestion list follows the same rule: it defaults to `color-scheme: light` and paints with `Canvas` / `CanvasText`, so an OS dark preference does not turn the popup black on a light page. For a dark surface set `--wcf-autocomplete-color-scheme: dark`, or override `--wcf-autocomplete-bg` and `--wcf-autocomplete-color` directly, on `form-input` or an ancestor. Native **select** popups use `--wcf-select-color-scheme` (default light) the same way.
 
 ```css
 form-input::part(input) {
